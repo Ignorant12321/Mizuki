@@ -19,11 +19,11 @@ import { LinkPreset } from "./types/config";
 // 移除i18n导入以避免循环依赖
 
 // 定义站点语言
-const SITE_LANG = "ja"; // 语言代码，例如：'en', 'zh_CN', 'ja' 等。
+const SITE_LANG = "zh_CN"; // 语言代码，例如：'en', 'zh_CN', 'ja' 等。
 const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UTC+8
 export const siteConfig: SiteConfig = {
-	title: "Mizuki",
-	subtitle: "One demo website",
+	title: "Ignorant's Blog",
+	subtitle: "Ignorant 的个人博客",
 	siteURL: "https://mizuki.mysqil.com/", // 请替换为你的站点URL，以斜杠结尾
 	siteStartDate: "2025-01-01", // 站点开始运行日期，用于站点统计组件计算运行天数
 
@@ -32,7 +32,7 @@ export const siteConfig: SiteConfig = {
 	lang: SITE_LANG,
 
 	themeColor: {
-		hue: 60, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
+		hue: 250, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
 		fixed: false, // 对访问者隐藏主题色选择器
 	},
 
@@ -53,7 +53,7 @@ export const siteConfig: SiteConfig = {
 		// 显示模式："text-icon" 显示图标+文本，"logo" 仅显示Logo
 		mode: "logo",
 		// 顶栏标题文本
-		text: "MizukiUI",
+		text: "Ignorant",
 		// 顶栏标题图标路径，默认使用 public/assets/home/home.png
 		icon: "assets/home/home.png",
 		// 网站Logo图片路径
@@ -127,7 +127,7 @@ export const siteConfig: SiteConfig = {
 
 		carousel: {
 			enable: true, // 为 true 时：为多张图片启用轮播。为 false 时：从数组中随机显示一张图片
-			interval: 1.5, // 轮播间隔时间（秒）
+			interval: 5.0, // 轮播间隔时间（秒）
 		},
 
 		waves: {
@@ -147,14 +147,14 @@ export const siteConfig: SiteConfig = {
 
 		homeText: {
 			enable: true, // 在主页显示自定义文本
-			title: "わたしの部屋", // 主页横幅主标题
+			title: "精神の隅", // 主页横幅主标题
 
 			subtitle: [
-				"特別なことはないけど、君がいると十分です",
-				"今でもあなたは私の光",
-				"君ってさ、知らないうちに私の毎日になってたよ",
-				"君と話すと、なんか毎日がちょっと楽しくなるんだ",
-				"今日はなんでもない日。でも、ちょっとだけいい日",
+				"说好从今以后都牵着手，因为要走很远",
+				"在这亭台回眸千年后，忆起你是谁，只消月色隐约便足以勾勒这是非",
+				"达拉崩吧斑得贝迪卜多比鲁翁",
+				"选贤臣，任能将，覆江东云雨，尽风流",
+				"还有我，陪你在雨里放肆奔跑啊。地球上，天空下，我们做一对傻瓜",
 			],
 			typewriter: {
 				enable: true, // 启用副标题打字机效果
@@ -249,31 +249,26 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Home,
 		LinkPreset.Archive,
 		// 支持自定义导航栏链接，支持多级菜单
-		{
-			name: "Links",
-			url: "/links/",
-			icon: "material-symbols:link",
-			children: [
-				{
-					name: "GitHub",
-					url: "https://github.com/matsuzaka-yuki/Mizuki",
-					external: true,
-					icon: "fa6-brands:github",
-				},
-				{
-					name: "Bilibili",
-					url: "https://space.bilibili.com/701864046",
-					external: true,
-					icon: "fa6-brands:bilibili",
-				},
-				{
-					name: "Gitee",
-					url: "https://gitee.com/matsuzakayuki/Mizuki",
-					external: true,
-					icon: "mdi:git",
-				},
-			],
-		},
+		// {
+		// 	name: "Links",
+		// 	url: "/links/",
+		// 	icon: "material-symbols:link",
+		// 	children: [
+		// 		{
+		// 			name: "GitHub",
+		// 			url: "https://github.com/Ignorant12321",
+		// 			external: true,
+		// 			icon: "fa6-brands:github",
+		// 		},
+		// 		{
+		// 			name: "Bilibili",
+		// 			url: "https://space.bilibili.com/2063167092",
+		// 			external: true,
+		// 			icon: "fa6-brands:bilibili",
+		// 		},
+		// 	],
+		// },
+
 		{
 			name: "My",
 			url: "/content/",
@@ -303,6 +298,28 @@ export const navBarConfig: NavBarConfig = {
 			],
 		},
 		{
+			name: "Others",
+			url: "#",
+			icon: "material-symbols:more-rounded",
+			children: [
+				{
+					name: "Timeline",
+					url: "/timeline/",
+					icon: "material-symbols:timeline",
+				},
+				{
+					name: "Projects",
+					url: "/projects/",
+					icon: "material-symbols:work",
+				},
+				{
+					name: "Skills",
+					url: "/skills/",
+					icon: "material-symbols:psychology",
+				},
+			],
+		},
+		{
 			name: "About",
 			url: "/content/",
 			icon: "material-symbols:info",
@@ -316,28 +333,6 @@ export const navBarConfig: NavBarConfig = {
 					name: "Friends",
 					url: "/friends/",
 					icon: "material-symbols:group",
-				},
-			],
-		},
-		{
-			name: "Others",
-			url: "#",
-			icon: "material-symbols:more-horiz",
-			children: [
-				{
-					name: "Projects",
-					url: "/projects/",
-					icon: "material-symbols:work",
-				},
-				{
-					name: "Skills",
-					url: "/skills/",
-					icon: "material-symbols:psychology",
-				},
-				{
-					name: "Timeline",
-					url: "/timeline/",
-					icon: "material-symbols:timeline",
 				},
 			],
 		},
@@ -435,7 +430,7 @@ export const shareConfig: ShareConfig = {
 
 export const announcementConfig: AnnouncementConfig = {
 	title: "", // 公告标题，填空使用i18n字符串Key.announcement
-	content: "ブログへようこそ！これはサンプルの告知です", // 公告内容
+	content: "孩儿立志出乡关，学不成名誓不还", // 公告内容
 	closable: true, // 允许用户关闭公告
 	link: {
 		enable: true, // 启用链接
@@ -450,14 +445,16 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 	mode: "meting", // 音乐播放器模式，可选 "local" 或 "meting"
 	meting_api:
 		"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r", // Meting API 地址
-	id: "14164869977", // 歌单ID
+	id: "17699694803", // 歌单ID
 	server: "netease", // 音乐源服务器。有的meting的api源支持更多平台,一般来说,netease=网易云音乐, tencent=QQ音乐, kugou=酷狗音乐, xiami=虾米音乐, baidu=百度音乐
 	type: "playlist", // 播单类型
 };
 
 export const footerConfig: FooterConfig = {
-	enable: false, // 是否启用Footer HTML注入功能
-	customHtml: "", // HTML格式的自定义页脚信息，例如备案号等，默认留空
+	enable: true, // 是否启用Footer HTML注入功能
+	customHtml:
+		'<div><span><i></i> 备案号 </span><span><a href="https://beian.miit.gov.cn/" target="_blank" one-link-mark="yes">京ICP备0000000000号</a>&nbsp;|&nbsp;<a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode= 32072202010255" target="_blank" one-link-mark="yes">京公网安备 00000000000000号</a></span></div><div><span><i></i>CDN &nbsp; </span><span><a href="https://www.upyun.com/" target="_blank" one-link-mark="yes">Upyun</a></span></div>',
+	// HTML格式的自定义页脚信息，例如备案号等，默认留空
 	// 也可以直接编辑 FooterConfig.html 文件来添加备案号等自定义内容
 	// 注意：若 customHtml 不为空，则使用 customHtml 中的内容；若 customHtml 留空，则使用 FooterConfig.html 文件中的内容
 	// FooterConfig.html 可能会在未来的某个版本弃用
@@ -469,13 +466,22 @@ export const footerConfig: FooterConfig = {
  * sidebar: 控制组件所在的侧边栏（left 或 right）。注意：移动端通常不显示右侧栏内容。若组件设置在 right，请确保 layout.position 为 "both"。
  */
 export const sidebarLayoutConfig: SidebarLayoutConfig = {
-	// 侧边栏组件属性配置列表
-	properties: [
+	// 侧边栏位置：单侧(unilateral)或双侧(both)
+	position: "both",
+
+	// 侧边栏组件配置列表
+	components: [
 		{
 			// 组件类型：用户资料组件
 			type: "profile",
+			// 是否启用该组件
+			enable: true,
+			// 组件显示顺序（数字越小越靠前）
+			order: 1,
 			// 组件位置："top" 表示固定在顶部
 			position: "top",
+			// 所在侧边栏
+			sidebar: "left",
 			// CSS 类名，用于应用样式和动画
 			class: "onload-animation",
 			// 动画延迟时间（毫秒），用于错开动画效果
@@ -484,8 +490,14 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 		{
 			// 组件类型：公告组件
 			type: "announcement",
+			// 是否启用该组件（现在通过统一配置控制）
+			enable: true,
+			// 组件显示顺序
+			order: 2,
 			// 组件位置："top" 表示固定在顶部
 			position: "top",
+			// 所在侧边栏
+			sidebar: "left",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -494,8 +506,14 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 		{
 			// 组件类型：分类组件
 			type: "categories",
+			// 是否启用该组件
+			enable: true,
+			// 组件显示顺序
+			order: 3,
 			// 组件位置："sticky" 表示粘性定位，可滚动
 			position: "sticky",
+			// 所在侧边栏
+			sidebar: "left",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -509,8 +527,14 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 		{
 			// 组件类型：标签组件
 			type: "tags",
+			// 是否启用该组件
+			enable: true,
+			// 组件显示顺序
+			order: 5,
 			// 组件位置："sticky" 表示粘性定位
 			position: "top",
+			// 所在侧边栏
+			sidebar: "left",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -524,8 +548,14 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 		{
 			// 组件类型：站点统计组件
 			type: "site-stats",
+			// 是否启用该组件
+			enable: true,
+			// 组件显示顺序
+			order: 5,
 			// 组件位置
 			position: "top",
+			// 所在侧边栏
+			sidebar: "right",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -534,21 +564,20 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 		{
 			// 组件类型：日历组件(移动端不显示)
 			type: "calendar",
+			// 是否启用该组件
+			enable: true,
+			// 组件显示顺序
+			order: 6,
 			// 组件位置
 			position: "top",
+			// 所在侧边栏
+			sidebar: "right",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
 			animationDelay: 250,
 		},
 	],
-
-	// 侧栏组件布局配置
-	components: {
-		left: ["profile", "announcement", "categories", "tags"],
-		right: ["site-stats", "calendar"],
-		drawer: ["profile", "announcement"],
-	},
 
 	// 默认动画配置
 	defaultAnimation: {
@@ -571,11 +600,22 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 桌面端断点：屏幕宽度大于等于1280px
 			desktop: 1280,
 		},
+		// 不同设备的布局模式
+		// hidden: 隐藏侧边栏
+		// sidebar: 显示侧边栏
+		layout: {
+			// 移动端：显示侧边栏(抽屉模式)
+			mobile: "sidebar",
+			// 平板端：显示侧边栏(抽屉模式)
+			tablet: "sidebar",
+			// 桌面端：显示侧边栏
+			desktop: "sidebar",
+		},
 	},
 };
 
 export const sakuraConfig: SakuraConfig = {
-	enable: false, // 默认关闭樱花特效
+	enable: true, // 默认关闭樱花特效
 	sakuraNum: 21, // 樱花数量
 	limitTimes: -1, // 樱花越界限制次数，-1为无限循环
 	size: {
@@ -605,22 +645,22 @@ export const sakuraConfig: SakuraConfig = {
 export const pioConfig: import("./types/config").PioConfig = {
 	enable: true, // 启用看板娘
 	models: ["/pio/models/pio/model.json"], // 默认模型路径
-	position: "left", // 模型位置
+	position: "right", // 默认位置在右侧
 	width: 280, // 默认宽度
 	height: 250, // 默认高度
 	mode: "draggable", // 默认为可拖拽模式
 	hiddenOnMobile: true, // 默认在移动设备上隐藏
 	dialog: {
-		welcome: "Welcome to Mizuki Website!", // 欢迎词
+		welcome: "欢迎来到 Ignorant 网站！", // 欢迎词
 		touch: [
-			"What are you doing?",
-			"Stop touching me!",
+			"你在干什么？",
+			"再摸我就报警了！",
 			"HENTAI!",
-			"Don't bully me like that!",
+			"不可以这样欺负我啦！",
 		], // 触摸提示
-		home: "Click here to go back to homepage!", // 首页提示
-		skin: ["Want to see my new outfit?", "The new outfit looks great~"], // 换装提示
-		close: "QWQ See you next time~", // 关闭提示
+		home: "点击这里回到首页！", // 首页提示
+		skin: ["想看看我的新衣服吗？", "新衣服真漂亮~"], // 换装提示
+		close: "QWQ 下次再见吧~", // 关闭提示
 		link: "https://github.com/matsuzaka-yuki/Mizuki", // 关于链接
 	},
 };
