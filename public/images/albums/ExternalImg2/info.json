@@ -1,0 +1,94 @@
+{
+	"mode": "external",
+	"hidden": false,
+	"title": "随机风景相册",
+	"description": "这是一个使用外链图片的相册，所有图片都来自外部链接",
+	"date": "2026-01-8",
+	"location": "网络",
+	"tags": ["风景", "随机", "API"],
+	"layout": "masonry",
+	"columns": 3,
+	"cover": "https://bing.img.run/rand_1366x768.php?t=1",
+	"photos": [
+		{
+			"id": "external-0",
+			"src": "https://bing.biturl.top/?resolution=1920x1080&format=image&index=random&0",
+			"alt": "随机图片 0",
+			"title": "随机图片 0",
+			"description": "随机图片 0",
+			"tags": ["风景", "自然", "bing", "随机"],
+			"width": 600,
+			"height": 800
+		},
+		{
+			"id": "external-1",
+			"src": "https://bing.img.run/rand_1366x768.php?t=1",
+			"alt": "随机图片 1",
+			"title": "随机图片 1",
+			"description": "随机图片 1",
+			"tags": ["风景", "自然", "bing", "随机"],
+			"width": 600,
+			"height": 800
+		},
+		{
+			"id": "external-2",
+			"src": "https://bing.img.run/rand_1366x768.php?t=2",
+			"alt": "随机图片 2",
+			"title": "随机图片 2",
+			"description": "随机图片 2",
+			"tags": ["风景", "自然", "bing", "随机"],
+			"width": 600,
+			"height": 800
+		},
+		{
+			"id": "external-3",
+			"src": "https://bing.img.run/rand_1366x768.php?t=3",
+			"alt": "随机图片 3",
+			"title": "随机图片 3",
+			"description": "随机图片 3",
+			"tags": ["风景", "自然", "bing", "随机"],
+			"width": 600,
+			"height": 800
+		},
+		{
+			"id": "external-4",
+			"src": "https://picsum.photos/800/600?random=4",
+			"alt": "随机图片 4",
+			"title": "随机图片 4",
+			"description": "随机图片 4",
+			"tags": ["风景", "自然", "picsum", "随机"],
+			"width": 600,
+			"height": 800
+		},
+		{
+			"id": "external-5",
+			"src": "https://picsum.photos/800/600?random=5",
+			"alt": "随机图片 5",
+			"title": "随机图片 5",
+			"description": "随机图片 5",
+			"tags": ["风景", "自然", "picsum", "随机"],
+			"width": 600,
+			"height": 800
+		},
+		{
+			"id": "external-6",
+			"src": "https://bing.biturl.top/?resolution=1920x1080&format=image&index=random&6",
+			"alt": "随机图片 6",
+			"title": "随机图片 6",
+			"description": "随机图片 6",
+			"tags": ["风景", "自然", "bing", "随机"],
+			"width": 600,
+			"height": 800
+		},
+		{
+			"id": "external-7",
+			"src": "https://bing.biturl.top/?resolution=1080x1920&format=image&index=random&7",
+			"alt": "随机图片 7",
+			"title": "随机图片 7",
+			"description": "随机图片 7",
+			"tags": ["风景", "自然", "bing", "随机"],
+			"width": 600,
+			"height": 800
+		}
+	]
+}

@@ -114,6 +114,8 @@ export const siteConfig: SiteConfig = {
 				"/assets/desktop-banner/6.webp",
 				"/assets/desktop-banner/7.webp",
 				"/assets/desktop-banner/8.webp",
+				"/assets/desktop-banner/9.webp",
+				"/assets/desktop-banner/10.webp",
 			], // 桌面横幅图片
 			mobile: [
 				"/assets/mobile-banner/1.webp",
@@ -124,6 +126,8 @@ export const siteConfig: SiteConfig = {
 				"/assets/mobile-banner/6.webp",
 				"/assets/mobile-banner/7.webp",
 				"/assets/mobile-banner/8.webp",
+				"/assets/mobile-banner/9.webp",
+				"/assets/mobile-banner/10.webp",
 			], // 移动横幅图片
 		}, // 使用本地横幅图片
 
@@ -228,6 +232,8 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 			"/assets/desktop-banner/6.webp",
 			"/assets/desktop-banner/7.webp",
 			"/assets/desktop-banner/8.webp",
+			"/assets/desktop-banner/9.webp",
+			"/assets/desktop-banner/10.webp",
 		], // 桌面横幅图片
 		mobile: [
 			"/assets/mobile-banner/1.webp",
@@ -238,6 +244,8 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 			"/assets/mobile-banner/6.webp",
 			"/assets/mobile-banner/7.webp",
 			"/assets/mobile-banner/8.webp",
+			"/assets/mobile-banner/9.webp",
+			"/assets/mobile-banner/10.webp",
 		], // 移动横幅图片
 	}, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
@@ -348,7 +356,7 @@ export const navBarConfig: NavBarConfig = {
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avatar.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
 	name: "まつざか ゆき",
-	bio: "世界は大きい、君は行かなければならない",
+	bio: "孩儿立志出乡关，学不成名誓不还",
 	typewriter: {
 		enable: true, // 启用个人简介打字机效果
 		speed: 80, // 打字速度（毫秒）
@@ -436,7 +444,7 @@ export const shareConfig: ShareConfig = {
 
 export const announcementConfig: AnnouncementConfig = {
 	title: "", // 公告标题，填空使用i18n字符串Key.announcement
-	content: "孩儿立志出乡关，学不成名誓不还", // 公告内容
+	content: "Refer to Mizuki theme", // 公告内容
 	closable: true, // 允许用户关闭公告
 	link: {
 		enable: true, // 启用链接

@@ -1,0 +1,134 @@
+{
+	"mode": "external",
+	"hidden": false,
+	"title": "随机动漫相册",
+	"description": "来自api接口的随机二次元图片",
+	"date": "2026-01-01",
+	"location": "网络",
+	"tags": ["动漫", "随机", "API"],
+	"layout": "masonry",
+	"columns": 3,
+	"cover": "https://www.dmoe.cc/random.php?t=1",
+	"photos": [
+		{
+			"id": "xjh-11",
+			"src": "https://img.xjh.me/random_img.php?return=302&1",
+			"alt": "随机动漫 11",
+			"title": "随机动漫 11",
+			"description": "随机动漫 11",
+			"tags": ["随机", "动漫", "xjh.me"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "dmoe.cc-1",
+			"src": "https://www.dmoe.cc/random.php?t=1",
+			"alt": "随机动漫 1",
+			"title": "随机动漫 1",
+			"description": "随机动漫 1",
+			"tags": ["随机", "动漫", "dmoe.cc"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "dmoe-2",
+			"src": "https://www.dmoe.cc/random.php?t=2",
+			"alt": "随机动漫 2",
+			"title": "随机动漫 2",
+			"description": "随机动漫 2",
+			"tags": ["随机", "动漫", "dmoe.cc"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "dmoe-3",
+			"src": "https://www.dmoe.cc/random.php?t=3",
+			"alt": "随机动漫 3",
+			"title": "随机动漫 3",
+			"description": "随机动漫 3",
+			"tags": ["随机", "动漫", "dmoe.cc"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "xjh-12",
+			"src": "https://img.xjh.me/random_img.php?return=302&3",
+			"alt": "随机动漫 12",
+			"title": "随机动漫 12",
+			"description": "随机动漫 12",
+			"tags": ["随机", "动漫", "xjh.me"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "seovx-4",
+			"src": "https://cdn.seovx.com/d/?mom=302&1",
+			"alt": "随机动漫 4",
+			"title": "随机动漫 4",
+			"description": "随机动漫 4",
+			"tags": ["随机", "动漫", "seovx.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "seovx-5",
+			"src": "https://cdn.seovx.com/d/?mom=302&2",
+			"alt": "随机动漫 5",
+			"title": "随机动漫 5",
+			"description": "随机动漫 5",
+			"tags": ["随机", "动漫", "seovx.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "seovx-6",
+			"src": "https://cdn.seovx.com/d/?mom=302&3",
+			"alt": "随机动漫 6",
+			"title": "随机动漫 6",
+			"description": "随机动漫 6",
+			"tags": ["随机", "动漫", "seovx.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "r10086-7",
+			"src": "https://api.r10086.com/樱道随机图片api接口.php?图片系列=东方project1&1",
+			"alt": "随机动漫 7",
+			"title": "随机动漫 7",
+			"description": "随机动漫 7",
+			"tags": ["随机", "动漫", "r10086.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "r10086-8",
+			"src": "https://api.r10086.com/樱道随机图片api接口.php?图片系列=东方project1&2",
+			"alt": "随机动漫 8",
+			"title": "随机动漫 8",
+			"description": "随机动漫 8",
+			"tags": ["随机", "动漫", "r10086.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "r10086-9",
+			"src": "https://api.r10086.com/樱道随机图片api接口.php?图片系列=东方project1&3",
+			"alt": "随机动漫 9",
+			"title": "随机动漫 9",
+			"description": "随机动漫 9",
+			"tags": ["随机", "动漫", "r10086.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "xjh-10",
+			"src": "https://img.xjh.me/random_img.php?return=302&1",
+			"alt": "随机动漫 10",
+			"title": "随机动漫 10",
+			"description": "随机动漫 10",
+			"tags": ["随机", "动漫", "xjh.me"],
+			"width": 800,
+			"height": 600
+		}
+	]
+}
