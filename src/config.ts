@@ -25,7 +25,7 @@ export const siteConfig: SiteConfig = {
 	title: "Ignorant's Blog",
 	subtitle: "Ignorant 的个人博客",
 	siteURL: "https://mizuki.mysqil.com/", // 请替换为你的站点URL，以斜杠结尾
-	siteStartDate: "2025-01-01", // 站点开始运行日期，用于站点统计组件计算运行天数
+	siteStartDate: "2026-01-01", // 站点开始运行日期，用于站点统计组件计算运行天数
 
 	timeZone: SITE_TIMEZONE,
 
@@ -67,12 +67,12 @@ export const siteConfig: SiteConfig = {
 	},
 
 	bangumi: {
-		userId: "your-bangumi-id", // 在此处设置你的Bangumi用户ID，可以设置为 "sai" 测试
-		fetchOnDev: false, // 是否在开发环境下获取 Bangumi 数据（默认 false），获取前先执行 pnpm build 构建 json 文件
+		userId: "1204025", // 在此处设置你的Bangumi用户ID，可以设置为 "sai" 测试
+		fetchOnDev: true, // 是否在开发环境下获取 Bangumi 数据（默认 false），获取前先执行 pnpm build 构建 json 文件
 	},
 
 	anime: {
-		mode: "local", // 番剧页面模式："bangumi" 使用Bangumi API，"local" 使用本地配置
+		mode: "bangumi", // 番剧页面模式："bangumi" 使用Bangumi API，"local" 使用本地配置
 	},
 
 	// 文章列表布局配置
@@ -112,6 +112,8 @@ export const siteConfig: SiteConfig = {
 				"/assets/desktop-banner/4.webp",
 				"/assets/desktop-banner/5.webp",
 				"/assets/desktop-banner/6.webp",
+				"/assets/desktop-banner/7.webp",
+				"/assets/desktop-banner/8.webp",
 			], // 桌面横幅图片
 			mobile: [
 				"/assets/mobile-banner/1.webp",
@@ -120,6 +122,8 @@ export const siteConfig: SiteConfig = {
 				"/assets/mobile-banner/4.webp",
 				"/assets/mobile-banner/5.webp",
 				"/assets/mobile-banner/6.webp",
+				"/assets/mobile-banner/7.webp",
+				"/assets/mobile-banner/8.webp",
 			], // 移动横幅图片
 		}, // 使用本地横幅图片
 
@@ -158,7 +162,6 @@ export const siteConfig: SiteConfig = {
 			],
 			typewriter: {
 				enable: true, // 启用副标题打字机效果
-
 				speed: 100, // 打字速度（毫秒）
 				deleteSpeed: 50, // 删除速度（毫秒）
 				pauseTime: 2000, // 完全显示后的暂停时间（毫秒）
@@ -186,11 +189,11 @@ export const siteConfig: SiteConfig = {
 	generateOgImages: false, // 启用生成OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
 	favicon: [
 		// 留空以使用默认 favicon
-		// {
-		//   src: '/favicon/icon.png',    // 图标文件路径
-		//   theme: 'light',              // 可选，指定主题 'light' | 'dark'
-		//   sizes: '32x32',              // 可选，图标大小
-		// }
+		{
+			src: "/favicon/favicon2.png", // 图标文件路径
+			//   theme: 'light',              // 可选，指定主题 'light' | 'dark'
+			//   sizes: '32x32',              // 可选，图标大小
+		},
 	],
 
 	// 字体配置
@@ -224,6 +227,8 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 			"/assets/desktop-banner/4.webp",
 			"/assets/desktop-banner/5.webp",
 			"/assets/desktop-banner/6.webp",
+			"/assets/desktop-banner/7.webp",
+			"/assets/desktop-banner/8.webp",
 		], // 桌面横幅图片
 		mobile: [
 			"/assets/mobile-banner/1.webp",
@@ -232,6 +237,8 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 			"/assets/mobile-banner/4.webp",
 			"/assets/mobile-banner/5.webp",
 			"/assets/mobile-banner/6.webp",
+			"/assets/mobile-banner/7.webp",
+			"/assets/mobile-banner/8.webp",
 		], // 移动横幅图片
 	}, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
