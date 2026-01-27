@@ -973,12 +973,14 @@
 			width: 17.5rem;
 			position: absolute;
 			bottom: 0;
+			/* right: 0; */
 			left: 0;
 		}
 		.expanded-player {
 			width: 20rem;
 			position: absolute;
 			bottom: 0;
+			/* right: 0; */
 			left: 0;
 		}
 
@@ -1002,6 +1004,7 @@
 		@media (max-width: 768px) {
 			.music-player {
 				max-width: 280px !important;
+				/* right: 0.5rem !important; */
 				left: 0.5rem !important;
 				bottom: 0.5rem !important;
 			}
@@ -1011,10 +1014,12 @@
 			.music-player.expanded {
 				width: calc(100vw - 16px);
 				max-width: none;
+				/* right: 0.5rem !important; */
 				left: 0.5rem !important;
 			}
 			.playlist-panel {
 				width: calc(100vw - 16px) !important;
+				/* right: 0.5rem !important; */
 				left: 0.5rem !important;
 				max-width: none;
 			}

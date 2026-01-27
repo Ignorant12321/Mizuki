@@ -9,6 +9,7 @@ import type {
 	NavBarConfig,
 	PermalinkConfig,
 	ProfileConfig,
+	Live2DConfig,
 	SakuraConfig,
 	ShareConfig,
 	SidebarLayoutConfig,
@@ -184,7 +185,7 @@ export const siteConfig: SiteConfig = {
 	},
 	toc: {
 		enable: true, // 启用目录功能
-		mode: "sidebar", // 目录显示模式："float" 悬浮按钮模式，"sidebar" 侧边栏模式
+		mode: "float", // 目录显示模式："float" 悬浮按钮模式，"sidebar" 侧边栏模式
 		depth: 2, // 目录深度，1-6，1 表示只显示 h1 标题，2 表示显示 h1 和 h2 标题，依此类推
 		useJapaneseBadge: true, // 使用日语假名标记（あいうえお...）代替数字，开启后会将 1、2、3... 改为 あ、い、う...
 	},
@@ -355,39 +356,84 @@ export const navBarConfig: NavBarConfig = {
 
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avatar.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
+	avatarFrame: "assets/images/avatarFrame.png",
 	name: "まつざか ゆき",
-	bio: "孩儿立志出乡关，学不成名誓不还",
+	bio: "世界は大きい、君は行かなければならない",
 	typewriter: {
 		enable: true, // 启用个人简介打字机效果
 		speed: 80, // 打字速度（毫秒）
 	},
 	links: [
 		{
+			name: "GitHub",
+			icon: "fa6-brands:github",
+			url: "https://github.com/Ignorant12321",
+		},
+		{
 			name: "Bilibili",
 			icon: "fa6-brands:bilibili",
-			url: "https://space.bilibili.com/701864046",
+			url: "https://space.bilibili.com/2063167092",
+		},
+		{
+			name: "Steam",
+			icon: "fa6-brands:steam",
+			url: "https://steamcommunity.com/profiles/76561199543339625/",
 		},
 		{
 			name: "Gitee",
-			icon: "mdi:git",
-			url: "https://gitee.com/matsuzakayuki",
-		},
-		{
-			name: "GitHub",
-			icon: "fa6-brands:github",
-			url: "https://github.com/matsuzaka-yuki",
-		},
-		{
-			name: "Codeberg",
-			icon: "simple-icons:codeberg",
-			url: "https://codeberg.org",
-		},
-		{
-			name: "Discord",
-			icon: "fa6-brands:discord",
-			url: "https://discord.gg/MqW6TcQtVM",
+			icon: "simple-icons:gitee",
+			url: "https://gitee.com/ignorantand",
 		},
 	],
+};
+
+// 新版 Live2D Widget 配置
+export const live2dConfig: Live2DConfig = {
+	enable: true, // 全局开关
+	lock: false, // 锁定位置
+	// 核心资源路径 (使用 fastly 镜像)
+	cdnPath: "https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.0-rc.6/dist/",
+
+	// 布局设置
+	position: "right", // 'left' 或 'right'
+	size: {
+		width: 280, // 画布宽度
+		height: 250, // 画布高度
+	},
+
+	// 整体位置偏移
+	offset: {
+		bottom: "-1rem", // 距底部距离
+		side: "6rem", // 距侧边(左/右)距离
+		hover: "0rem", // 鼠标悬停时距侧边(上/下)距离
+	},
+
+	// 适配不同模型的身高问题 (例如魔女帽子)
+	tips: {
+		top: "-50px", // 气泡框的 Y 轴偏移 (负数向上)
+		width: "", // 气泡框宽度
+	},
+
+	// 工具栏设置
+	tools: {
+		top: "-30px", // 工具栏 Y 轴偏移
+		side: "-30px", // 工具栏侧边偏移
+		items: [
+			"hitokoto",
+			"asteroids",
+			"switch-model",
+			"switch-texture",
+			"photo",
+			"info",
+			"quit",
+		],
+	},
+
+	// 移动端设置
+	mobile: {
+		show: false, // 在移动端是否显示 (true=显示, false=隐藏)
+		breakpoint: 768, // 断点宽度
+	},
 };
 
 export const licenseConfig: LicenseConfig = {
@@ -431,9 +477,9 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 };
 
 export const commentConfig: CommentConfig = {
-	enable: false, // 启用评论功能。当设置为 false 时，评论组件将不会显示在文章区域。
+	enable: true, // 启用评论功能。当设置为 false 时，评论组件将不会显示在文章区域。
 	twikoo: {
-		envId: "https://twikoo.vercel.app",
+		envId: "https://comment-01.218501.xyz",
 		lang: SITE_LANG,
 	},
 };
@@ -444,8 +490,8 @@ export const shareConfig: ShareConfig = {
 
 export const announcementConfig: AnnouncementConfig = {
 	title: "", // 公告标题，填空使用i18n字符串Key.announcement
-	content: "Refer to Mizuki theme", // 公告内容
-	closable: true, // 允许用户关闭公告
+	content: "孩儿立志出乡关，学不成名誓不还", // 公告内容
+	closable: false, // 允许用户关闭公告
 	link: {
 		enable: true, // 启用链接
 		text: "Learn More", // 链接文本
@@ -466,8 +512,7 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 
 export const footerConfig: FooterConfig = {
 	enable: true, // 是否启用Footer HTML注入功能
-	customHtml:
-		'<div><span><i></i> 备案号 </span><span><a href="https://beian.miit.gov.cn/" target="_blank" one-link-mark="yes">京ICP备0000000000号</a>&nbsp;|&nbsp;<a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode= 32072202010255" target="_blank" one-link-mark="yes">京公网安备 00000000000000号</a></span></div><div><span><i></i>CDN &nbsp; </span><span><a href="https://www.upyun.com/" target="_blank" one-link-mark="yes">Upyun</a></span></div>',
+	customHtml: "",
 	// HTML格式的自定义页脚信息，例如备案号等，默认留空
 	// 也可以直接编辑 FooterConfig.html 文件来添加备案号等自定义内容
 	// 注意：若 customHtml 不为空，则使用 customHtml 中的内容；若 customHtml 留空，则使用 FooterConfig.html 文件中的内容
@@ -493,7 +538,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件显示顺序（数字越小越靠前）
 			order: 1,
 			// 组件位置："top" 表示固定在顶部
-			position: "top",
+			position: "sticky",
 			// 所在侧边栏
 			sidebar: "left",
 			// CSS 类名，用于应用样式和动画
@@ -509,7 +554,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件显示顺序
 			order: 2,
 			// 组件位置："top" 表示固定在顶部
-			position: "top",
+			position: "sticky",
 			// 所在侧边栏
 			sidebar: "left",
 			// CSS 类名
@@ -518,16 +563,32 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			animationDelay: 50,
 		},
 		{
+			// 组件类型：站点统计组件
+			type: "site-stats",
+			// 是否启用该组件
+			enable: true,
+			// 组件显示顺序
+			order: 3,
+			// 组件位置
+			position: "top",
+			// 所在侧边栏
+			sidebar: "right",
+			// CSS 类名
+			class: "onload-animation",
+			// 动画延迟时间
+			animationDelay: 100,
+		},
+		{
 			// 组件类型：分类组件
 			type: "categories",
 			// 是否启用该组件
 			enable: true,
 			// 组件显示顺序
-			order: 3,
+			order: 4,
 			// 组件位置："sticky" 表示粘性定位，可滚动
-			position: "sticky",
+			position: "top",
 			// 所在侧边栏
-			sidebar: "left",
+			sidebar: "right",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -548,32 +609,16 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件位置："sticky" 表示粘性定位
 			position: "top",
 			// 所在侧边栏
-			sidebar: "left",
-			// CSS 类名
-			class: "onload-animation",
-			// 动画延迟时间
-			animationDelay: 250,
-			// 响应式配置
-			responsive: {
-				// 折叠阈值：当标签数量超过20个时自动折叠
-				collapseThreshold: 20,
-			},
-		},
-		{
-			// 组件类型：站点统计组件
-			type: "site-stats",
-			// 是否启用该组件
-			enable: true,
-			// 组件显示顺序
-			order: 5,
-			// 组件位置
-			position: "top",
-			// 所在侧边栏
 			sidebar: "right",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
 			animationDelay: 200,
+			// 响应式配置
+			responsive: {
+				// 折叠阈值：当标签数量超过20个时自动折叠
+				collapseThreshold: 20,
+			},
 		},
 		{
 			// 组件类型：日历组件(移动端不显示)
@@ -655,30 +700,6 @@ export const sakuraConfig: SakuraConfig = {
 	zIndex: 100, // 层级，确保樱花在合适的层级显示
 };
 
-// Pio 看板娘配置
-export const pioConfig: import("./types/config").PioConfig = {
-	enable: true, // 启用看板娘
-	models: ["/pio/models/pio/model.json"], // 默认模型路径
-	position: "right", // 默认位置在右侧
-	width: 280, // 默认宽度
-	height: 250, // 默认高度
-	mode: "draggable", // 默认为可拖拽模式
-	hiddenOnMobile: true, // 默认在移动设备上隐藏
-	dialog: {
-		welcome: "欢迎来到 Ignorant 网站！", // 欢迎词
-		touch: [
-			"你在干什么？",
-			"再摸我就报警了！",
-			"HENTAI!",
-			"不可以这样欺负我啦！",
-		], // 触摸提示
-		home: "点击这里回到首页！", // 首页提示
-		skin: ["想看看我的新衣服吗？", "新衣服真漂亮~"], // 换装提示
-		close: "QWQ 下次再见吧~", // 关闭提示
-		link: "https://github.com/matsuzaka-yuki/Mizuki", // 关于链接
-	},
-};
-
 // 导出所有配置的统一接口
 export const widgetConfigs = {
 	profile: profileConfig,
@@ -687,7 +708,6 @@ export const widgetConfigs = {
 	layout: sidebarLayoutConfig,
 	sakura: sakuraConfig,
 	fullscreenWallpaper: fullscreenWallpaperConfig,
-	pio: pioConfig, // 添加 pio 配置
 	share: shareConfig, // 添加分享配置
 } as const;
 

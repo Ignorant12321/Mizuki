@@ -3,18 +3,18 @@ import { Icon } from "astro-icon/components";
 ---
 
 <!-- There can't be a filter on parent element, or it will break `fixed` -->
-<div class="back-to-top-wrapper block">
+<div class="back-to-bottom-wrapper block">
 	<div
-		id="back-to-top-btn"
-		class="back-to-top-btn hide items-center rounded-2xl overflow-hidden transition"
-		onclick="backToTop()"
+		id="back-to-bottom-btn"
+		class="back-to-bottom-btn flex items-center rounded-2xl overflow-hidden transition"
+		onclick="backToBottom()"
 	>
 		<button
-			aria-label="Back to Top"
+			aria-label="Back to Bottom"
 			class="btn-card h-[3.75rem] w-[3.75rem]"
 		>
 			<Icon
-				name="material-symbols:keyboard-arrow-up-rounded"
+				name="material-symbols:keyboard-arrow-down-rounded"
 				class="mx-auto"
 			/>
 		</button>
@@ -22,7 +22,7 @@ import { Icon } from "astro-icon/components";
 </div>
 
 <style lang="stylus">
-  .back-to-top-wrapper
+  .back-to-bottom-wrapper
     width: 3.75rem
     height: 3.75rem
     position: absolute
@@ -30,13 +30,13 @@ import { Icon } from "astro-icon/components";
     top: 0
     pointer-events: none
 
-  .back-to-top-btn
+  .back-to-bottom-btn
     color: var(--primary)
     font-size: 2.25rem
     font-weight: bold
     border: none
     position: fixed
-    bottom: 10rem
+    bottom: 5rem
     opacity: 1
     right: 6rem
     cursor: pointer
@@ -56,21 +56,25 @@ import { Icon } from "astro-icon/components";
       transform: translateX(5rem) scale(0.9)
 
   @media (max-width: 1560px)
-    .back-to-top-btn
+    .back-to-bottom-btnn
       box-shadow: none
 
   // 手机端隐藏返回顶部按钮
   @media (max-width: 768px)
-    .back-to-top-wrapper
-      bottom: 5rem
-      right: 1rem
-    //  display: none
+    .back-to-bottom-wrapper
+      bottom: 1rem
+      right: 3rem
+      //display: none
 
 </style>
 
 <script is:raw is:inline>
-	function backToTop() {
-		// 直接使用原生滚动，避免OverlayScrollbars冲突
-		window.scroll({ top: 0, behavior: "smooth" });
+	// 滚动到底部
+	function backToBottom() {
+		window.scrollTo({
+			// document.documentElement.scrollHeight 获取当前页面的总高度
+			top: document.documentElement.scrollHeight,
+			behavior: "smooth",
+		});
 	}
 </script>
