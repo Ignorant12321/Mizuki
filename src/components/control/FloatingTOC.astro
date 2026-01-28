@@ -124,6 +124,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 	}
 
 	.floating-toc-panel-content {
+		z-index: 100;
 		padding: 0.75rem;
 		max-height: 60vh;
 		overflow-y: auto;
@@ -152,6 +153,10 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 	}
 
 	@media (max-width: 768px) {
+		.floating-toc-btn {
+			right: -1rem;
+			bottom: 3rem;
+		}
 		.floating-toc-wrapper {
 			transform: none;
 			right: 2rem;

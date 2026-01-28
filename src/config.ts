@@ -142,7 +142,7 @@ export const siteConfig: SiteConfig = {
 		waves: {
 			enable: true, // 是否启用水波纹效果（注意：此功能性能开销较大）
 			performanceMode: false, // 性能模式：减少动画复杂度(性能提升40%)
-			mobileDisable: false, // 移动端禁用
+			mobileDisable: true, // 移动端禁用
 		},
 
 		// PicFlow API支持(智能图片API)
@@ -263,26 +263,6 @@ export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
 		LinkPreset.Archive,
-		// 支持自定义导航栏链接，支持多级菜单
-		// {
-		// 	name: "Links",
-		// 	url: "/links/",
-		// 	icon: "material-symbols:link",
-		// 	children: [
-		// 		{
-		// 			name: "GitHub",
-		// 			url: "https://github.com/Ignorant12321",
-		// 			external: true,
-		// 			icon: "fa6-brands:github",
-		// 		},
-		// 		{
-		// 			name: "Bilibili",
-		// 			url: "https://space.bilibili.com/2063167092",
-		// 			external: true,
-		// 			icon: "fa6-brands:bilibili",
-		// 		},
-		// 	],
-		// },
 
 		{
 			name: "My",
@@ -389,51 +369,22 @@ export const profileConfig: ProfileConfig = {
 
 // 新版 Live2D Widget 配置
 export const live2dConfig: Live2DConfig = {
-	enable: true, // 全局开关
-	lock: false, // 锁定位置
-	// 核心资源路径 (使用 fastly 镜像)
-	cdnPath: "https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.0-rc.6/dist/",
-
-	// 布局设置
-	position: "right", // 'left' 或 'right'
-	size: {
-		width: 280, // 画布宽度
-		height: 250, // 画布高度
-	},
-
-	// 整体位置偏移
-	offset: {
-		bottom: "-1rem", // 距底部距离
-		side: "6rem", // 距侧边(左/右)距离
-		hover: "0rem", // 鼠标悬停时距侧边(上/下)距离
-	},
-
-	// 适配不同模型的身高问题 (例如魔女帽子)
-	tips: {
-		top: "-50px", // 气泡框的 Y 轴偏移 (负数向上)
-		width: "", // 气泡框宽度
-	},
-
-	// 工具栏设置
-	tools: {
-		top: "-30px", // 工具栏 Y 轴偏移
-		side: "-30px", // 工具栏侧边偏移
-		items: [
-			"hitokoto",
-			"asteroids",
-			"switch-model",
-			"switch-texture",
-			"photo",
-			"info",
-			"quit",
-		],
-	},
-
-	// 移动端设置
-	mobile: {
-		show: false, // 在移动端是否显示 (true=显示, false=隐藏)
-		breakpoint: 768, // 断点宽度
-	},
+	enable: true,
+	drag: false,
+	modelId: 1,
+	logLevel: "warn",
+	live2dPath:
+		"https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.0-rc.6/dist/",
+	waifuPath: "/live2d/waifu-tips.json",
+	tools: [
+		"hitokoto",
+		"asteroids",
+		"switch-model",
+		"switch-texture",
+		"photo",
+		"info",
+		"quit",
+	],
 };
 
 export const licenseConfig: LicenseConfig = {
@@ -504,7 +455,7 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 	enable: true, // 启用音乐播放器功能
 	mode: "meting", // 音乐播放器模式，可选 "local" 或 "meting"
 	meting_api:
-		"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r", // Meting API 地址
+		"https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r", // Meting API 地址
 	id: "17699694803", // 歌单ID
 	server: "netease", // 音乐源服务器。有的meting的api源支持更多平台,一般来说,netease=网易云音乐, tencent=QQ音乐, kugou=酷狗音乐, xiami=虾米音乐, baidu=百度音乐
 	type: "playlist", // 播单类型
@@ -540,7 +491,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件位置："top" 表示固定在顶部
 			position: "sticky",
 			// 所在侧边栏
-			sidebar: "left",
+			sidebar: "right",
 			// CSS 类名，用于应用样式和动画
 			class: "onload-animation",
 			// 动画延迟时间（毫秒），用于错开动画效果
@@ -556,7 +507,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件位置："top" 表示固定在顶部
 			position: "sticky",
 			// 所在侧边栏
-			sidebar: "left",
+			sidebar: "right",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -572,7 +523,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件位置
 			position: "top",
 			// 所在侧边栏
-			sidebar: "right",
+			sidebar: "left",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -588,7 +539,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件位置："sticky" 表示粘性定位，可滚动
 			position: "top",
 			// 所在侧边栏
-			sidebar: "right",
+			sidebar: "left",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -609,7 +560,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件位置："sticky" 表示粘性定位
 			position: "top",
 			// 所在侧边栏
-			sidebar: "right",
+			sidebar: "left",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -628,7 +579,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件显示顺序
 			order: 6,
 			// 组件位置
-			position: "top",
+			position: "sticky",
 			// 所在侧边栏
 			sidebar: "right",
 			// CSS 类名
@@ -712,10 +663,11 @@ export const widgetConfigs = {
 } as const;
 
 export const umamiConfig = {
-	enabled: false, // 是否显示Umami统计
-	apiKey: import.meta.env.UMAMI_API_KEY || "api_xxxxxxxx", // API密钥优先从环境变量读取，否则使用配置文件中的值
+	enabled: true, // 是否显示Umami统计
+	apiKey:
+		import.meta.env.UMAMI_API_KEY || "api_ds6dVQgZUWwrcA8S1UWP64cLi7x7twnN", // API密钥优先从环境变量读取，否则使用配置文件中的值
 	baseUrl: "https://api.umami.is", // Umami Cloud API地址
 	scripts: `
-<script defer src="XXXX.XXX" data-website-id="ABCD1234"></script>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="88d1e417-cf7e-4163-af33-143cd87930b1"></script>
   `.trim(), // 上面填你要插入的Script,不用再去Layout中插入
 } as const;

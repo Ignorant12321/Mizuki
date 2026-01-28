@@ -13,7 +13,7 @@
 	// Meting API 地址，从配置中获取或使用默认地址(bilibili.uno(由哔哩哔哩松坂有希公益管理)),服务器在海外,部分音乐平台可能不支持并且速度可能慢,也可以自建Meting API
 	let meting_api =
 		musicPlayerConfig.meting_api ??
-		"https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r";
+		"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r";
 	// Meting API 的 ID，从配置中获取或使用默认值
 	let meting_id = musicPlayerConfig.id ?? "14164869977";
 	// Meting API 的服务器，从配置中获取或使用默认值,有的meting的api源支持更多平台,一般来说,netease=网易云音乐, tencent=QQ音乐, kugou=酷狗音乐, xiami=虾米音乐, baidu=百度音乐
@@ -26,7 +26,7 @@
 	// 播放器是否展开，默认为 false
 	let isExpanded = false;
 	// 播放器是否隐藏，默认为 false
-	let isHidden = false;
+	let isHidden = true;
 	// 是否显示播放列表，默认为 false
 	let showPlaylist = false;
 	// 当前播放时间，默认为 0
@@ -455,7 +455,7 @@
 
 {#if musicPlayerConfig.enable}
 	{#if showError}
-		<div class="fixed bottom-20 left-4 z-[60] max-w-sm">
+		<div class="fixed bottom-20 right-4 z-[60] max-w-sm">
 			<div
 				class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-up"
 			>
@@ -475,7 +475,7 @@
 	{/if}
 
 	<div
-		class="music-player fixed bottom-4 left-4 z-50 transition-all duration-300 ease-in-out"
+		class="music-player fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out"
 		class:expanded={isExpanded}
 		class:hidden-mode={isHidden}
 	>
@@ -499,17 +499,22 @@
 			{#if isLoading}
 				<Icon icon="eos-icons:loading" class="text-white text-lg" />
 			{:else if isPlaying}
-				<div class="flex space-x-0.5">
+				<div class="flex items-end gap-[2px] h-4 pb-[2px]">
 					<div
-						class="w-0.5 h-3 bg-white rounded-full animate-pulse"
+						class="music-bar"
+						style="height: 60%; animation-duration: 1.2s;"
 					></div>
 					<div
-						class="w-0.5 h-4 bg-white rounded-full animate-pulse"
-						style="animation-delay: 150ms;"
+						class="music-bar"
+						style="height: 100%; animation-duration: 1.6s;"
 					></div>
 					<div
-						class="w-0.5 h-2 bg-white rounded-full animate-pulse"
-						style="animation-delay: 300ms;"
+						class="music-bar"
+						style="height: 50%; animation-duration: 2.2s;"
+					></div>
+					<div
+						class="music-bar"
+						style="height: 80%; animation-duration: 1.4s;"
 					></div>
 				</div>
 			{:else}
@@ -826,7 +831,7 @@
 		</div>
 		{#if showPlaylist}
 			<div
-				class="playlist-panel float-panel fixed bottom-20 left-4 w-80 max-h-96 overflow-hidden z-50"
+				class="playlist-panel float-panel fixed bottom-20 right-4 w-80 max-h-96 overflow-hidden z-50"
 				transition:slide={{ duration: 300, axis: "y" }}
 			>
 				<div
@@ -917,6 +922,26 @@
 	</div>
 
 	<style>
+		.music-bar {
+			width: 3px; /* 稍微加粗一点点，视觉更清晰 */
+			background-color: white;
+			border-radius: 99px; /* 保持圆角 */
+			transform-origin: bottom; /* 向上跳动 */
+			animation: music-rhythm ease-in-out infinite;
+			will-change: transform; /* 性能优化 */
+		}
+
+		@keyframes music-rhythm {
+			0%,
+			100% {
+				transform: scaleY(0.3);
+				opacity: 0.8;
+			}
+			50% {
+				transform: scaleY(1);
+				opacity: 1;
+			}
+		}
 		.orb-player {
 			position: relative;
 			backdrop-filter: blur(10px);
@@ -966,22 +991,25 @@
 			height: 3rem;
 		}
 		.music-player {
+			z-index: 101;
 			max-width: 20rem;
 			user-select: none;
 		}
 		.mini-player {
+			z-index: 101;
 			width: 17.5rem;
 			position: absolute;
 			bottom: 0;
-			/* right: 0; */
-			left: 0;
+			right: 0;
+			/* left: 0; */
 		}
 		.expanded-player {
+			z-index: 101;
 			width: 20rem;
 			position: absolute;
 			bottom: 0;
-			/* right: 0; */
-			left: 0;
+			right: 0;
+			/* left: 0; */
 		}
 
 		.animate-pulse {
@@ -1004,8 +1032,8 @@
 		@media (max-width: 768px) {
 			.music-player {
 				max-width: 280px !important;
-				/* right: 0.5rem !important; */
-				left: 0.5rem !important;
+				right: 0.5rem !important;
+				/* left: 0.5rem !important; */
 				bottom: 0.5rem !important;
 			}
 			.mini-player {
@@ -1014,13 +1042,14 @@
 			.music-player.expanded {
 				width: calc(100vw - 16px);
 				max-width: none;
-				/* right: 0.5rem !important; */
-				left: 0.5rem !important;
+				bottom: 0.5rem !important;
+				right: 0.5rem !important;
+				/* left: 0.5rem !important; */
 			}
 			.playlist-panel {
 				width: calc(100vw - 16px) !important;
-				/* right: 0.5rem !important; */
-				left: 0.5rem !important;
+				right: 0.5rem !important;
+				/* left: 0.5rem !important; */
 				max-width: none;
 			}
 			.controls {

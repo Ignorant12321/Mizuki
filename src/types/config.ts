@@ -433,30 +433,11 @@ export type ShareConfig = {
 };
 
 export type Live2DConfig = {
-	enable: boolean;
-	lock: boolean;
-	cdnPath: string;
-	position: "left" | "right";
-	size: {
-		width: number | string;
-		height: number | string;
-	};
-	offset: {
-		bottom: string;
-		side: string;
-		hover?: string;
-	};
-	tips: {
-		top: string;
-		width: number | string;
-	};
-	tools: {
-		top: string;
-		side: string;
-		items: string[];
-	};
-	mobile: {
-		show: boolean;
-		breakpoint: number;
-	};
+	enable: boolean; // 是否启用Live2D看板娘
+	drag: boolean; // 是否启用拖拽功能
+	modelId: number; // 模型ID
+	logLevel: "error" | "warn" | "info" | "trace"; // 日志级别
+	live2dPath: string; // Live2D模型路径
+	waifuPath: string; // 提示词路径
+	tools: string[]; // 工具栏
 };

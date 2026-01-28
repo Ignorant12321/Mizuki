@@ -1,66 +1,35 @@
 ---
 /*
  * Live2D Widget (Based on stevenjoezhang/live2d-widget)
- * 修复：防止进入文章页后按钮重复出现 + 支持位置锁定
+ *
  */
+
 import { live2dConfig } from "../../config";
 
-// 如果配置关闭，则不渲染
+// // 如果配置关闭，则不渲染
 if (!live2dConfig.enable) {
 	return;
 }
 
-const { position, lock, size, offset, tips, tools } = live2dConfig;
-
-// 格式化函数
-const formatSize = (val: string | number | undefined) => {
-	if (val === "" || val === undefined || val === null) return "auto";
-	return typeof val === "number" ? `${val}px` : val;
-};
-
-// 悬浮抬高高度 (默认 -20px)
-const hoverOffset = offset.hover !== undefined ? offset.hover : "-20px";
+const { drag, modelId, logLevel, tools } = live2dConfig;
+const live2dPath =
+	live2dConfig.live2dPath ||
+	"https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.0-rc.6/dist/";
+const waifuPath =
+	live2dConfig.waifuPath ||
+	"https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.0-rc.6/dist/live2d/waifu-tips.json";
 ---
 
-<div
-	id="waifu"
-	class={position === "left" ? "waifu-left" : "waifu-right"}
-	style={{
-		"--waifu-width": formatSize(size.width),
-		"--waifu-height": formatSize(size.height),
-		"--waifu-bottom": offset.bottom,
-		"--waifu-side": offset.side,
-		"--waifu-hover": hoverOffset,
-		"--tips-top": tips.top,
-		"--tips-width": formatSize(tips.width),
-		"--tools-top": tools.top,
-		"--tools-side": tools.side,
-	}}
->
+<div id="waifu">
 	<div id="waifu-tips"></div>
 	<canvas id="live2d" width="800" height="800"></canvas>
-
 	<div id="waifu-tool"></div>
 </div>
-
-<link rel="stylesheet" href={`${live2dConfig.cdnPath}waifu.css`} />
-<link
-	rel="stylesheet"
-	href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-/>
-
-<script is:inline define:vars={{ config: live2dConfig }}>
+<link rel="stylesheet" href={live2dPath + "waifu.css"} />
+<script is:inline define:vars={{ config: live2dConfig, live2dPath, waifuPath }}>
 	// 封装资源加载
 	function loadExternalResource(url, type) {
 		return new Promise((resolve, reject) => {
-			// 防止重复加载 CSS
-			if (
-				type === "css" &&
-				document.querySelector(`link[href="${url}"]`)
-			) {
-				resolve();
-				return;
-			}
 			let tag;
 			if (type === "css") {
 				tag = document.createElement("link");
@@ -80,32 +49,33 @@ const hoverOffset = offset.hover !== undefined ? offset.hover : "-20px";
 	}
 
 	(async () => {
-		if (
-			!config.mobile.show &&
-			window.innerWidth < config.mobile.breakpoint
-		) {
-			return;
-		}
+		// 屏幕宽度小于768不渲染;
+		// if (screen.width < 768) return;
 
-		await loadExternalResource(config.cdnPath + "waifu-tips.js", "js");
-
-		if (typeof initWidget === "function") {
-			// 【关键修复】初始化前先清空工具栏，防止页面切换时重复添加按钮
-			const toolDiv = document.getElementById("waifu-tool");
-			if (toolDiv) toolDiv.innerHTML = "";
-
+		// 避免图片资源跨域问题
+		const OriginalImage = window.Image;
+		window.Image = function (...args) {
+			const img = new OriginalImage(...args);
+			img.crossOrigin = "anonymous";
+			return img;
+		};
+		if (typeof window.initWidget !== "function") {
+			console.log("Live2D 脚本未检测到，正在首次加载 waifu-tips.js ...");
+			await loadExternalResource(live2dPath + "waifu-tips.js", "js");
 			initWidget({
-				waifuPath: config.cdnPath + "waifu-tips.json",
-				cubism2Path: config.cdnPath + "live2d.min.js",
-				cubism5Path: config.cdnPath + "live2dcubismcore.min.js",
-				tools: config.tools.items,
-
-				// 【关键】这里配置是否允许拖拽
-				// 如果 config.lock 为 true，则 drag 为 false (取反)
-				drag: !config.lock,
-
-				logLevel: "warn",
+				waifuPath: waifuPath,
+				cdnPath: "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/",
+				cubism2Path:
+					"https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.0-rc.6/dist/live2d.min.js",
+				cubism5Path:
+					"https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js",
+				tools: config.tools,
+				modelId: config.modelId,
+				logLevel: config.logLevel,
+				drag: config.drag,
 			});
+		} else {
+			return;
 		}
 	})();
 
@@ -122,69 +92,13 @@ const hoverOffset = offset.hover !== undefined ? offset.hover : "-20px";
 </script>
 
 <style>
-	/* --- 看板娘主体 --- */
 	#waifu {
-		position: fixed;
-		z-index: 9999;
-		width: var(--waifu-width);
-		height: var(--waifu-height);
-		display: block;
-		pointer-events: none;
-		transition: transform 0.3s ease-in-out;
+		z-index: 99;
 	}
-
-	/* 悬浮抬高 (配合 config.offset.hover) */
-	#waifu:hover {
-		transform: translateY(var(--waifu-hover)) !important;
+	#waifu-toggle {
+		z-index: 99;
 	}
-
-	#live2d,
-	#waifu-tool,
-	#waifu-tips {
-		pointer-events: auto;
-	}
-
-	/* --- 位置修正 --- */
-
-	/* 看板娘在左边 */
-	#waifu.waifu-left {
-		left: var(--waifu-side);
-		right: auto;
-		bottom: var(--waifu-bottom);
-	}
-
-	/* 看板娘在右边 */
-	#waifu.waifu-right {
-		right: var(--waifu-side);
-		left: auto;
-		bottom: var(--waifu-bottom);
-	}
-
-	/* 画布限制 */
-	#live2d {
-		width: var(--waifu-width) !important;
-		height: var(--waifu-height) !important;
-		position: relative;
-	}
-
-	/* 气泡框 */
-	#waifu-tips {
-		top: var(--tips-top) !important;
-		width: var(--tips-width) !important;
-	}
-
 	#waifu-tool {
-		top: var(--tools-top) !important;
-	}
-
-	/* --- 按钮跟随 --- */
-	.waifu-left #waifu-tool {
-		left: auto !important;
-		right: var(--tools-side) !important;
-	}
-
-	.waifu-right #waifu-tool {
-		right: auto !important;
-		left: var(--tools-side) !important;
+		z-index: 99;
 	}
 </style>
