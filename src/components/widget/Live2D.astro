@@ -90,15 +90,15 @@ const waifuPath =
 		);
 	}
 </script>
-
-<style>
-	#waifu {
-		z-index: 99;
+<style is:global>
+	@media (max-width: 768px), (hover: none) {
+		#waifu-toggle.waifu-toggle-active {
+			margin-left: -30px !important;
+		}
 	}
+	#waifu,
+	#waifu-tool,
 	#waifu-toggle {
-		z-index: 99;
-	}
-	#waifu-tool {
-		z-index: 99;
+		z-index: 99 !important;
 	}
 </style>

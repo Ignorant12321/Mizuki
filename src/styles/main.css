@@ -718,3 +718,47 @@ html {
 :root:not(.dark) .custom-md spoiler {
   --_spoiler-mask: color-mix(in oklch, var(--primary) 55%, white 45%);
 }
+
+/* 鼠标样式 */
+html {
+  cursor: url(../../public/assets/cursor/default.cur), auto;
+}
+a,
+button,
+.test-btn,
+.cursor-pointer,
+.tk-icon,
+.tk-action,
+#waifu,
+#waifu-tool svg {
+  cursor: url("../../public/assets/cursor/pointer.cur"), auto !important;
+}
+
+p,
+input[type="text"],
+input[type="password"],
+input[type="email"],
+textarea {
+  cursor: url("../../public/assets/cursor/input.cur"), auto !important;
+}
+
+#live2d,
+.mermaid-zoom-wrapper {
+  cursor: url("../../public/assets/cursor/grab.cur"), grab !important;
+}
+#live2d:active,
+.mermaid-zoom-wrapper:active {
+  cursor: url("../../public/assets/cursor/grabing.cur"), grabbing !important;
+}
+
+button:disabled,
+input:disabled,
+.cursor-not-allowed,
+.not-allowed {
+  cursor: url("../../public/assets/cursor/not-allowed.cur"), auto !important;
+}
+
+.cursor-zoom-in,
+.f-panzoom__viewport {
+  cursor: url("../../public/assets/cursor/zoomIn.cur"), auto !important;
+}

@@ -107,28 +107,32 @@ export const siteConfig: SiteConfig = {
 		// 支持单张图片或图片数组，当数组长度 > 1 时自动启用轮播
 		src: {
 			desktop: [
-				"/assets/desktop-banner/1.webp",
-				"/assets/desktop-banner/2.webp",
-				"/assets/desktop-banner/3.webp",
-				"/assets/desktop-banner/4.webp",
-				"/assets/desktop-banner/5.webp",
-				"/assets/desktop-banner/6.webp",
-				"/assets/desktop-banner/7.webp",
-				"/assets/desktop-banner/8.webp",
-				"/assets/desktop-banner/9.webp",
-				"/assets/desktop-banner/10.webp",
+				"/assets/desktop-banner/1d.webp",
+				"/assets/desktop-banner/2d.webp",
+				"/assets/desktop-banner/3d.webp",
+				"/assets/desktop-banner/4d.webp",
+				"/assets/desktop-banner/5d.webp",
+				"/assets/desktop-banner/6d.webp",
+				"/assets/desktop-banner/7d.webp",
+				"/assets/desktop-banner/8d.webp",
+				"/assets/desktop-banner/9d.webp",
+				"/assets/desktop-banner/10d.webp",
+				"/assets/desktop-banner/11d.webp",
+				"/assets/desktop-banner/12d.webp",
 			], // 桌面横幅图片
 			mobile: [
-				"/assets/mobile-banner/1.webp",
-				"/assets/mobile-banner/2.webp",
-				"/assets/mobile-banner/3.webp",
-				"/assets/mobile-banner/4.webp",
-				"/assets/mobile-banner/5.webp",
-				"/assets/mobile-banner/6.webp",
-				"/assets/mobile-banner/7.webp",
-				"/assets/mobile-banner/8.webp",
-				"/assets/mobile-banner/9.webp",
-				"/assets/mobile-banner/10.webp",
+				"/assets/mobile-banner/1m.webp",
+				"/assets/mobile-banner/2m.webp",
+				"/assets/mobile-banner/3m.webp",
+				"/assets/mobile-banner/4m.webp",
+				"/assets/mobile-banner/5m.webp",
+				"/assets/mobile-banner/6m.webp",
+				"/assets/mobile-banner/7m.webp",
+				"/assets/mobile-banner/8m.webp",
+				"/assets/mobile-banner/9m.webp",
+				"/assets/mobile-banner/10m.webp",
+				"/assets/mobile-banner/11m.webp",
+				"/assets/mobile-banner/12m.webp",
 			], // 移动横幅图片
 		}, // 使用本地横幅图片
 
@@ -136,7 +140,7 @@ export const siteConfig: SiteConfig = {
 
 		carousel: {
 			enable: true, // 为 true 时：为多张图片启用轮播。为 false 时：从数组中随机显示一张图片
-			interval: 5.0, // 轮播间隔时间（秒）
+			interval: 4.5, // 轮播间隔时间（秒）
 		},
 
 		waves: {
@@ -190,7 +194,7 @@ export const siteConfig: SiteConfig = {
 		useJapaneseBadge: true, // 使用日语假名标记（あいうえお...）代替数字，开启后会将 1、2、3... 改为 あ、い、う...
 	},
 	showCoverInContent: true, // 在文章内容页显示文章封面
-	generateOgImages: false, // 启用生成OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
+	generateOgImages: true, // 启用生成OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
 	favicon: [
 		// 留空以使用默认 favicon
 		{
@@ -225,28 +229,32 @@ export const siteConfig: SiteConfig = {
 export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	src: {
 		desktop: [
-			"/assets/desktop-banner/1.webp",
-			"/assets/desktop-banner/2.webp",
-			"/assets/desktop-banner/3.webp",
-			"/assets/desktop-banner/4.webp",
-			"/assets/desktop-banner/5.webp",
-			"/assets/desktop-banner/6.webp",
-			"/assets/desktop-banner/7.webp",
-			"/assets/desktop-banner/8.webp",
-			"/assets/desktop-banner/9.webp",
-			"/assets/desktop-banner/10.webp",
+			"/assets/desktop-banner/1d.webp",
+			"/assets/desktop-banner/2d.webp",
+			"/assets/desktop-banner/3d.webp",
+			"/assets/desktop-banner/4d.webp",
+			"/assets/desktop-banner/5d.webp",
+			"/assets/desktop-banner/6d.webp",
+			"/assets/desktop-banner/7d.webp",
+			"/assets/desktop-banner/8d.webp",
+			"/assets/desktop-banner/9d.webp",
+			"/assets/desktop-banner/10d.webp",
+			"/assets/desktop-banner/11d.webp",
+			"/assets/desktop-banner/12d.webp",
 		], // 桌面横幅图片
 		mobile: [
-			"/assets/mobile-banner/1.webp",
-			"/assets/mobile-banner/2.webp",
-			"/assets/mobile-banner/3.webp",
-			"/assets/mobile-banner/4.webp",
-			"/assets/mobile-banner/5.webp",
-			"/assets/mobile-banner/6.webp",
-			"/assets/mobile-banner/7.webp",
-			"/assets/mobile-banner/8.webp",
-			"/assets/mobile-banner/9.webp",
-			"/assets/mobile-banner/10.webp",
+			"/assets/mobile-banner/1m.webp",
+			"/assets/mobile-banner/2m.webp",
+			"/assets/mobile-banner/3m.webp",
+			"/assets/mobile-banner/4m.webp",
+			"/assets/mobile-banner/5m.webp",
+			"/assets/mobile-banner/6m.webp",
+			"/assets/mobile-banner/7m.webp",
+			"/assets/mobile-banner/8m.webp",
+			"/assets/mobile-banner/9m.webp",
+			"/assets/mobile-banner/10m.webp",
+			"/assets/mobile-banner/11m.webp",
+			"/assets/mobile-banner/12m.webp",
 		], // 移动横幅图片
 	}, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
