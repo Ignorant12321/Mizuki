@@ -8,6 +8,11 @@ export const LinkPresets: { [key in LinkPreset]: NavBarLink } = {
 		url: "/",
 		icon: "material-symbols:home",
 	},
+	[LinkPreset.News]: {
+		name: i18n(I18nKey.news),
+		url: "/news/",
+		icon: "material-symbols:rss-feed",
+	},
 	[LinkPreset.About]: {
 		name: i18n(I18nKey.about),
 		url: "/about/",

@@ -6,14 +6,12 @@
 ::github{repo="matsuzaka-yuki/Mizuki"}
 
 ## 🐾 看板娘 (Live2D)
-右下角的 Live2D 看板娘挂件修改自 [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)。
+左下角的 Live2D 看板娘挂件修改自 [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)。
 
 ::github{repo="stevenjoezhang/live2d-widget"}
 
 看板娘的后端 API 服务使用了 [live2d_api](https://github.com/fghrsh/live2d_api)。
 
 ::github{repo="fghrsh/live2d_api"}
-
----
 
 *Built with ❤️ using Astro.*
