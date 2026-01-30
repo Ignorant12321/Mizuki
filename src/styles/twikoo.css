@@ -21,7 +21,7 @@ html.dark {
 /* Text Area */
 .tk-row {
   .tk-col {
-    @apply flex-col-reverse;
+    /* @apply flex-col-reverse; */
     .tk-input {
       textarea {
         @apply rounded-[var(--radius-large)] py-4 px-6 !min-h-[150px] focus:border-[var(--primary)];
@@ -34,7 +34,7 @@ html.dark {
 .tk-meta-input {
   @apply relative mt-3;
   div {
-    @apply min-h-10;
+    /* @apply min-h-10; */
     .el-input-group__prepend {
       @apply !bg-inherit rounded-l-lg;
       min-height: inherit;
@@ -187,4 +187,59 @@ Make the emoji component display correctly when there are too many emoji packs
 .tk-admin-panel {
   position: relative;
   z-index: 100;
+}
+
+#twikoo .el-textarea__inner {
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: right center;
+}
+
+/* =========================================
+   1. 隐藏“网址”输入框
+   ========================================= */
+/* 选中 meta-input 下的第3个输入框（通常是网址）并隐藏 */
+.tk-meta-input .el-input:nth-child(3) {
+  display: none !important;
+}
+
+/* =========================================
+   2. 头像调整：不独占一列，与昵称同行
+   ========================================= */
+.tk-submit {
+  position: relative !important;
+  margin-top: 0rem !important;
+}
+/* 把头像变成绝对定位，定在左上角 */
+.tk-submit .tk-avatar {
+  display: block !important;
+  position: absolute !important;
+  margin-top: 0.4rem;
+}
+@media (max-width: 768px) {
+  .tk-submit .tk-avatar {
+    margin-top: 0.6rem;
+  }
+}
+
+/* 给昵称栏腾出位置，防止被头像挡住 */
+.tk-meta-input {
+  margin-left: 3rem !important;
+}
+
+/* =========================================
+   操作栏（表情、预览）与输入框的间距
+   ========================================= */
+.tk-row.actions {
+  margin-top: 1rem !important; /* 增加约 16px 的间距 */
+  width: 100% !important;
+}
+
+/* =========================================
+   评论区与编辑区的分割线
+   ========================================= */
+/* 在“X 条评论”这个标题上面加一条线 */
+.tk-comments-title {
+  border-top: 1px dashed var(--tk-border-color, #eaeaea); /* 虚线分割，颜色可自选 */
+  padding-top: 0.5rem !important; /* 线与下方文字的距离 */
 }
