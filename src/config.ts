@@ -206,7 +206,8 @@ export const siteConfig: SiteConfig = {
 	favicon: [
 		// 留空以使用默认 favicon
 		{
-			src: "/favicon/favicon2.ico", // 图标文件路径
+			src: "/favicon/favicon.ico", // 图标文件路径
+			// src: "/favicon/favicon2.ico", // 图标文件路径
 			//   theme: 'light',              // 可选，指定主题 'light' | 'dark'
 			//   sizes: '32x32',              // 可选，图标大小
 		},
@@ -374,7 +375,7 @@ export const navBarConfig: NavBarConfig = {
 };
 
 export const profileConfig: ProfileConfig = {
-	avatar: "assets/images/avatar.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
+	avatar: "assets/images/lty.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
 	avatarFrame: "assets/images/avatarFrame.png",
 	name: "北に向かう",
 	bio: "世界は大きい、君は行かなければならない",

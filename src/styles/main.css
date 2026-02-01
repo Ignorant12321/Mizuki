@@ -764,5 +764,5 @@ input:disabled,
 
 .cursor-zoom-in,
 .f-panzoom__viewport {
-  cursor: url("/public/assets/cursor/zoomIn.cur"), auto !important;
+  cursor: url("/assets/cursor/zoomIn.cur"), auto !important;
 }
