@@ -25,7 +25,7 @@ const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UT
 export const siteConfig: SiteConfig = {
 	title: "Ignorant's Blog",
 	subtitle: "Ignorant 的个人博客",
-	siteURL: "https://mizuki.mysqil.com/", // 请替换为你的站点URL，以斜杠结尾
+	siteURL: "https://218501.xyz/", // 请替换为你的站点URL，以斜杠结尾
 	siteStartDate: "2026-01-01", // 站点开始运行日期，用于站点统计组件计算运行天数
 
 	timeZone: SITE_TIMEZONE,
@@ -280,15 +280,39 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Home,
 		LinkPreset.Archive,
 		{
-			name: "观澜",
-			url: "/news/",
-			icon: "material-symbols:rss-feed",
+			name: "器录",
+			url: "/#/",
+			icon: "material-symbols:service-toolbox",
+			children: [
+				{
+					name: "时语",
+					url: "/news/",
+					icon: "material-symbols:rss-feed",
+				},
+				{
+					name: "寄驿",
+					url: "https://delivery.218501.xyz",
+					external: true,
+					icon: "material-symbols:moped-package-outline",
+				},
+				{
+					name: "观流",
+					url: "https://cloud.umami.is/share/kBYtuya0KQCIaPH3",
+					external: true,
+					icon: "material-symbols:monitor-heart-outline-rounded",
+				},
+			],
 		},
 		{
 			name: "My",
 			url: "/content/",
 			icon: "material-symbols:person",
 			children: [
+				{
+					name: "Gallery",
+					url: "/albums/",
+					icon: "material-symbols:photo-library",
+				},
 				{
 					name: "Anime",
 					url: "/anime/",
@@ -300,11 +324,6 @@ export const navBarConfig: NavBarConfig = {
 					icon: "material-symbols:book",
 				},
 				{
-					name: "Gallery",
-					url: "/albums/",
-					icon: "material-symbols:photo-library",
-				},
-				{
 					name: "Devices",
 					url: "devices/",
 					icon: "material-symbols:devices",
@@ -312,35 +331,35 @@ export const navBarConfig: NavBarConfig = {
 				},
 			],
 		},
-		{
-			name: "Others",
-			url: "#",
-			icon: "material-symbols:more-rounded",
-			children: [
-				{
-					name: "Timeline",
-					url: "/timeline/",
-					icon: "material-symbols:timeline",
-				},
-				{
-					name: "Projects",
-					url: "/projects/",
-					icon: "material-symbols:work",
-				},
-				{
-					name: "Skills",
-					url: "/skills/",
-					icon: "material-symbols:psychology",
-				},
-			],
-		},
+		// {
+		// 	name: "Others",
+		// 	url: "#",
+		// 	icon: "material-symbols:more-rounded",
+		// 	children: [
+		// 		{
+		// 			name: "Timeline",
+		// 			url: "/timeline/",
+		// 			icon: "material-symbols:timeline",
+		// 		},
+		// 		{
+		// 			name: "Projects",
+		// 			url: "/projects/",
+		// 			icon: "material-symbols:work",
+		// 		},
+		// 		{
+		// 			name: "Skills",
+		// 			url: "/skills/",
+		// 			icon: "material-symbols:psychology",
+		// 		},
+		// 	],
+		// },
 		{
 			name: "About",
 			url: "/content/",
 			icon: "material-symbols:info",
 			children: [
 				{
-					name: "About",
+					name: "关于",
 					url: "/about/",
 					icon: "material-symbols:person",
 				},
@@ -357,7 +376,7 @@ export const navBarConfig: NavBarConfig = {
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avatar.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
 	avatarFrame: "assets/images/avatarFrame.png",
-	name: "まつざか ゆき",
+	name: "北に向かう",
 	bio: "世界は大きい、君は行かなければならない",
 	typewriter: {
 		enable: true, // 启用个人简介打字机效果
@@ -688,6 +707,6 @@ export const umamiConfig = {
 		import.meta.env.UMAMI_API_KEY || "api_ds6dVQgZUWwrcA8S1UWP64cLi7x7twnN", // API密钥优先从环境变量读取，否则使用配置文件中的值
 	baseUrl: "https://api.umami.is", // Umami Cloud API地址
 	scripts: `
-<script defer src="https://cloud.umami.is/script.js" data-website-id="88d1e417-cf7e-4163-af33-143cd87930b1"></script>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="76481de8-a898-442f-8bcf-45eac353add1"></script>
   `.trim(), // 上面填你要插入的Script,不用再去Layout中插入
 } as const;

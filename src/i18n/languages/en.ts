@@ -3,6 +3,7 @@ import type { Translation } from "../translation";
 
 export const en: Translation = {
 	[Key.home]: "Home",
+	[Key.news]: "News",
 	[Key.about]: "About",
 	[Key.archive]: "Archive",
 	[Key.search]: "Search",
@@ -11,6 +12,7 @@ export const en: Translation = {
 	// Navigation bar titles
 	[Key.navLinks]: "Links",
 	[Key.navMy]: "My",
+	[Key.navNews]: "News",
 	[Key.navAbout]: "About",
 	[Key.navOthers]: "Others",
 

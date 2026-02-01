@@ -2,18 +2,19 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const zh_CN: Translation = {
-	[Key.home]: "主页",
-	[Key.news]: "观澜",
+	[Key.home]: "隅角",
+	[Key.news]: "时语",
 	[Key.about]: "关于我们",
-	[Key.archive]: "归档",
+	[Key.archive]: "藏卷",
 	[Key.search]: "搜索",
-	[Key.other]: "其他",
+	[Key.other]: "杂录",
 
 	// 导航栏标题
 	[Key.navLinks]: "链接",
-	[Key.navMy]: "我的",
-	[Key.navAbout]: "关于",
-	[Key.navOthers]: "其他",
+	[Key.navMy]: "私馆",
+	[Key.navNews]: "时语",
+	[Key.navAbout]: "尘语",
+	[Key.navOthers]: "杂录",
 
 	[Key.tags]: "标签",
 	[Key.categories]: "分类",
@@ -27,7 +28,7 @@ export const zh_CN: Translation = {
 	[Key.announcementClose]: "关闭",
 
 	[Key.comments]: "评论",
-	[Key.friends]: "友链",
+	[Key.friends]: "聚贤",
 	[Key.friendsSubtitle]: "发现更多优质网站",
 	[Key.friendsSearchPlaceholder]: "搜索友链名称或描述...",
 	[Key.friendsFilterAll]: "全部",
@@ -58,8 +59,8 @@ export const zh_CN: Translation = {
 	[Key.author]: "作者",
 	[Key.publishedAt]: "发布于",
 	[Key.license]: "许可协议",
-	[Key.anime]: "追番",
-	[Key.diary]: "日记",
+	[Key.anime]: "逐影",
+	[Key.diary]: "碎念",
 
 	// 番剧页面
 	[Key.animeTitle]: "我的追番记录",
@@ -116,7 +117,7 @@ export const zh_CN: Translation = {
 	[Key.unknownArtist]: "未知艺术家",
 
 	// 相册页面
-	[Key.albums]: "相册",
+	[Key.albums]: "浮光",
 	[Key.albumsSubtitle]: "记录生活中的美好瞬间",
 	[Key.albumsEmpty]: "暂无内容",
 	[Key.albumsEmptyDesc]: "还没有创建任何相册，快去添加一些美好的回忆吧！",
@@ -125,7 +126,7 @@ export const zh_CN: Translation = {
 	[Key.albumsPhotosCount]: "张照片",
 
 	// 设备页面
-	[Key.devices]: "设备",
+	[Key.devices]: "物志",
 	[Key.devicesSubtitle]: "这里展示了我日常使用的各类设备",
 	[Key.devicesViewDetails]: "查看详情",
 

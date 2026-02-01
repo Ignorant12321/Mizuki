@@ -199,9 +199,9 @@ Make the emoji component display correctly when there are too many emoji packs
    1. 隐藏“网址”输入框
    ========================================= */
 /* 选中 meta-input 下的第3个输入框（通常是网址）并隐藏 */
-.tk-meta-input .el-input:nth-child(3) {
+/* .tk-meta-input .el-input:nth-child(3) {
   display: none !important;
-}
+} */
 
 /* =========================================
    2. 头像调整：不独占一列，与昵称同行

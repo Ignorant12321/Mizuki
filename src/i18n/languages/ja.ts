@@ -3,6 +3,7 @@ import type { Translation } from "../translation";
 
 export const ja: Translation = {
 	[Key.home]: "ホーム",
+	[Key.news]: "波瀾を見る",
 	[Key.about]: "このブログについて",
 	[Key.archive]: "アーカイブ",
 	[Key.search]: "検索",
@@ -10,6 +11,7 @@ export const ja: Translation = {
 
 	// ナビゲーションバータイトル
 	[Key.navLinks]: "リンク",
+	[Key.navNews]: "波瀾を見る",
 	[Key.navMy]: "私の",
 	[Key.navAbout]: "情報",
 	[Key.navOthers]: "その他",
