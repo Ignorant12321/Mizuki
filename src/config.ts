@@ -282,7 +282,7 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Archive,
 		{
 			name: "器录",
-			url: "/#/",
+			url: "",
 			icon: "material-symbols:service-toolbox",
 			children: [
 				{
@@ -290,6 +290,25 @@ export const navBarConfig: NavBarConfig = {
 					url: "/news/",
 					icon: "material-symbols:rss-feed",
 				},
+				// {
+				// 	name: "观星",
+				// 	url: "",
+				// 	icon: "material-symbols:monitor-heart-outline-rounded",
+				// 	children: [
+				// 		{
+				// 			name: "运行",
+				// 			url: "https://uptime.218501.xyz/status/website",
+				// 			external: true,
+				// 			icon: "material-symbols:monitor-heart-outline-rounded",
+				// 		},
+				// 		{
+				// 			name: "流量",
+				// 			url: "https://cloud.umami.is/share/kBYtuya0KQCIaPH3",
+				// 			external: true,
+				// 			icon: "material-symbols:data-thresholding-outline",
+				// 		},
+				// 	],
+				// },
 				{
 					name: "寄驿",
 					url: "https://delivery.218501.xyz",
@@ -297,10 +316,22 @@ export const navBarConfig: NavBarConfig = {
 					icon: "material-symbols:moped-package-outline",
 				},
 				{
-					name: "观流",
+					name: "图阁",
+					url: "https://easyimage.218501.xyz/",
+					external: true,
+					icon: "material-symbols:add-photo-alternate-outline-rounded",
+				},
+				{
+					name: "运序",
+					url: "https://uptime.218501.xyz/status/website",
+					external: true,
+					icon: "material-symbols:traffic",
+				},
+				{
+					name: "溯踪",
 					url: "https://cloud.umami.is/share/kBYtuya0KQCIaPH3",
 					external: true,
-					icon: "material-symbols:monitor-heart-outline-rounded",
+					icon: "material-symbols:data-thresholding-outline",
 				},
 			],
 		},
