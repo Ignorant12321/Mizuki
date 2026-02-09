@@ -122,11 +122,31 @@
 		},
 		{
 			"id": "xjh-10",
-			"src": "https://img.xjh.me/random_img.php?return=302&1",
+			"src": "https://img.xjh.me/random_img.php?return=302&2",
 			"alt": "随机动漫 10",
 			"title": "随机动漫 10",
 			"description": "随机动漫 10",
 			"tags": ["随机", "动漫", "xjh.me"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "sretna-13",
+			"src": "https://api.sretna.cn/api/anime.php?return=img&1",
+			"alt": "随机动漫 13",
+			"title": "随机动漫 13",
+			"description": "随机动漫 13",
+			"tags": ["随机", "动漫", "sretna.cn"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "sretna-14",
+			"src": "https://api.sretna.cn/api/anime.php?return=img&2",
+			"alt": "随机动漫 14",
+			"title": "随机动漫 14",
+			"description": "随机动漫 14",
+			"tags": ["随机", "动漫", "sretna.cn"],
 			"width": 800,
 			"height": 600
 		}

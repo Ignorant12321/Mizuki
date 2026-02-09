@@ -33,7 +33,7 @@ export const siteConfig: SiteConfig = {
 	lang: SITE_LANG,
 
 	themeColor: {
-		hue: 90, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
+		hue: 155, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
 		fixed: false, // 对访问者隐藏主题色选择器
 	},
 
@@ -281,59 +281,9 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Home,
 		LinkPreset.Archive,
 		{
-			name: "器录",
-			url: "",
-			icon: "material-symbols:service-toolbox",
-			children: [
-				{
-					name: "时语",
-					url: "/news/",
-					icon: "material-symbols:rss-feed",
-				},
-				// {
-				// 	name: "观星",
-				// 	url: "",
-				// 	icon: "material-symbols:monitor-heart-outline-rounded",
-				// 	children: [
-				// 		{
-				// 			name: "运行",
-				// 			url: "https://uptime.218501.xyz/status/website",
-				// 			external: true,
-				// 			icon: "material-symbols:monitor-heart-outline-rounded",
-				// 		},
-				// 		{
-				// 			name: "流量",
-				// 			url: "https://cloud.umami.is/share/kBYtuya0KQCIaPH3",
-				// 			external: true,
-				// 			icon: "material-symbols:data-thresholding-outline",
-				// 		},
-				// 	],
-				// },
-				{
-					name: "寄驿",
-					url: "https://delivery.218501.xyz",
-					external: true,
-					icon: "material-symbols:moped-package-outline",
-				},
-				{
-					name: "图阁",
-					url: "https://easyimage.218501.xyz/",
-					external: true,
-					icon: "material-symbols:add-photo-alternate-outline-rounded",
-				},
-				{
-					name: "运序",
-					url: "https://uptime.218501.xyz/status/website",
-					external: true,
-					icon: "material-symbols:traffic",
-				},
-				{
-					name: "溯踪",
-					url: "https://cloud.umami.is/share/kBYtuya0KQCIaPH3",
-					external: true,
-					icon: "material-symbols:data-thresholding-outline",
-				},
-			],
+			name: "时语",
+			url: "/news/",
+			icon: "material-symbols:rss-feed",
 		},
 		{
 			name: "My",
@@ -394,6 +344,11 @@ export const navBarConfig: NavBarConfig = {
 					name: "关于",
 					url: "/about/",
 					icon: "material-symbols:person",
+				},
+				{
+					name: "津渡",
+					url: "/Ig-nav/",
+					icon: "mdi:navigation-variant",
 				},
 				{
 					name: "Friends",

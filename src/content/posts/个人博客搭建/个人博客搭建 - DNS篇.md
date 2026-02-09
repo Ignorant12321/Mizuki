@@ -2,9 +2,9 @@
 
 title: 个人博客搭建 - DNS篇
 
-published: 2026-02-01
+published: 2026-02-03
 
-updated: 2026-02-04
+updated: 2026-02-03
 
 description: 'DNS的名词解析，阿里云如何为服务器添加解析'
 
