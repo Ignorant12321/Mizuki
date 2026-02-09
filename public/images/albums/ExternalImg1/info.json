@@ -11,127 +11,127 @@
 	"cover": "https://www.loliapi.com/acg?t=1",
 	"photos": [
 		{
-			"id": "xjh-11",
+			"id": "rand-01",
 			"src": "https://img.xjh.me/random_img.php?return=302&1",
-			"alt": "随机动漫 11",
-			"title": "随机动漫 11",
-			"description": "随机动漫 11",
-			"tags": ["随机", "动漫", "xjh.me"],
-			"width": 800,
-			"height": 600
-		},
-		{
-			"id": "loliapi-1",
-			"src": "https://www.loliapi.com/acg?t=1",
 			"alt": "随机动漫 1",
 			"title": "随机动漫 1",
 			"description": "随机动漫 1",
-			"tags": ["随机", "动漫", "loliapi"],
+			"tags": ["随机", "动漫", "xjh.me"],
 			"width": 800,
 			"height": 600
 		},
 		{
-			"id": "dmoe-2",
-			"src": "https://www.loliapi.com/acg?t=2",
+			"id": "rand-02",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=safe&1",
 			"alt": "随机动漫 2",
 			"title": "随机动漫 2",
 			"description": "随机动漫 2",
-			"tags": ["随机", "动漫", "loliapi"],
+			"tags": ["随机", "动漫", "nekosapi.com"],
 			"width": 800,
 			"height": 600
 		},
 		{
-			"id": "dmoe-3",
-			"src": "https://www.loliapi.com/acg?t=3",
+			"id": "rand-03",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&2",
 			"alt": "随机动漫 3",
 			"title": "随机动漫 3",
 			"description": "随机动漫 3",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-04",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=safe&3",
+			"alt": "随机动漫 4",
+			"title": "随机动漫 4",
+			"description": "随机动漫 4",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-05",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&4",
+			"alt": "随机动漫 5",
+			"title": "随机动漫 5",
+			"description": "随机动漫 5",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-06",
+			"src": "https://www.loliapi.com/acg?t=1",
+			"alt": "随机动漫 6",
+			"title": "随机动漫 6",
+			"description": "随机动漫 6",
 			"tags": ["随机", "动漫", "loliapi"],
 			"width": 800,
 			"height": 600
 		},
 		{
-			"id": "xjh-12",
-			"src": "https://img.xjh.me/random_img.php?return=302&3",
-			"alt": "随机动漫 12",
-			"title": "随机动漫 12",
-			"description": "随机动漫 12",
-			"tags": ["随机", "动漫", "xjh.me"],
-			"width": 800,
-			"height": 600
-		},
-		{
-			"id": "seovx-4",
-			"src": "https://cdn.seovx.com/d/?mom=302&1",
-			"alt": "随机动漫 4",
-			"title": "随机动漫 4",
-			"description": "随机动漫 4",
-			"tags": ["随机", "动漫", "seovx.com"],
-			"width": 800,
-			"height": 600
-		},
-		{
-			"id": "seovx-5",
-			"src": "https://cdn.seovx.com/d/?mom=302&2",
-			"alt": "随机动漫 5",
-			"title": "随机动漫 5",
-			"description": "随机动漫 5",
-			"tags": ["随机", "动漫", "seovx.com"],
-			"width": 800,
-			"height": 600
-		},
-		{
-			"id": "seovx-6",
-			"src": "https://cdn.seovx.com/d/?mom=302&3",
-			"alt": "随机动漫 6",
-			"title": "随机动漫 6",
-			"description": "随机动漫 6",
-			"tags": ["随机", "动漫", "seovx.com"],
-			"width": 800,
-			"height": 600
-		},
-		{
-			"id": "r10086-7",
-			"src": "https://api.r10086.com/樱道随机图片api接口.php?图片系列=东方project1&1",
+			"id": "rand-07",
+			"src": "https://www.loliapi.com/acg?t=2",
 			"alt": "随机动漫 7",
 			"title": "随机动漫 7",
 			"description": "随机动漫 7",
-			"tags": ["随机", "动漫", "r10086.com"],
+			"tags": ["随机", "动漫", "loliapi"],
 			"width": 800,
 			"height": 600
 		},
 		{
-			"id": "r10086-8",
-			"src": "https://api.r10086.com/樱道随机图片api接口.php?图片系列=东方project1&2",
+			"id": "rand-08",
+			"src": "https://www.loliapi.com/acg?t=3",
 			"alt": "随机动漫 8",
 			"title": "随机动漫 8",
 			"description": "随机动漫 8",
-			"tags": ["随机", "动漫", "r10086.com"],
+			"tags": ["随机", "动漫", "loliapi"],
 			"width": 800,
 			"height": 600
 		},
 		{
-			"id": "r10086-9",
-			"src": "https://api.r10086.com/樱道随机图片api接口.php?图片系列=东方project1&3",
+			"id": "rand-09",
+			"src": "https://cdn.seovx.com/d/?mom=302&1",
 			"alt": "随机动漫 9",
 			"title": "随机动漫 9",
 			"description": "随机动漫 9",
+			"tags": ["随机", "动漫", "seovx.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-10",
+			"src": "https://cdn.seovx.com/d/?mom=302&2",
+			"alt": "随机动漫 10",
+			"title": "随机动漫 10",
+			"description": "随机动漫 10",
+			"tags": ["随机", "动漫", "seovx.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-11",
+			"src": "https://cdn.seovx.com/d/?mom=302&3",
+			"alt": "随机动漫 11",
+			"title": "随机动漫 11",
+			"description": "随机动漫 11",
+			"tags": ["随机", "动漫", "seovx.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-12",
+			"src": "https://api.r10086.com/樱道随机图片api接口.php?图片系列=东方project1&3",
+			"alt": "随机动漫 12",
+			"title": "随机动漫 12",
+			"description": "随机动漫 12",
 			"tags": ["随机", "动漫", "r10086.com"],
 			"width": 800,
 			"height": 600
 		},
 		{
-			"id": "xjh-10",
-			"src": "https://img.xjh.me/random_img.php?return=302&2",
-			"alt": "随机动漫 10",
-			"title": "随机动漫 10",
-			"description": "随机动漫 10",
-			"tags": ["随机", "动漫", "xjh.me"],
-			"width": 800,
-			"height": 600
-		},
-		{
-			"id": "sretna-13",
+			"id": "rand-13",
 			"src": "https://api.sretna.cn/api/anime.php?return=img&1",
 			"alt": "随机动漫 13",
 			"title": "随机动漫 13",
@@ -141,12 +141,52 @@
 			"height": 600
 		},
 		{
-			"id": "sretna-14",
+			"id": "rand-14",
 			"src": "https://api.sretna.cn/api/anime.php?return=img&2",
 			"alt": "随机动漫 14",
 			"title": "随机动漫 14",
 			"description": "随机动漫 14",
 			"tags": ["随机", "动漫", "sretna.cn"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-15",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=safe&5",
+			"alt": "随机动漫 15",
+			"title": "随机动漫 15",
+			"description": "随机动漫 15",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-16",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&6",
+			"alt": "随机动漫 16",
+			"title": "随机动漫 16",
+			"description": "随机动漫 16",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-17",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=safe&7",
+			"alt": "随机动漫 17",
+			"title": "随机动漫 17",
+			"description": "随机动漫 17",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-18",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&8",
+			"alt": "随机动漫 18",
+			"title": "随机动漫 18",
+			"description": "随机动漫 18",
+			"tags": ["随机", "动漫", "nekosapi.com"],
 			"width": 800,
 			"height": 600
 		}
