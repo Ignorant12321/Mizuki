@@ -1,0 +1,25 @@
+{
+	"mode": "external",
+	"hidden": false,
+	"title": "随机动漫相册",
+	"description": "来自api接口的随机二次元图片",
+	"date": "2026-01-01",
+	"location": "网络",
+	"tags": ["动漫", "随机", "API"],
+	"layout": "masonry",
+	"columns": 3,
+	"cover": "https://www.loliapi.com/acg?t=1",
+	"photos": [
+		{
+			"id": "rand-01",
+			"src": "https://api.nekosapi.com/v4/images/random?rating=suggestive",
+			"isJson": true,
+			"jsonPath": "0.url",
+			"alt": "随机动漫 1",
+			"title": "每次刷新都变的图片",
+			"tags": ["API", "动态"],
+			"width": 800,
+			"height": 600
+		}
+	]
+}

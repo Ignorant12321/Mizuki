@@ -160,6 +160,8 @@ function processExternalPhotos(
 		photos.push({
 			id: photo.id || `${albumId}-external-photo-${index}`,
 			src: photo.src,
+			isJson: photo.isJson || false,
+			jsonPath: photo.jsonPath || "",
 			thumbnail: photo.thumbnail,
 			alt: photo.alt || photo.title || `Photo ${index + 1}`,
 			title: photo.title,

@@ -1,6 +1,8 @@
 export interface Photo {
 	id?: string;
 	src: string;
+	isJson?: boolean;
+	jsonPath?: string;
 	alt?: string;
 	title?: string;
 	thumbnail?: string;
