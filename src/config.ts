@@ -281,11 +281,6 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Home,
 		LinkPreset.Archive,
 		{
-			name: "时语",
-			url: "/news/",
-			icon: "material-symbols:rss-feed",
-		},
-		{
 			name: "My",
 			url: "/content/",
 			icon: "material-symbols:person",
@@ -349,6 +344,11 @@ export const navBarConfig: NavBarConfig = {
 					name: "津渡",
 					url: "/Ig-nav/",
 					icon: "mdi:navigation-variant",
+				},
+				{
+					name: "时语",
+					url: "/news/",
+					icon: "material-symbols:rss-feed",
 				},
 				{
 					name: "Friends",
