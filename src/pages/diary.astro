@@ -11,8 +11,8 @@ if (!siteConfig.featurePages.diary) {
 }
 
 // 获取日记数据
-const moments = getDiaryList();
-const diaryStats = getDiaryStats();
+const moments = await getDiaryList();
+const diaryStats = await getDiaryStats();
 
 // 时间格式化函数
 function formatTime(dateString: string): string {
@@ -25,7 +25,8 @@ function formatTime(dateString: string): string {
 	const now = new Date();
 	const date = new Date(dateString);
 	const diffInMinutes = Math.floor(
-		(now.getTime() + timeGap * 60 * 60 * 1000 - date.getTime()) / (1000 * 60),
+		(now.getTime() + timeGap * 60 * 60 * 1000 - date.getTime()) /
+			(1000 * 60),
 	);
 
 	if (diffInMinutes < 60) {
@@ -43,23 +44,39 @@ function formatTime(dateString: string): string {
 
 <MainGridLayout title={i18n(I18nKey.diary)} description="即刻短文">
 	<!-- 引入右侧边栏布局管理器 -->
-  <script>
-    import('../scripts/right-sidebar-layout.js');
-  </script>
-	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+	<script>
+		import("../scripts/right-sidebar-layout.js");
+	</script>
+	<div
+		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
+	>
 		<div class="card-base z-10 px-4 py-4 md:px-6 md:py-5 relative w-full">
-		<div class="relative max-w-4xl w-full px-2 md:px-0">
+			<div class="relative max-w-4xl w-full px-2 md:px-0">
 				<!-- 页面头部 -->
 				<div class="moments-header mb-6">
 					<div class="header-content">
 						<div class="header-info">
-							<h1 class="moments-title text-xl md:text-2xl lg:text-3xl font-bold text-90 mb-1">{i18n(I18nKey.diary)}</h1>
-							<p class="moments-subtitle text-sm md:text-base lg:text-lg text-75">{i18n(I18nKey.diarySubtitle)}</p>
+							<h1
+								class="moments-title text-xl md:text-2xl lg:text-3xl font-bold text-90 mb-1"
+							>
+								{i18n(I18nKey.diary)}
+							</h1>
+							<p
+								class="moments-subtitle text-sm md:text-base lg:text-lg text-75"
+							>
+								{i18n(I18nKey.diarySubtitle)}
+							</p>
 						</div>
 						<div class="header-stats">
 							<div class="stat-item text-center">
-								<span class="stat-number text-lg md:text-xl lg:text-2xl font-bold text-[var(--primary)]">{diaryStats.total}</span>
-								<span class="stat-label text-xs md:text-sm lg:text-base text-75">{i18n(I18nKey.diaryCount)}</span>
+								<span
+									class="stat-number text-lg md:text-xl lg:text-2xl font-bold text-[var(--primary)]"
+									>{diaryStats.total}</span
+								>
+								<span
+									class="stat-label text-xs md:text-sm lg:text-base text-75"
+									>{i18n(I18nKey.diaryCount)}</span
+								>
 							</div>
 						</div>
 					</div>
@@ -68,47 +85,139 @@ function formatTime(dateString: string): string {
 				<!-- 短文列表 -->
 				<div class="moments-timeline">
 					<div class="timeline-list space-y-4">
-					{moments.map((moment, index) => (
-						<div class="moment-item card-base-daily p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all">
-								<div class="moment-content">
-									<p class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4">{moment.content}</p>
-									
-									{moment.images && moment.images.length > 0 && (
-				<div class="diary-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
-					{moment.images.map((image, _index) => (
-					<div class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform">
-						<a href="javascript:void(0)" data-src={image} data-fancybox={`gallery-${index}-${_index}`} class="block w-full h-full">
-							<img 
-								src={image} 
-								alt="diary moment image"
-								class="w-full h-full object-cover"
-								loading="lazy"
-							/>
-						</a>
-					</div>
-					))}
-				</div>
-			)}
-								</div>
-								
-								<hr class="moment-divider border-t border-[var(--line-divider)] my-3 md:my-4" />
-								
-								<div class="moment-footer flex justify-between items-center">
-									<div class="moment-time flex items-center gap-1.5 text-75 text-xs md:text-sm lg:text-base">
-										<i class="time-icon text-xs md:text-sm">🕐</i>
-										<time datetime={moment.date}>
-											{formatTime(moment.date)}
-										</time>
+						{
+							moments.map((moment, index) => {
+								const imageCount = moment.images
+									? moment.images.length
+									: 0;
+								// 单张图居中 + 限制宽度；多张图网格布局
+								const imageContainerClass =
+									imageCount === 1
+										? "diary-images flex justify-center mb-3 md:mb-4"
+										: "diary-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4";
+
+								return (
+									<div class="moment-item card-base-daily p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all group">
+										<div class="moment-content">
+											{/* 正文 */}
+											<p class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4">
+												{moment.content}
+											</p>
+
+											{/* 图片 (保持你的单张优化逻辑) */}
+											{imageCount > 0 && (
+												<div
+													class={imageContainerClass}
+												>
+													{moment.images &&
+														moment.images.map(
+															(image, _index) => (
+																<div
+																	class={`image-item relative rounded-md overflow-hidden cursor-pointer hover:scale-105 transition-transform ${imageCount === 1 ? "w-3/5 md:w-1/2 aspect-square" : "aspect-square w-full"}`}
+																>
+																	<a
+																		href="javascript:void(0)"
+																		data-src={
+																			image
+																		}
+																		data-fancybox={`gallery-${index}-${_index}`}
+																		class="block w-full h-full"
+																	>
+																		<img
+																			src={
+																				image
+																			}
+																			alt="diary moment image"
+																			class="w-full h-full object-cover"
+																			loading="lazy"
+																		/>
+																	</a>
+																</div>
+															),
+														)}
+												</div>
+											)}
+
+											{/* 标签 (右对齐) */}
+											{moment.tags &&
+												moment.tags.length > 0 && (
+													<div class="moment-tags flex flex-wrap justify-end gap-2 mb-3">
+														{moment.tags.map(
+															(tag) => (
+																<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--bg-tag,rgba(0,0,0,0.05))] text-[var(--text-tag,#666)] transition-colors hover:bg-[var(--bg-tag-hover,rgba(0,0,0,0.1))]">
+																	# {tag}
+																</span>
+															),
+														)}
+													</div>
+												)}
+										</div>
+
+										{/* 分割线 */}
+										<hr class="moment-divider border-t border-[var(--line-divider)] my-3 md:my-4 opacity-60" />
+
+										{/* 4. 底部 Meta 信息栏 (强制单行版) */}
+										<div class="moment-footer flex items-center justify-between w-full text-xs md:text-sm text-75">
+											{/* 左侧：地点与心情 (允许压缩，文字过长显示...) */}
+											<div class="flex items-center gap-2 md:gap-4 min-w-0 overflow-hidden mr-2">
+												{/* 地点 */}
+												{moment.location && (
+													<div
+														class="moment-location flex items-center gap-1 text-75 hover:text-main transition-colors min-w-0"
+														title={moment.location}
+													>
+														<i class="location-icon text-main opacity-80 shrink-0">
+															📍
+														</i>
+														{/* truncate: 文字超长变省略号 */}
+														<span class="truncate">
+															{moment.location}
+														</span>
+													</div>
+												)}
+
+												{/* 心情 (手机端如果空间不够，心情可能会被挤掉，或者你可以选择在这里隐藏它) */}
+												{moment.mood && (
+													<div class="moment-mood flex items-center gap-1 text-75 shrink-0">
+														<i class="mood-icon opacity-80">
+															💭
+														</i>
+														<span class="hidden md:inline">
+															{moment.mood}
+														</span>{" "}
+														{/* 手机端只显图标，大屏显文字 */}
+													</div>
+												)}
+											</div>
+
+											{/* 右侧：时间 (禁止压缩，永远完整显示) */}
+											<div class="moment-time flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity shrink-0 ml-auto">
+												<time
+													datetime={moment.date}
+													class="font-mono whitespace-nowrap"
+												>
+													{moment.date.substring(
+														0,
+														10,
+													)}
+													({formatTime(moment.date)})
+												</time>
+												<i class="time-icon text-[10px] md:text-xs">
+													🕐
+												</i>
+											</div>
+										</div>
 									</div>
-									
-								</div>
-							</div>
-						))}
+								);
+							})
+						}
 					</div>
 				</div>
 
 				<!-- 底部提示 -->
-				<div class="moments-tips text-center mt-6 md:mt-8 lg:mt-10 text-75 text-xs md:text-sm lg:text-base italic">
+				<div
+					class="moments-tips text-center mt-6 md:mt-8 lg:mt-10 text-75 text-xs md:text-sm lg:text-base italic"
+				>
 					{i18n(I18nKey.diaryTips)}
 				</div>
 			</div>
@@ -122,16 +231,20 @@ function formatTime(dateString: string): string {
 		border: 1px solid var(--line-divider);
 		transition: all 0.3s ease;
 	}
-	
+
 	.moments-header {
 		padding: 1rem;
 		border-radius: 8px;
-		background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, var(--primary)) 100%);
+		background: linear-gradient(
+			135deg,
+			var(--primary) 0%,
+			var(--primary-dark, var(--primary)) 100%
+		);
 		color: white;
 		position: relative;
 		overflow: hidden;
 	}
-	
+
 	.header-content {
 		display: flex;
 		justify-content: space-between;
@@ -139,131 +252,129 @@ function formatTime(dateString: string): string {
 		position: relative;
 		z-index: 1;
 	}
-	
+
 	.moments-title {
 		color: white;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 	}
-	
+
 	.moments-subtitle {
 		color: rgba(255, 255, 255, 0.9);
 	}
-	
+
 	.stat-number {
 		color: white;
 	}
-	
+
 	.stat-label {
 		color: rgba(255, 255, 255, 0.8);
 	}
-	
+
 	.image-item img {
 		transition: transform 0.3s ease;
 	}
-	
+
 	.image-item:hover img {
 		transform: scale(1.05);
 	}
-	
+
 	.action-btn {
 		background: none;
 		border: none;
 		cursor: pointer;
 		color: var(--text-muted);
 	}
-	
+
 	.action-btn:hover {
 		color: var(--primary);
 	}
-	
+
 	/* 响应式设计 */
 	/* 手机端 (小于640px) */
 	@media (max-width: 640px) {
 		.moments-header {
 			padding: 0.75rem;
 		}
-		
+
 		.header-content {
 			flex-direction: column;
 			text-align: center;
 			gap: 0.75rem;
 		}
-		
+
 		.diary-images {
 			grid-template-columns: repeat(2, 1fr);
 		}
-		
+
 		.moment-footer {
 			flex-direction: column;
 			align-items: flex-start;
 			gap: 0.5rem;
 		}
 	}
-	
+
 	/* 平板竖屏 (641px - 900px) - 优化显示 */
 	@media (min-width: 641px) and (max-width: 900px) {
 		.moments-header {
 			padding: 1.25rem;
 		}
-		
+
 		.header-content {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
 		}
-		
+
 		.moment-item {
 			padding: 1.5rem;
 		}
-		
+
 		.diary-images {
 			grid-template-columns: repeat(3, 1fr);
 			gap: 0.75rem;
 			max-width: 500px;
 		}
-		
+
 		.moment-text {
 			font-size: 1rem;
 			line-height: 1.7;
 		}
-		
+
 		.moment-footer {
 			margin-top: 1rem;
 		}
 	}
-	
+
 	/* 平板横屏和桌面端 (大于900px) */
 	@media (min-width: 901px) {
 		.moments-header {
 			padding: 1.5rem;
 		}
-		
+
 		.moment-item {
 			padding: 2rem;
 		}
-		
+
 		.diary-images {
 			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 			max-width: 600px;
 			gap: 1rem;
 		}
-		
+
 		.moment-text {
 			font-size: 1.1rem;
 			line-height: 1.8;
 		}
 	}
-	
+
 	/* 优化小屏幕显示 */
 	@media (max-width: 480px) {
 		.moment-item {
 			border-radius: 8px;
 		}
-		
+
 		.moments-header {
 			border-radius: 6px;
 		}
 	}
 </style>
-
-

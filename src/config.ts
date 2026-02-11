@@ -281,6 +281,11 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Home,
 		LinkPreset.Archive,
 		{
+			name: "Diary",
+			url: "/diary/",
+			icon: "material-symbols:book",
+		},
+		{
 			name: "My",
 			url: "/content/",
 			icon: "material-symbols:person",
@@ -296,15 +301,20 @@ export const navBarConfig: NavBarConfig = {
 					icon: "material-symbols:movie",
 				},
 				{
-					name: "Diary",
-					url: "/diary/",
-					icon: "material-symbols:book",
-				},
-				{
 					name: "Devices",
 					url: "devices/",
 					icon: "material-symbols:devices",
 					external: false,
+				},
+				{
+					name: "津渡",
+					url: "/Ig-nav/",
+					icon: "mdi:navigation-variant",
+				},
+				{
+					name: "时语",
+					url: "/news/",
+					icon: "material-symbols:rss-feed",
 				},
 			],
 		},
@@ -339,16 +349,6 @@ export const navBarConfig: NavBarConfig = {
 					name: "关于",
 					url: "/about/",
 					icon: "material-symbols:person",
-				},
-				{
-					name: "津渡",
-					url: "/Ig-nav/",
-					icon: "mdi:navigation-variant",
-				},
-				{
-					name: "时语",
-					url: "/news/",
-					icon: "material-symbols:rss-feed",
 				},
 				{
 					name: "Friends",

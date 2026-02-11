@@ -1,6 +1,6 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
-import { z } from 'astro/zod';
+import { z } from "astro/zod";
 
 const postsCollection = defineCollection({
 	loader: glob({ pattern: "**/*.md", base: "./src/content/posts" }),
@@ -42,7 +42,19 @@ const specCollection = defineCollection({
 	loader: glob({ pattern: "**/*.md", base: "./src/content/spec" }),
 	schema: z.object({}),
 });
+const diaryCollection = defineCollection({
+	loader: glob({ pattern: "**/*.md", base: "./src/content/diary" }),
+	schema: z.object({
+		id: z.coerce.string().optional(),
+		date: z.coerce.date().optional(),
+		images: z.array(z.string()).optional().default([]),
+		location: z.string().optional(),
+		mood: z.string().optional(),
+		tags: z.array(z.string()).optional().default([]),
+	}),
+});
 export const collections = {
 	posts: postsCollection,
 	spec: specCollection,
+	diary: diaryCollection,
 };
