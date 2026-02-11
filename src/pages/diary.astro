@@ -11,8 +11,8 @@ if (!siteConfig.featurePages.diary) {
 }
 
 // 获取日记数据
-const moments = getDiaryList();
-const diaryStats = getDiaryStats();
+const moments = await getDiaryList();
+const diaryStats = await getDiaryStats();
 
 // 时间格式化函数
 function formatTime(dateString: string): string {

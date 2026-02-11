@@ -1,0 +1,25 @@
+[
+	{
+		"id": 1,
+		"content": "今天天气真好，樱花落下的速度是每秒5厘米。",
+		"date": "2025-01-15T10:30:00Z",
+		"images": ["/images/diary/sakura.jpg", "/images/diary/1.jpg"],
+		"location": "东京",
+		"mood": "Sentimental",
+		"tags": ["anime", "life"]
+	},
+	{
+		"id": "special-day-2025",
+		"content": "去海边散步了，风很大，但是心情很平静。看到了一只很可爱的流浪猫。",
+		"date": "2025-02-20T14:00:00Z",
+		"images": [],
+		"location": "海边",
+		"mood": "Calm",
+		"tags": ["walk", "cat"]
+	},
+	{
+		"id": 3,
+		"content": "只是简单记录一下，今天什么都没发生。",
+		"date": "2025-03-01T09:00:00Z"
+	}
+]
