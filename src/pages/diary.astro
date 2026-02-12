@@ -21,14 +21,12 @@ function formatTime(dateString: string): string {
 		TG = siteConfig.timeZone;
 	const timeGap = TG;
 
-	// const lang = siteConfig.lang;
 	const now = new Date();
 	const date = new Date(dateString);
 	const diffInMinutes = Math.floor(
 		(now.getTime() + timeGap * 60 * 60 * 1000 - date.getTime()) /
 			(1000 * 60),
 	);
-
 	if (diffInMinutes < 60) {
 		return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
 	}
@@ -43,7 +41,6 @@ function formatTime(dateString: string): string {
 ---
 
 <MainGridLayout title={i18n(I18nKey.diary)} description="即刻短文">
-	<!-- 引入右侧边栏布局管理器 -->
 	<script>
 		import("../scripts/right-sidebar-layout.js");
 	</script>
@@ -52,7 +49,6 @@ function formatTime(dateString: string): string {
 	>
 		<div class="card-base z-10 px-4 py-4 md:px-6 md:py-5 relative w-full">
 			<div class="relative max-w-4xl w-full px-2 md:px-0">
-				<!-- 页面头部 -->
 				<div class="moments-header mb-6">
 					<div class="header-content">
 						<div class="header-info">
@@ -82,7 +78,6 @@ function formatTime(dateString: string): string {
 					</div>
 				</div>
 
-				<!-- 短文列表 -->
 				<div class="moments-timeline">
 					<div class="timeline-list space-y-4">
 						{
@@ -90,11 +85,25 @@ function formatTime(dateString: string): string {
 								const imageCount = moment.images
 									? moment.images.length
 									: 0;
-								// 单张图居中 + 限制宽度；多张图网格布局
-								const imageContainerClass =
-									imageCount === 1
-										? "diary-images flex justify-center mb-3 md:mb-4"
-										: "diary-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4";
+
+								// 动态计算图片容器样式
+								// 1张图: Flex布局，靠左
+								// 2或4张图: 2列 Grid
+								// 其他(3, 5+): 3列 Grid
+								let gridClassName =
+									"diary-images mt-3 md:mt-4 gap-2 md:gap-3";
+								if (imageCount === 1) {
+									gridClassName += " flex justify-center";
+								} else if (
+									imageCount === 2 ||
+									imageCount === 4
+								) {
+									gridClassName +=
+										" grid grid-cols-2 max-w-[80%] md:max-w-[60%] mx-auto";
+								} else {
+									gridClassName +=
+										" grid grid-cols-3 mx-auto";
+								}
 
 								return (
 									<div class="moment-item card-base-daily p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all group">
@@ -104,36 +113,52 @@ function formatTime(dateString: string): string {
 												{moment.content}
 											</p>
 
-											{/* 图片 (保持你的单张优化逻辑) */}
+											{/* 图片渲染 */}
 											{imageCount > 0 && (
-												<div
-													class={imageContainerClass}
-												>
+												<div class={gridClassName}>
 													{moment.images &&
 														moment.images.map(
-															(image, _index) => (
-																<div
-																	class={`image-item relative rounded-md overflow-hidden cursor-pointer hover:scale-105 transition-transform ${imageCount === 1 ? "w-3/5 md:w-1/2 aspect-square" : "aspect-square w-full"}`}
-																>
-																	<a
-																		href="javascript:void(0)"
-																		data-src={
-																			image
+															(image, _index) => {
+																const isSingle =
+																	imageCount ===
+																	1;
+																// 单图：限制最大高度，保留比例
+																// 多图：强制正方形 (aspect-square)
+																const imgWrapperClass =
+																	isSingle
+																		? "image-item relative rounded-lg overflow-hidden cursor-pointer border border-[var(--line-divider)] max-h-[500px] w-auto inline-block"
+																		: "image-item relative rounded-lg overflow-hidden cursor-pointer aspect-square w-full";
+
+																return (
+																	<div
+																		class={
+																			imgWrapperClass
 																		}
-																		data-fancybox={`gallery-${index}-${_index}`}
-																		class="block w-full h-full"
 																	>
-																		<img
-																			src={
+																		<a
+																			href="javascript:void(0)"
+																			data-src={
 																				image
 																			}
-																			alt="diary moment image"
-																			class="w-full h-full object-cover"
-																			loading="lazy"
-																		/>
-																	</a>
-																</div>
-															),
+																			data-fancybox={`gallery-${index}`}
+																			class={
+																				isSingle
+																					? "block h-full w-auto"
+																					: "block w-full h-full"
+																			}
+																		>
+																			<img
+																				src={
+																					image
+																				}
+																				alt="diary moment image"
+																				class={`w-full h-full transition-transform duration-300 hover:scale-105 ${isSingle ? "object-contain bg-black/5" : "object-cover"}`}
+																				loading="lazy"
+																			/>
+																		</a>
+																	</div>
+																);
+															},
 														)}
 												</div>
 											)}
@@ -141,7 +166,7 @@ function formatTime(dateString: string): string {
 											{/* 标签 (右对齐) */}
 											{moment.tags &&
 												moment.tags.length > 0 && (
-													<div class="moment-tags flex flex-wrap justify-end gap-2 mb-3">
+													<div class="moment-tags flex flex-wrap justify-end gap-2 mb-3 mt-4">
 														{moment.tags.map(
 															(tag) => (
 																<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--bg-tag,rgba(0,0,0,0.05))] text-[var(--text-tag,#666)] transition-colors hover:bg-[var(--bg-tag-hover,rgba(0,0,0,0.1))]">
@@ -156,9 +181,9 @@ function formatTime(dateString: string): string {
 										{/* 分割线 */}
 										<hr class="moment-divider border-t border-[var(--line-divider)] my-3 md:my-4 opacity-60" />
 
-										{/* 4. 底部 Meta 信息栏 (强制单行版) */}
+										{/* 底部 Meta 信息栏 */}
 										<div class="moment-footer flex items-center justify-between w-full text-xs md:text-sm text-75">
-											{/* 左侧：地点与心情 (允许压缩，文字过长显示...) */}
+											{/* 左侧：地点与心情 */}
 											<div class="flex items-center gap-2 md:gap-4 min-w-0 overflow-hidden mr-2">
 												{/* 地点 */}
 												{moment.location && (
@@ -169,14 +194,13 @@ function formatTime(dateString: string): string {
 														<i class="location-icon text-main opacity-80 shrink-0">
 															📍
 														</i>
-														{/* truncate: 文字超长变省略号 */}
 														<span class="truncate">
 															{moment.location}
 														</span>
 													</div>
 												)}
 
-												{/* 心情 (手机端如果空间不够，心情可能会被挤掉，或者你可以选择在这里隐藏它) */}
+												{/* 心情 */}
 												{moment.mood && (
 													<div class="moment-mood flex items-center gap-1 text-75 shrink-0">
 														<i class="mood-icon opacity-80">
@@ -184,13 +208,12 @@ function formatTime(dateString: string): string {
 														</i>
 														<span class="hidden md:inline">
 															{moment.mood}
-														</span>{" "}
-														{/* 手机端只显图标，大屏显文字 */}
+														</span>
 													</div>
 												)}
 											</div>
 
-											{/* 右侧：时间 (禁止压缩，永远完整显示) */}
+											{/* 右侧：时间 */}
 											<div class="moment-time flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity shrink-0 ml-auto">
 												<time
 													datetime={moment.date}
@@ -214,7 +237,6 @@ function formatTime(dateString: string): string {
 					</div>
 				</div>
 
-				<!-- 底部提示 -->
 				<div
 					class="moments-tips text-center mt-6 md:mt-8 lg:mt-10 text-75 text-xs md:text-sm lg:text-base italic"
 				>
@@ -271,11 +293,7 @@ function formatTime(dateString: string): string {
 	}
 
 	.image-item img {
-		transition: transform 0.3s ease;
-	}
-
-	.image-item:hover img {
-		transform: scale(1.05);
+		/* transition moved to tailwind class to handle different cases */
 	}
 
 	.action-btn {
@@ -302,10 +320,6 @@ function formatTime(dateString: string): string {
 			gap: 0.75rem;
 		}
 
-		.diary-images {
-			grid-template-columns: repeat(2, 1fr);
-		}
-
 		.moment-footer {
 			flex-direction: column;
 			align-items: flex-start;
@@ -313,7 +327,7 @@ function formatTime(dateString: string): string {
 		}
 	}
 
-	/* 平板竖屏 (641px - 900px) - 优化显示 */
+	/* 平板竖屏 (641px - 900px) */
 	@media (min-width: 641px) and (max-width: 900px) {
 		.moments-header {
 			padding: 1.25rem;
@@ -327,12 +341,6 @@ function formatTime(dateString: string): string {
 
 		.moment-item {
 			padding: 1.5rem;
-		}
-
-		.diary-images {
-			grid-template-columns: repeat(3, 1fr);
-			gap: 0.75rem;
-			max-width: 500px;
 		}
 
 		.moment-text {
@@ -353,12 +361,6 @@ function formatTime(dateString: string): string {
 
 		.moment-item {
 			padding: 2rem;
-		}
-
-		.diary-images {
-			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-			max-width: 600px;
-			gap: 1rem;
 		}
 
 		.moment-text {

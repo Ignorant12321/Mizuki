@@ -4,79 +4,514 @@ import { announcementConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import WidgetLayout from "./WidgetLayout.astro";
+import jsonAnnouncements from "../../data/announcement.json";
 
-const config = announcementConfig;
-
-interface Props {
-	class?: string;
-	style?: string;
+// --- 1. 数据初始化 ---
+let rawData = announcementConfig.content;
+if (
+	typeof rawData === "string" ||
+	!rawData ||
+	(Array.isArray(rawData) && rawData.length === 0)
+) {
+	rawData = jsonAnnouncements;
 }
+const announcements = Array.isArray(rawData) ? rawData : [];
+
+// --- 2. 占位符配置 ---
+const defaults = {
+	latest: { text: "暂无新公告", icon: "fa6-solid:check" },
+	history: { text: "暂无历史记录", icon: "fa6-solid:box-open" },
+};
+const userPlaceholder = announcementConfig.placeholder || {};
+const finalPlaceholder = {
+	latest: { ...defaults.latest, ...(userPlaceholder.latest || {}) },
+	history: { ...defaults.history, ...(userPlaceholder.history || {}) },
+};
+
+// --- 3. 配置参数 ---
+const globalClosable = announcementConfig.closable !== false; // 默认为 true
+const configItemsPerPage = announcementConfig.itemsPerPage || 3; // 默认 3 条
+
 const className = Astro.props.class;
 const style = Astro.props.style;
 ---
 
-<!-- 组件显示现在由sidebarLayoutConfig统一控制，无需检查config.enable -->
-<WidgetLayout 
-    name={config.title || i18n(I18nKey.announcement)} 
-    id="announcement"
-    class={className} 
-    style={style}
+<WidgetLayout
+	name={announcementConfig.title || i18n(I18nKey.announcement)}
+	id="announcement-widget"
+	class={className}
+	style={style}
 >
-    <div>
-        <!-- 公告栏内容 -->
-        <div class="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-3">
-            {config.content}
-        </div>
-        
-        <!-- 可选链接和关闭按钮 -->
-        <div class="flex items-center justify-between gap-3">
-            <div>
-                {config.link && config.link.enable !== false && (
-                    <a 
-                        href={config.link.url} 
-                        target={config.link.external ? "_blank" : "_self"}
-                        rel={config.link.external ? "noopener noreferrer" : undefined}
-                        class="btn-regular rounded-lg px-3 py-1.5 text-sm font-medium active:scale-95 transition-transform"
-                    >
-                        {config.link.text}
+	{
+		globalClosable && (
+			<div class="absolute top-4 right-5 z-10">
+				<button
+					id="history-toggle-btn"
+					class="flex items-center gap-1.5 px-2 py-1 rounded-md text-neutral-400 hover:text-[var(--primary)] hover:bg-[var(--btn-regular-bg)] transition-colors cursor-pointer select-none"
+				>
+					<span id="history-btn-text" class="text-xs font-medium">
+						历史
+					</span>
+					<Icon name="fa6-solid:clock-rotate-left" class="text-sm" />
+				</button>
+			</div>
+		)
+	}
 
-                    </a>
-                )}
-            </div>
-            
-            {config.closable && (
-                <button 
-                    class="btn-regular rounded-lg h-8 w-8 text-sm hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                    onclick="closeAnnouncement()"
-                    aria-label={i18n(I18nKey.announcementClose)}
-                >
-                    <Icon name="fa6-solid:xmark" class="text-sm" />
-                </button>
-            )}
-        </div>
-    </div>
+	<div
+		id="announcement-list-container"
+		class="relative flex flex-col min-h-[160px] transition-all duration-300"
+	>
+		<div
+			id="announcement-list"
+			class="flex flex-col gap-3 pt-1 w-full relative z-10"
+		>
+		</div>
+
+		<div
+			id="placeholder-empty"
+			class="absolute inset-0 hidden flex-col items-center justify-center text-center select-none z-0"
+		>
+			<div
+				class="h-12 w-12 bg-[var(--card-bg)] rounded-full flex items-center justify-center mb-3 text-neutral-400 shadow-sm border border-neutral-100 dark:border-none"
+			>
+				<Icon name={finalPlaceholder.latest.icon} class="text-xl" />
+			</div>
+			<p
+				class="text-sm text-neutral-500 dark:text-neutral-400 font-medium"
+			>
+				{finalPlaceholder.latest.text}
+			</p>
+		</div>
+		<div
+			id="placeholder-history"
+			class="absolute inset-0 hidden flex-col items-center justify-center text-center select-none z-0"
+		>
+			<div
+				class="h-12 w-12 bg-[var(--card-bg)] rounded-full flex items-center justify-center mb-3 text-neutral-400 shadow-sm border border-neutral-100 dark:border-none"
+			>
+				<Icon name={finalPlaceholder.history.icon} class="text-xl" />
+			</div>
+			<p
+				class="text-sm text-neutral-500 dark:text-neutral-400 font-medium"
+			>
+				{finalPlaceholder.history.text}
+			</p>
+		</div>
+	</div>
+
+	<div
+		id="pagination-controls"
+		class="hidden justify-between items-center mt-3 pt-3 border-t border-dashed border-neutral-200 dark:border-neutral-700/50"
+	>
+		<div class="flex items-center gap-1">
+			<button
+				id="first-page"
+				class="p-1.5 rounded-md hover:bg-[var(--card-bg)] text-neutral-400 hover:text-[var(--primary)] disabled:opacity-30 disabled:pointer-events-none transition"
+				aria-label="First Page"
+			>
+				<Icon name="fa6-solid:angles-left" class="text-xs" />
+			</button>
+			<button
+				id="prev-page"
+				class="p-1.5 rounded-md hover:bg-[var(--card-bg)] text-neutral-400 hover:text-[var(--primary)] disabled:opacity-30 disabled:pointer-events-none transition"
+				aria-label="Previous Page"
+			>
+				<Icon name="fa6-solid:chevron-left" class="text-xs" />
+			</button>
+		</div>
+
+		<div class="flex items-center gap-2 text-xs text-neutral-500">
+			<input
+				type="number"
+				id="page-input"
+				value="1"
+				min="1"
+				class="w-10 h-6 text-center border border-neutral-200 dark:border-neutral-700 rounded bg-transparent focus:border-[var(--primary)] focus:text-[var(--primary)] focus:outline-none transition-colors"
+			/>
+			<span class="text-neutral-400">/</span>
+			<span id="total-pages-text">1</span>
+		</div>
+
+		<div class="flex items-center gap-1">
+			<button
+				id="next-page"
+				class="p-1.5 rounded-md hover:bg-[var(--card-bg)] text-neutral-400 hover:text-[var(--primary)] disabled:opacity-30 disabled:pointer-events-none transition"
+				aria-label="Next Page"
+			>
+				<Icon name="fa6-solid:chevron-right" class="text-xs" />
+			</button>
+			<button
+				id="last-page"
+				class="p-1.5 rounded-md hover:bg-[var(--card-bg)] text-neutral-400 hover:text-[var(--primary)] disabled:opacity-30 disabled:pointer-events-none transition"
+				aria-label="Last Page"
+			>
+				<Icon name="fa6-solid:angles-right" class="text-xs" />
+			</button>
+		</div>
+	</div>
 </WidgetLayout>
 
-<script>
-    function closeAnnouncement() {
-        // 通过data-id属性找到整个widget-layout元素
-        const widgetLayout = document.querySelector('widget-layout[data-id="announcement"]') as HTMLElement;
-        if (widgetLayout) {
-            // 隐藏整个widget-layout元素
-            widgetLayout.style.display = 'none';
-            // 保存关闭状态到localStorage
-            localStorage.setItem('announcementClosed', 'true');
-        }
-    }
+<script
+	is:inline
+	define:vars={{
+		announcementsJson: announcements,
+		itemsPerPage: configItemsPerPage,
+		globalClosable: globalClosable,
+	}}
+>
+	const allData = announcementsJson;
+	const PAGE_SIZE = itemsPerPage; // 使用配置的每页数量
+	const STORAGE_KEY = "closed_announcement_ids";
 
-    // 页面加载时检查是否已关闭
-    document.addEventListener('DOMContentLoaded', function() {
-        const widgetLayout = document.querySelector('widget-layout[data-id="announcement"]') as HTMLElement;
-        if (widgetLayout && localStorage.getItem('announcementClosed') === 'true') {
-            widgetLayout.style.display = 'none';
-        }
-    });
+	let currentPage = 1;
+	let isHistoryMode = false;
 
-    // 使公告栏函数全局可用
-    window.closeAnnouncement = closeAnnouncement;
+	function getClosedIds() {
+		if (!globalClosable) return []; // 如果全局禁止关闭，则永远没有已关闭的 ID
+		try {
+			return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+		} catch (e) {
+			return [];
+		}
+	}
+	function saveClosedIds(ids) {
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+	}
+
+	function getPriorityValue(pinned) {
+		if (typeof pinned === "number") return pinned;
+		if (pinned === true) return 1;
+		return 0;
+	}
+
+	function getDisplayData() {
+		// 如果全局 closable 为 false，则忽略本地存储，始终显示所有数据（且不显示历史模式）
+		if (!globalClosable) {
+			return [...allData].sort(
+				(a, b) =>
+					getPriorityValue(b.pinned) - getPriorityValue(a.pinned),
+			);
+		}
+
+		const closedIds = getClosedIds();
+		let filtered = allData.filter((item) =>
+			isHistoryMode
+				? closedIds.includes(item.id)
+				: !closedIds.includes(item.id),
+		);
+
+		filtered.sort(
+			(a, b) => getPriorityValue(b.pinned) - getPriorityValue(a.pinned),
+		);
+		return filtered;
+	}
+
+	window.toggleAnnouncementStatus = function (id) {
+		if (!globalClosable) return; // 全局禁止关闭时无效
+
+		const el = document.querySelector(
+			`.announcement-item[data-id="${id}"]`,
+		);
+		if (el) el.classList.add("item-exit");
+
+		setTimeout(() => {
+			const closedIds = getClosedIds();
+			const index = closedIds.indexOf(id);
+			if (index > -1) closedIds.splice(index, 1);
+			else closedIds.push(id);
+			saveClosedIds(closedIds);
+
+			const newData = getDisplayData();
+			const totalPages = Math.ceil(newData.length / PAGE_SIZE);
+			if (currentPage > totalPages && totalPages > 0)
+				currentPage = totalPages;
+
+			render();
+		}, 400);
+	};
+
+	function toggleMode() {
+		if (!globalClosable) return;
+
+		const listContainer = document.getElementById("announcement-list");
+		const pEmpty = document.getElementById("placeholder-empty");
+		const pHistory = document.getElementById("placeholder-history");
+
+		listContainer.style.opacity = "0";
+		listContainer.style.transform = "translateY(10px)";
+		if (pEmpty) pEmpty.style.opacity = "0";
+		if (pHistory) pHistory.style.opacity = "0";
+
+		setTimeout(() => {
+			isHistoryMode = !isHistoryMode;
+			currentPage = 1;
+
+			const btnText = document.getElementById("history-btn-text");
+			const historyBtn = document.getElementById("history-toggle-btn");
+			if (isHistoryMode) {
+				btnText.innerText = "返回";
+				historyBtn.classList.add(
+					"text-[var(--primary)]",
+					"bg-[var(--btn-regular-bg)]",
+				);
+			} else {
+				btnText.innerText = "历史";
+				historyBtn.classList.remove(
+					"text-[var(--primary)]",
+					"bg-[var(--btn-regular-bg)]",
+				);
+			}
+
+			render();
+
+			requestAnimationFrame(() => {
+				listContainer.style.opacity = "1";
+				listContainer.style.transform = "translateY(0)";
+			});
+		}, 200);
+	}
+
+	function handleInputPage(e) {
+		const data = getDisplayData();
+		const totalPages = Math.ceil(data.length / PAGE_SIZE);
+		let val = parseInt(e.target.value);
+		if (isNaN(val) || val < 1) val = 1;
+		if (val > totalPages) val = totalPages;
+		currentPage = val;
+		render();
+	}
+
+	function changePage(newPage) {
+		currentPage = newPage;
+		render();
+	}
+
+	function render() {
+		const container = document.getElementById("announcement-list");
+		const pagination = document.getElementById("pagination-controls");
+		const placeholderEmpty = document.getElementById("placeholder-empty");
+		const placeholderHistory = document.getElementById(
+			"placeholder-history",
+		);
+
+		const displayData = getDisplayData();
+		const totalItems = displayData.length;
+		const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+
+		// --- 空状态处理 ---
+		if (totalItems === 0) {
+			container.innerHTML = "";
+			pagination.classList.remove("flex");
+			pagination.classList.add("hidden");
+
+			// 如果全局不可关闭，始终只显示 empty 占位符（因为没有历史模式）
+			if (!globalClosable) {
+				placeholderEmpty.classList.remove("hidden", "flex");
+				placeholderEmpty.classList.add("flex");
+				setTimeout(() => (placeholderEmpty.style.opacity = "1"), 10);
+				return;
+			}
+
+			if (isHistoryMode) {
+				placeholderEmpty.classList.add("hidden");
+				placeholderHistory.classList.remove("hidden");
+				placeholderHistory.classList.add("flex");
+				setTimeout(() => (placeholderHistory.style.opacity = "1"), 10);
+			} else {
+				placeholderHistory.classList.add("hidden");
+				placeholderEmpty.classList.remove("hidden");
+				placeholderEmpty.classList.add("flex");
+				setTimeout(() => (placeholderEmpty.style.opacity = "1"), 10);
+			}
+			return;
+		} else {
+			if (placeholderEmpty) {
+				placeholderEmpty.classList.add("hidden");
+				placeholderEmpty.style.opacity = "0";
+			}
+			if (placeholderHistory) {
+				placeholderHistory.classList.add("hidden");
+				placeholderHistory.style.opacity = "0";
+			}
+		}
+
+		// --- 分页处理 ---
+		if (currentPage > totalPages) currentPage = totalPages || 1;
+		const startIndex = (currentPage - 1) * PAGE_SIZE;
+		const pageItems = displayData.slice(startIndex, startIndex + PAGE_SIZE);
+
+		let html = "";
+		pageItems.forEach((item, idx) => {
+			const priority = getPriorityValue(item.pinned);
+			const isPinned = priority > 0;
+			const delay = idx * 50;
+
+			const actionIcon = isHistoryMode
+				? `<path fill="currentColor" d="M480 256c0 123.4-100.5 223.9-223.9 223.9c-49.7 0-96.1-16.2-134.5-44c-12.8-9.3-15.6-27.1-6.3-39.9s27.1-15.6 39.9-6.3c29.7 21.5 65.6 34.1 104.9 34.1c96.5 0 174.9-78.4 174.9-174.9S356.5 73 260 73c-64.8 0-122 35.8-152.6 89.2l61.8 0c15.8 0 28.6 12.8 28.6 28.6s-12.8 28.6-28.6 28.6l-123.8 0c-15.8 0-28.6-12.8-28.6-28.6l0-123.8c0-15.8 12.8-28.6 28.6-28.6s28.6 12.8 28.6 28.6l0 52.8C103.5 45.4 178 8 260.1 8C397 8 508 119 508 256z"/>`
+				: `<path fill="currentColor" d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>`;
+			const actionTitle = isHistoryMode ? "还原" : "关闭";
+
+			let pinColorClass = "text-[var(--primary)]";
+			if (priority >= 10) pinColorClass = "text-red-500";
+
+			const pinnedIcon = isPinned
+				? `<span class="mr-1.5 ${pinColorClass} shrink-0" title="Priority: ${priority}"><svg class="inline-block w-3 h-3 rotate-45" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" fill="currentColor"><path d="M32 32C32 14.3 46.3 0 64 0H320c17.7 0 32 14.3 32 32s-14.3 32-32 32H290.5l11.4 148.2c36.7 19.9 65.7 53.2 79.5 94.7l1 3c3.3 9.9 1.6 20.8-4.4 29.2s-15.3 13.7-25.8 13.7H32c-10.5 0-19.9-5.3-25.8-13.7s-7.7-19.3-4.4-29.2l1-3c13.8-41.5 42.8-74.8 79.5-94.7L93.5 64H64C46.3 64 32 49.7 32 32zM160 384h64v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V384z"/></svg></span>`
+				: "";
+
+			// [修改] 按钮渲染逻辑：全局开启 && (历史模式 OR 单条允许关闭)
+			// 如果 globalClosable 为 false，上面已经 return 了，所以这里只要判断 item.closable
+			// 注意：isHistoryMode 为 true 时，一定显示还原按钮
+			const showCloseBtn = isHistoryMode || item.closable !== false;
+
+			const closeBtnHtml = showCloseBtn
+				? `
+                <button 
+                    class="text-neutral-400 hover:text-[var(--primary)] hover:bg-[var(--btn-regular-bg)] rounded-md transition-all p-1 shrink-0"
+                    onclick="toggleAnnouncementStatus('${item.id}')"
+                    title="${actionTitle}"
+                >
+                    <svg viewBox="0 0 512 512" class="h-3 w-3" xmlns="http://www.w3.org/2000/svg">${actionIcon}</svg>
+                </button>
+            `
+				: "";
+
+			html += `
+            <div class="announcement-item item-enter relative flex flex-col bg-[var(--card-bg)] rounded-xl p-3 border border-neutral-200 dark:border-neutral-700/50 shadow-sm overflow-hidden" 
+                 data-id="${item.id}"
+                 style="animation-delay: ${delay}ms">
+                <div class="flex justify-between items-start mb-2 gap-2">
+                    <div class="font-bold text-sm text-neutral-800 dark:text-neutral-200 leading-tight line-clamp-1 flex items-center w-full">
+                        ${pinnedIcon}
+                        <div class="truncate flex-1">${item.title}</div>
+                    </div>
+                    ${closeBtnHtml}
+                </div>
+                <div class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-3 break-words line-clamp-3">
+                    ${item.content}
+                </div>
+                <div class="flex justify-between items-center mt-auto pt-2 border-t border-dashed border-neutral-200 dark:border-neutral-700/50">
+                    ${
+						item.date
+							? `
+                    <div class="flex items-center gap-1.5 text-xs text-neutral-400">
+                        <svg viewBox="0 0 512 512" class="h-2.5 w-2.5 opacity-70" fill="currentColor"><path d="M464 256A208 208 0 1 1 48 256a208 208 0 0 1 416 0zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></svg>
+                        <span>${item.date}</span>
+                    </div>`
+							: "<span></span>"
+					}
+                    ${
+						item.link && item.link.enable
+							? `
+                    <a href="${item.link.url}" target="${item.link.external ? "_blank" : "_self"}" 
+                       class="text-xs font-medium text-[var(--primary)] hover:opacity-80 transition-opacity flex items-center gap-1 bg-[var(--btn-regular-bg)] px-2 py-0.5 rounded-full">
+                        ${item.link.text}
+                        <svg viewBox="0 0 320 512" class="h-2 w-2" fill="currentColor"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>
+                    </a>`
+							: ""
+					}
+                </div>
+            </div>
+            `;
+		});
+		container.innerHTML = html;
+
+		// [修改] 分页控件更新：处理4个按钮的逻辑
+		if (totalPages > 1) {
+			pagination.classList.remove("hidden");
+			pagination.classList.add("flex");
+
+			// 按钮元素
+			const firstBtn = document.getElementById("first-page");
+			const prevBtn = document.getElementById("prev-page");
+			const nextBtn = document.getElementById("next-page");
+			const lastBtn = document.getElementById("last-page");
+			const inputEl = document.getElementById("page-input");
+
+			// 状态禁用逻辑
+			const isFirst = currentPage === 1;
+			const isLast = currentPage === totalPages;
+
+			firstBtn.disabled = isFirst;
+			prevBtn.disabled = isFirst;
+			nextBtn.disabled = isLast;
+			lastBtn.disabled = isLast;
+
+			inputEl.value = currentPage;
+			inputEl.max = totalPages;
+			document.getElementById("total-pages-text").innerText = totalPages;
+
+			// 事件绑定
+			firstBtn.onclick = () => changePage(1);
+			prevBtn.onclick = () => changePage(currentPage - 1);
+			nextBtn.onclick = () => changePage(currentPage + 1);
+			lastBtn.onclick = () => changePage(totalPages);
+
+			inputEl.onchange = handleInputPage;
+			inputEl.onkeydown = (e) => {
+				if (e.key === "Enter") handleInputPage(e);
+			};
+		} else {
+			pagination.classList.remove("flex");
+			pagination.classList.add("hidden");
+		}
+	}
+
+	document.addEventListener("DOMContentLoaded", () => {
+		const historyBtn = document.getElementById("history-toggle-btn");
+		if (historyBtn) historyBtn.addEventListener("click", toggleMode);
+		render();
+	});
 </script>
+
+<style>
+	@keyframes slideInUp {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	@keyframes collapseExit {
+		0% {
+			opacity: 1;
+			max-height: 200px;
+			transform: scale(1);
+			margin-bottom: 0.75rem;
+		}
+		40% {
+			opacity: 0;
+			transform: scale(0.95);
+		}
+		100% {
+			opacity: 0;
+			max-height: 0;
+			margin-bottom: 0;
+			padding-top: 0;
+			padding-bottom: 0;
+			border-width: 0;
+			transform: scale(0.9);
+		}
+	}
+	.item-enter {
+		animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+		opacity: 0;
+	}
+	.item-exit {
+		animation: collapseExit 0.4s ease-in-out forwards;
+		pointer-events: none;
+		transform-origin: center top;
+		overflow: hidden;
+	}
+	input[type="number"]::-webkit-outer-spin-button,
+	input[type="number"]::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+	input[type="number"] {
+		-moz-appearance: textfield;
+	}
+</style>

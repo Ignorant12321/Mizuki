@@ -311,19 +311,31 @@ export type ExpressiveCodeConfig = {
 	hideDuringThemeTransition?: boolean; // 是否在主题切换时隐藏代码块
 };
 
-export type AnnouncementConfig = {
-	// enable属性已移除，现在通过sidebarLayoutConfig统一控制
-	title?: string; // 公告栏标题
-	content: string; // 公告栏内容
-	icon?: string; // 公告栏图标
-	type?: "info" | "warning" | "success" | "error"; // 公告类型
-	closable?: boolean; // 是否可关闭
+// 定义每一条公告的结构
+export type AnnouncementItem = {
+	id: string; // 唯一ID
+	title: string; //  卡片标题
+	content: string; // 支持 HTML
+	pinned?: boolean | number; // 是否置顶
+	date?: string; // 发布时间
+	closable?: boolean; // 单条公告是否允许关闭 (默认 true)
 	link?: {
-		enable: boolean; // 是否启用链接
-		text: string; // 链接文字
-		url: string; // 链接地址
-		external?: boolean; // 是否外部链接
+		enable: boolean;
+		text: string;
+		url: string;
+		external?: boolean;
 	};
+};
+// 定义整体配置结构
+export type AnnouncementConfig = {
+	title?: string; // 全局公告标题
+	placeholder?: {
+		latest?: { text: string; icon: string }; // 最新消息为空时的配置
+		history?: { text: string; icon: string }; // 历史消息为空时的配置
+	}; // 无公告时的占位符
+	closable?: boolean; // 全局开关：如果为 false，所有人都不显示关闭按钮且无历史功能
+	itemsPerPage?: number; // 每页显示的公告数量
+	content: AnnouncementItem[] | string;
 };
 
 export type MusicPlayerConfig = {

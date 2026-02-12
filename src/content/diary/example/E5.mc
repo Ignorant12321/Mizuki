@@ -1,0 +1,24 @@
+---
+date: 2025-01-20T11:45:00Z
+images: 
+  - "https://bing.img.run/rand_1366x768.php?idx=31"
+  - "https://bing.img.run/rand_1366x768.php?idx=32"
+  - "https://bing.img.run/rand_1366x768.php?idx=33"
+  - "https://bing.img.run/rand_1366x768.php?idx=34"
+  - "https://bing.img.run/rand_1366x768.php?idx=35"
+location: Tokyo
+mood: Happy
+tags:
+  - coffee
+  - park
+  - cats
+  - chill
+---
+
+在吉祥寺（Kichijoji）度过了一个悠闲的上午。
+
+井之头公园的鸭子船还在排队，我就在旁边的长椅上喂了会鸽子。这里真的非常适合散步，有很多推着婴儿车的年轻夫妇，还有画素描的老爷爷。
+
+误打误撞进了一家超级可爱的猫咪咖啡馆，里面的猫猫都在午睡，软乎乎的。点了一杯手冲咖啡，店主还送了一块猫爪形状的饼干，舍不得吃！
+
+这边的杂货店也太好逛了，买了好几个奇奇怪怪的小盘子，虽然带回去很重，但控制不住剁手的心。

@@ -286,6 +286,11 @@ export const navBarConfig: NavBarConfig = {
 			icon: "material-symbols:book",
 		},
 		{
+			name: "津渡",
+			url: "/Ig-nav/",
+			icon: "mdi:navigation-variant",
+		},
+		{
 			name: "My",
 			url: "/content/",
 			icon: "material-symbols:person",
@@ -305,11 +310,6 @@ export const navBarConfig: NavBarConfig = {
 					url: "devices/",
 					icon: "material-symbols:devices",
 					external: false,
-				},
-				{
-					name: "津渡",
-					url: "/Ig-nav/",
-					icon: "mdi:navigation-variant",
 				},
 				{
 					name: "时语",
@@ -466,17 +466,21 @@ export const shareConfig: ShareConfig = {
 };
 
 export const announcementConfig: AnnouncementConfig = {
-	title: "", // 公告标题，填空使用i18n字符串Key.announcement
-	content: "孩儿立志出乡关，学不成名誓不还", // 公告内容
-	closable: false, // 允许用户关闭公告
-	link: {
-		enable: true, // 启用链接
-		text: "Learn More", // 链接文本
-		url: "/about/", // 链接 URL
-		external: false, // 内部链接
+	title: "公告栏",
+	placeholder: {
+		latest: {
+			text: "太棒了，您已读完所有公告！",
+			icon: "fa6-solid:face-smile-wink",
+		},
+		history: {
+			text: "空空如也，暂无历史记录",
+			icon: "fa6-solid:box-open",
+		},
 	},
+	closable: true,
+	itemsPerPage: 2,
+	content: [], // 留空则读取 src/data/announcement.json
 };
-
 export const musicPlayerConfig: MusicPlayerConfig = {
 	enable: true, // 启用音乐播放器功能
 	mode: "meting", // 音乐播放器模式，可选 "local" 或 "meting"

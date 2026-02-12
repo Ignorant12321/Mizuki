@@ -1,0 +1,29 @@
+[
+	{
+		"id": "json-notice-001",
+		"title": "佳讯：",
+		"pinned": 100,
+		"content": "🎉本网站已接入DeepWiki,有问题<a href=\"https://deepwiki.com/Ignorant12321/Mizuki\" target=\"_blank\"><img src=\"https://deepwiki.com/badge.svg\" alt=\"Ask DeepWiki\"></a>",
+		"date": "2026-02-12",
+		"closable": false,
+		"link": {
+			"enable": true,
+			"text": "立即尝试",
+			"url": "https://deepwiki.com/Ignorant12321/Mizuki",
+			"external": true
+		}
+	},
+	{
+		"id": "json-notice-002",
+		"title": "自箴",
+		"pinned": false,
+		"content": "孩儿立志出乡关，学不成名誓不还",
+		"date": "2026-01-01",
+		"link": {
+			"enable": false,
+			"text": "",
+			"url": "",
+			"external": false
+		}
+	}
+]
