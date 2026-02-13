@@ -15,10 +15,23 @@
 	},
 	{
 		"id": "json-notice-002",
-		"title": "自箴",
+		"title": "自箴：",
 		"pinned": false,
 		"content": "孩儿立志出乡关，学不成名誓不还",
 		"date": "2026-01-01",
+		"link": {
+			"enable": false,
+			"text": "",
+			"url": "",
+			"external": false
+		}
+	},
+	{
+		"id": "json-notice-003",
+		"title": "TIPS：",
+		"pinned": false,
+		"content": "为了避免服务器被攻击等情况发生，本站每日凌晨0点关闭服务，次日8:00重新开放，敬请谅解",
+		"date": "2026-02-13",
 		"link": {
 			"enable": false,
 			"text": "",
