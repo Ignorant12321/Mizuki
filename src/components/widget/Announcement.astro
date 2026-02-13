@@ -4,20 +4,18 @@ import { announcementConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import WidgetLayout from "./WidgetLayout.astro";
-import jsonAnnouncements from "../../data/announcement.json";
+// 引入本地数据文件
+import type { AnnouncementItem } from "src/types/config";
+import { announcements as localAnnouncements } from "../../data/announcement-data";
 
-// --- 1. 数据初始化 ---
+// --- 数据初始化 ---
 let rawData = announcementConfig.content;
-if (
-	typeof rawData === "string" ||
-	!rawData ||
-	(Array.isArray(rawData) && rawData.length === 0)
-) {
-	rawData = jsonAnnouncements;
+if (!rawData || (Array.isArray(rawData) && rawData.length === 0)) {
+	rawData = localAnnouncements;
 }
-const announcements = Array.isArray(rawData) ? rawData : [];
+const data: AnnouncementItem[] = Array.isArray(rawData) ? rawData : [];
 
-// --- 2. 占位符配置 ---
+// --- 占位符配置 ---
 const defaults = {
 	latest: { text: "暂无新公告", icon: "fa6-solid:check" },
 	history: { text: "暂无历史记录", icon: "fa6-solid:box-open" },
@@ -28,9 +26,9 @@ const finalPlaceholder = {
 	history: { ...defaults.history, ...(userPlaceholder.history || {}) },
 };
 
-// --- 3. 配置参数 ---
-const globalClosable = announcementConfig.closable !== false; // 默认为 true
-const configItemsPerPage = announcementConfig.itemsPerPage || 3; // 默认 3 条
+// --- 配置参数 ---
+const globalClosable = announcementConfig.closable !== false;
+const configItemsPerPage = announcementConfig.itemsPerPage || 3;
 
 const className = Astro.props.class;
 const style = Astro.props.style;
@@ -42,12 +40,14 @@ const style = Astro.props.style;
 	class={className}
 	style={style}
 >
+	{/* 历史按钮 */}
 	{
 		globalClosable && (
 			<div class="absolute top-4 right-5 z-10">
 				<button
 					id="history-toggle-btn"
 					class="flex items-center gap-1.5 px-2 py-1 rounded-md text-neutral-400 hover:text-[var(--primary)] hover:bg-[var(--btn-regular-bg)] transition-colors cursor-pointer select-none"
+					aria-label="Toggle History"
 				>
 					<span id="history-btn-text" class="text-xs font-medium">
 						历史
@@ -62,12 +62,14 @@ const style = Astro.props.style;
 		id="announcement-list-container"
 		class="relative flex flex-col min-h-[160px] transition-all duration-300"
 	>
+		{/* 列表容器 */}
 		<div
 			id="announcement-list"
 			class="flex flex-col gap-3 pt-1 w-full relative z-10"
 		>
 		</div>
 
+		{/* 空状态：当前无数据 */}
 		<div
 			id="placeholder-empty"
 			class="absolute inset-0 hidden flex-col items-center justify-center text-center select-none z-0"
@@ -83,6 +85,8 @@ const style = Astro.props.style;
 				{finalPlaceholder.latest.text}
 			</p>
 		</div>
+
+		{/* 空状态：无历史记录 */}
 		<div
 			id="placeholder-history"
 			class="absolute inset-0 hidden flex-col items-center justify-center text-center select-none z-0"
@@ -100,9 +104,10 @@ const style = Astro.props.style;
 		</div>
 	</div>
 
+	{/* 分页控制器 */}
 	<div
 		id="pagination-controls"
-		class="hidden justify-between items-center mt-3 pt-3 border-t border-dashed border-neutral-200 dark:border-neutral-700/50"
+		class="flex justify-between items-center mt-3 pt-3 border-t border-dashed border-neutral-200 dark:border-neutral-700/50"
 	>
 		<div class="flex items-center gap-1">
 			<button
@@ -155,61 +160,67 @@ const style = Astro.props.style;
 <script
 	is:inline
 	define:vars={{
-		announcementsJson: announcements,
+		runtimeData: data,
 		itemsPerPage: configItemsPerPage,
 		globalClosable: globalClosable,
 	}}
 >
-	const allData = announcementsJson;
-	const PAGE_SIZE = itemsPerPage; // 使用配置的每页数量
+	const allData = runtimeData;
+	const PAGE_SIZE = itemsPerPage;
 	const STORAGE_KEY = "closed_announcement_ids";
 
 	let currentPage = 1;
 	let isHistoryMode = false;
 
+	// --- 数据存储辅助函数 ---
 	function getClosedIds() {
-		if (!globalClosable) return []; // 如果全局禁止关闭，则永远没有已关闭的 ID
+		if (!globalClosable) return [];
 		try {
 			return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 		} catch (e) {
 			return [];
 		}
 	}
+
 	function saveClosedIds(ids) {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
 	}
 
-	function getPriorityValue(pinned) {
-		if (typeof pinned === "number") return pinned;
-		if (pinned === true) return 1;
-		return 0;
+	// --- 核心排序逻辑 ---
+	function sortAnnouncements(data) {
+		return data.sort((a, b) => {
+			const pinnedA = a.pinned ? 1 : 0;
+			const pinnedB = b.pinned ? 1 : 0;
+			if (pinnedA !== pinnedB) return pinnedB - pinnedA;
+
+			const orderA = typeof a.order === "number" ? a.order : 0;
+			const orderB = typeof b.order === "number" ? b.order : 0;
+			if (orderA !== orderB) return orderB - orderA;
+
+			const dateA = a.date ? new Date(a.date).getTime() : 0;
+			const dateB = b.date ? new Date(b.date).getTime() : 0;
+			return dateB - dateA;
+		});
 	}
 
 	function getDisplayData() {
-		// 如果全局 closable 为 false，则忽略本地存储，始终显示所有数据（且不显示历史模式）
+		let filtered = [];
 		if (!globalClosable) {
-			return [...allData].sort(
-				(a, b) =>
-					getPriorityValue(b.pinned) - getPriorityValue(a.pinned),
+			filtered = [...allData];
+		} else {
+			const closedIds = getClosedIds();
+			filtered = allData.filter((item) =>
+				isHistoryMode
+					? closedIds.includes(item.id)
+					: !closedIds.includes(item.id),
 			);
 		}
-
-		const closedIds = getClosedIds();
-		let filtered = allData.filter((item) =>
-			isHistoryMode
-				? closedIds.includes(item.id)
-				: !closedIds.includes(item.id),
-		);
-
-		filtered.sort(
-			(a, b) => getPriorityValue(b.pinned) - getPriorityValue(a.pinned),
-		);
-		return filtered;
+		return sortAnnouncements(filtered);
 	}
 
+	// --- 交互操作 ---
 	window.toggleAnnouncementStatus = function (id) {
-		if (!globalClosable) return; // 全局禁止关闭时无效
-
+		if (!globalClosable) return;
 		const el = document.querySelector(
 			`.announcement-item[data-id="${id}"]`,
 		);
@@ -226,14 +237,13 @@ const style = Astro.props.style;
 			const totalPages = Math.ceil(newData.length / PAGE_SIZE);
 			if (currentPage > totalPages && totalPages > 0)
 				currentPage = totalPages;
-
+			if (currentPage < 1) currentPage = 1;
 			render();
 		}, 400);
 	};
 
 	function toggleMode() {
 		if (!globalClosable) return;
-
 		const listContainer = document.getElementById("announcement-list");
 		const pEmpty = document.getElementById("placeholder-empty");
 		const pHistory = document.getElementById("placeholder-history");
@@ -246,7 +256,6 @@ const style = Astro.props.style;
 		setTimeout(() => {
 			isHistoryMode = !isHistoryMode;
 			currentPage = 1;
-
 			const btnText = document.getElementById("history-btn-text");
 			const historyBtn = document.getElementById("history-toggle-btn");
 			if (isHistoryMode) {
@@ -262,9 +271,7 @@ const style = Astro.props.style;
 					"bg-[var(--btn-regular-bg)]",
 				);
 			}
-
 			render();
-
 			requestAnimationFrame(() => {
 				listContainer.style.opacity = "1";
 				listContainer.style.transform = "translateY(0)";
@@ -274,7 +281,7 @@ const style = Astro.props.style;
 
 	function handleInputPage(e) {
 		const data = getDisplayData();
-		const totalPages = Math.ceil(data.length / PAGE_SIZE);
+		const totalPages = Math.ceil(data.length / PAGE_SIZE) || 1;
 		let val = parseInt(e.target.value);
 		if (isNaN(val) || val < 1) val = 1;
 		if (val > totalPages) val = totalPages;
@@ -287,9 +294,9 @@ const style = Astro.props.style;
 		render();
 	}
 
+	// --- 渲染核心 ---
 	function render() {
 		const container = document.getElementById("announcement-list");
-		const pagination = document.getElementById("pagination-controls");
 		const placeholderEmpty = document.getElementById("placeholder-empty");
 		const placeholderHistory = document.getElementById(
 			"placeholder-history",
@@ -297,163 +304,152 @@ const style = Astro.props.style;
 
 		const displayData = getDisplayData();
 		const totalItems = displayData.length;
-		const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+		const totalPages =
+			totalItems > 0 ? Math.ceil(totalItems / PAGE_SIZE) : 1;
 
-		// --- 空状态处理 ---
 		if (totalItems === 0) {
 			container.innerHTML = "";
-			pagination.classList.remove("flex");
-			pagination.classList.add("hidden");
-
-			// 如果全局不可关闭，始终只显示 empty 占位符（因为没有历史模式）
 			if (!globalClosable) {
-				placeholderEmpty.classList.remove("hidden", "flex");
-				placeholderEmpty.classList.add("flex");
-				setTimeout(() => (placeholderEmpty.style.opacity = "1"), 10);
-				return;
-			}
-
-			if (isHistoryMode) {
-				placeholderEmpty.classList.add("hidden");
-				placeholderHistory.classList.remove("hidden");
-				placeholderHistory.classList.add("flex");
-				setTimeout(() => (placeholderHistory.style.opacity = "1"), 10);
+				showPlaceholder(placeholderEmpty, placeholderHistory);
+			} else if (isHistoryMode) {
+				showPlaceholder(placeholderHistory, placeholderEmpty);
 			} else {
-				placeholderHistory.classList.add("hidden");
-				placeholderEmpty.classList.remove("hidden");
-				placeholderEmpty.classList.add("flex");
-				setTimeout(() => (placeholderEmpty.style.opacity = "1"), 10);
+				showPlaceholder(placeholderEmpty, placeholderHistory);
 			}
-			return;
 		} else {
-			if (placeholderEmpty) {
-				placeholderEmpty.classList.add("hidden");
-				placeholderEmpty.style.opacity = "0";
-			}
-			if (placeholderHistory) {
-				placeholderHistory.classList.add("hidden");
-				placeholderHistory.style.opacity = "0";
-			}
+			hidePlaceholder(placeholderEmpty);
+			hidePlaceholder(placeholderHistory);
 		}
 
-		// --- 分页处理 ---
-		if (currentPage > totalPages) currentPage = totalPages || 1;
+		if (currentPage > totalPages) currentPage = totalPages;
+		if (currentPage < 1) currentPage = 1;
+
 		const startIndex = (currentPage - 1) * PAGE_SIZE;
 		const pageItems = displayData.slice(startIndex, startIndex + PAGE_SIZE);
 
 		let html = "";
 		pageItems.forEach((item, idx) => {
-			const priority = getPriorityValue(item.pinned);
-			const isPinned = priority > 0;
 			const delay = idx * 50;
 
+			// 操作按钮（历史模式是还原，普通模式是关闭）
 			const actionIcon = isHistoryMode
 				? `<path fill="currentColor" d="M480 256c0 123.4-100.5 223.9-223.9 223.9c-49.7 0-96.1-16.2-134.5-44c-12.8-9.3-15.6-27.1-6.3-39.9s27.1-15.6 39.9-6.3c29.7 21.5 65.6 34.1 104.9 34.1c96.5 0 174.9-78.4 174.9-174.9S356.5 73 260 73c-64.8 0-122 35.8-152.6 89.2l61.8 0c15.8 0 28.6 12.8 28.6 28.6s-12.8 28.6-28.6 28.6l-123.8 0c-15.8 0-28.6-12.8-28.6-28.6l0-123.8c0-15.8 12.8-28.6 28.6-28.6s28.6 12.8 28.6 28.6l0 52.8C103.5 45.4 178 8 260.1 8C397 8 508 119 508 256z"/>`
 				: `<path fill="currentColor" d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>`;
 			const actionTitle = isHistoryMode ? "还原" : "关闭";
 
-			let pinColorClass = "text-[var(--primary)]";
-			if (priority >= 10) pinColorClass = "text-red-500";
-
-			const pinnedIcon = isPinned
-				? `<span class="mr-1.5 ${pinColorClass} shrink-0" title="Priority: ${priority}"><svg class="inline-block w-3 h-3 rotate-45" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" fill="currentColor"><path d="M32 32C32 14.3 46.3 0 64 0H320c17.7 0 32 14.3 32 32s-14.3 32-32 32H290.5l11.4 148.2c36.7 19.9 65.7 53.2 79.5 94.7l1 3c3.3 9.9 1.6 20.8-4.4 29.2s-15.3 13.7-25.8 13.7H32c-10.5 0-19.9-5.3-25.8-13.7s-7.7-19.3-4.4-29.2l1-3c13.8-41.5 42.8-74.8 79.5-94.7L93.5 64H64C46.3 64 32 49.7 32 32zM160 384h64v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V384z"/></svg></span>`
-				: "";
-
-			// [修改] 按钮渲染逻辑：全局开启 && (历史模式 OR 单条允许关闭)
-			// 如果 globalClosable 为 false，上面已经 return 了，所以这里只要判断 item.closable
-			// 注意：isHistoryMode 为 true 时，一定显示还原按钮
+			// 关闭按钮
 			const showCloseBtn = isHistoryMode || item.closable !== false;
-
 			const closeBtnHtml = showCloseBtn
-				? `
-                <button 
-                    class="text-neutral-400 hover:text-[var(--primary)] hover:bg-[var(--btn-regular-bg)] rounded-md transition-all p-1 shrink-0"
+				? `<button 
+                    class="text-neutral-400 hover:text-[var(--primary)] hover:bg-[var(--btn-regular-bg)] rounded-md transition-all p-1 shrink-0 ml-3"
                     onclick="toggleAnnouncementStatus('${item.id}')"
                     title="${actionTitle}"
-                >
-                    <svg viewBox="0 0 512 512" class="h-3 w-3" xmlns="http://www.w3.org/2000/svg">${actionIcon}</svg>
-                </button>
-            `
+                   >
+                    <svg viewBox="0 0 512 512" class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg">${actionIcon}</svg>
+                   </button>`
 				: "";
+
+			// Icon HTML
+			// 样式调整：shrink-0 防止压缩，pt-[2px] 使得图标与首行文字垂直对齐
+			const iconHtml = item.icon
+				? `<span class="mr-2 shrink-0 text-sm text-[var(--primary)]">${item.icon}</span>`
+				: "";
+
+			// 链接 HTML
+			const linkHtml =
+				item.link && item.link.enable
+					? `
+                <a href="${item.link.url}" target="${item.link.external ? "_blank" : "_self"}" 
+                   class="text-xs font-medium text-[var(--primary)] hover:opacity-80 transition-opacity flex items-center gap-1 bg-[var(--btn-regular-bg)] px-2 py-0.5 rounded-full">
+                    ${item.link.text}
+                    <svg viewBox="0 0 320 512" class="h-2 w-2" fill="currentColor"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>
+                </a>`
+					: "";
+
+			// 日期 HTML
+			const dateHtml = item.date
+				? `
+                <div class="flex items-center gap-1.5 text-xs text-neutral-400">
+                    <svg viewBox="0 0 512 512" class="h-2.5 w-2.5 opacity-70" fill="currentColor"><path d="M464 256A208 208 0 1 1 48 256a208 208 0 0 1 416 0zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></svg>
+                    <span>${item.date}</span>
+                </div>`
+				: "<span></span>";
 
 			html += `
             <div class="announcement-item item-enter relative flex flex-col bg-[var(--card-bg)] rounded-xl p-3 border border-neutral-200 dark:border-neutral-700/50 shadow-sm overflow-hidden" 
                  data-id="${item.id}"
                  style="animation-delay: ${delay}ms">
-                <div class="flex justify-between items-start mb-2 gap-2">
-                    <div class="font-bold text-sm text-neutral-800 dark:text-neutral-200 leading-tight line-clamp-1 flex items-center w-full">
-                        ${pinnedIcon}
-                        <div class="truncate flex-1">${item.title}</div>
+                
+                <div class="flex items-start justify-between mb-2">
+                    <div class="flex items-start flex-1 min-w-0">
+                         ${iconHtml}
+                         <div class="font-bold text-sm text-neutral-800 dark:text-neutral-200 leading-tight break-words pt-[1px]">
+                            ${item.title}
+                         </div>
                     </div>
+                    
                     ${closeBtnHtml}
                 </div>
-                <div class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-3 break-words line-clamp-3">
+
+                <div class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-3 break-words ml-1">
                     ${item.content}
                 </div>
+
                 <div class="flex justify-between items-center mt-auto pt-2 border-t border-dashed border-neutral-200 dark:border-neutral-700/50">
-                    ${
-						item.date
-							? `
-                    <div class="flex items-center gap-1.5 text-xs text-neutral-400">
-                        <svg viewBox="0 0 512 512" class="h-2.5 w-2.5 opacity-70" fill="currentColor"><path d="M464 256A208 208 0 1 1 48 256a208 208 0 0 1 416 0zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></svg>
-                        <span>${item.date}</span>
-                    </div>`
-							: "<span></span>"
-					}
-                    ${
-						item.link && item.link.enable
-							? `
-                    <a href="${item.link.url}" target="${item.link.external ? "_blank" : "_self"}" 
-                       class="text-xs font-medium text-[var(--primary)] hover:opacity-80 transition-opacity flex items-center gap-1 bg-[var(--btn-regular-bg)] px-2 py-0.5 rounded-full">
-                        ${item.link.text}
-                        <svg viewBox="0 0 320 512" class="h-2 w-2" fill="currentColor"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>
-                    </a>`
-							: ""
-					}
+                    ${dateHtml}
+                    ${linkHtml}
                 </div>
             </div>
             `;
 		});
 		container.innerHTML = html;
 
-		// [修改] 分页控件更新：处理4个按钮的逻辑
-		if (totalPages > 1) {
-			pagination.classList.remove("hidden");
-			pagination.classList.add("flex");
+		// --- 更新分页控件 ---
+		const firstBtn = document.getElementById("first-page");
+		const prevBtn = document.getElementById("prev-page");
+		const nextBtn = document.getElementById("next-page");
+		const lastBtn = document.getElementById("last-page");
+		const inputEl = document.getElementById("page-input");
+		const totalPagesText = document.getElementById("total-pages-text");
 
-			// 按钮元素
-			const firstBtn = document.getElementById("first-page");
-			const prevBtn = document.getElementById("prev-page");
-			const nextBtn = document.getElementById("next-page");
-			const lastBtn = document.getElementById("last-page");
-			const inputEl = document.getElementById("page-input");
+		const isFirst = currentPage === 1;
+		const isLast = currentPage === totalPages;
 
-			// 状态禁用逻辑
-			const isFirst = currentPage === 1;
-			const isLast = currentPage === totalPages;
+		firstBtn.disabled = isFirst;
+		prevBtn.disabled = isFirst;
+		nextBtn.disabled = isLast;
+		lastBtn.disabled = isLast;
 
-			firstBtn.disabled = isFirst;
-			prevBtn.disabled = isFirst;
-			nextBtn.disabled = isLast;
-			lastBtn.disabled = isLast;
+		inputEl.value = currentPage;
+		inputEl.max = totalPages;
+		totalPagesText.innerText = totalPages;
 
-			inputEl.value = currentPage;
-			inputEl.max = totalPages;
-			document.getElementById("total-pages-text").innerText = totalPages;
+		firstBtn.onclick = () => changePage(1);
+		prevBtn.onclick = () => changePage(currentPage - 1);
+		nextBtn.onclick = () => changePage(currentPage + 1);
+		lastBtn.onclick = () => changePage(totalPages);
+		inputEl.onchange = handleInputPage;
+		inputEl.onkeydown = (e) => {
+			if (e.key === "Enter") handleInputPage(e);
+		};
+	}
 
-			// 事件绑定
-			firstBtn.onclick = () => changePage(1);
-			prevBtn.onclick = () => changePage(currentPage - 1);
-			nextBtn.onclick = () => changePage(currentPage + 1);
-			lastBtn.onclick = () => changePage(totalPages);
+	function showPlaceholder(toShow, toHide) {
+		if (toHide) {
+			toHide.classList.add("hidden");
+			toHide.style.opacity = "0";
+		}
+		if (toShow) {
+			toShow.classList.remove("hidden");
+			toShow.classList.add("flex");
+			setTimeout(() => (toShow.style.opacity = "1"), 10);
+		}
+	}
 
-			inputEl.onchange = handleInputPage;
-			inputEl.onkeydown = (e) => {
-				if (e.key === "Enter") handleInputPage(e);
-			};
-		} else {
-			pagination.classList.remove("flex");
-			pagination.classList.add("hidden");
+	function hidePlaceholder(el) {
+		if (el) {
+			el.classList.add("hidden");
+			el.style.opacity = "0";
 		}
 	}
 

@@ -315,8 +315,10 @@ export type ExpressiveCodeConfig = {
 export type AnnouncementItem = {
 	id: string; // 唯一ID
 	title: string; //  卡片标题
+	icon?: string; // 支持 Emoji, SVG 代码
 	content: string; // 支持 HTML
-	pinned?: boolean | number; // 是否置顶
+	pinned?: boolean; // 是否置顶(分组)
+	order?: number; // 显示顺序，数字越大越靠前
 	date?: string; // 发布时间
 	closable?: boolean; // 单条公告是否允许关闭 (默认 true)
 	link?: {
@@ -460,6 +462,6 @@ export type Live2DConfig = {
 	modelId: number; // 模型ID
 	logLevel: "error" | "warn" | "info" | "trace"; // 日志级别
 	live2dPath: string; // Live2D模型路径
-	waifuPath: string; // 提示词路径
+	waifuTipsPath: string; // 提示词路径
 	tools: string[]; // 工具栏
 };
