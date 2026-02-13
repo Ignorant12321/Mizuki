@@ -44,7 +44,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 <style>
 	.floating-toc-wrapper {
 		position: fixed;
-		right: 6rem;
+		left: -4.2rem;
 		bottom: 16rem;
 		z-index: 50;
 		pointer-events: auto;
@@ -100,8 +100,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 	.floating-toc-panel {
 		position: absolute;
-		bottom: 4.5rem;
-		right: 0;
+		bottom: -7.5rem;
+		right: -20rem;
 		width: 18rem;
 		max-height: 60vh;
 		background: var(--card-bg);
@@ -154,12 +154,12 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 	@media (max-width: 768px) {
 		.floating-toc-btn {
-			right: -1rem;
+			left: 1rem;
 			bottom: 4.5rem;
 		}
 		.floating-toc-wrapper {
 			transform: none;
-			right: 2rem;
+			left: 0rem;
 			bottom: 12rem;
 			opacity: 0.6;
 		}
@@ -172,8 +172,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		.floating-toc-panel {
 			width: 85vw;
 			max-width: 20rem;
-			right: 0;
-			bottom: 4.5rem;
+			right: -22rem;
+			bottom: -9rem;
 		}
 	}
 

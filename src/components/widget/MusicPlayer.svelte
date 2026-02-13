@@ -475,7 +475,7 @@
 	{/if}
 
 	<div
-		class="music-player fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out"
+		class="music-player fixed bottom-4 left-[1rem] z-50 transition-all duration-300 ease-in-out"
 		class:expanded={isExpanded}
 		class:hidden-mode={isHidden}
 	>
@@ -831,7 +831,7 @@
 		</div>
 		{#if showPlaylist}
 			<div
-				class="playlist-panel float-panel fixed bottom-20 right-4 w-80 max-h-96 overflow-hidden z-50"
+				class="playlist-panel float-panel fixed bottom-20 left-4 w-80 max-h-96 overflow-hidden z-50"
 				transition:slide={{ duration: 300, axis: "y" }}
 			>
 				<div
@@ -1000,16 +1000,16 @@
 			width: 17.5rem;
 			position: absolute;
 			bottom: 0;
-			right: 0;
-			/* left: 0; */
+			/* right: 0; */
+			left: 0;
 		}
 		.expanded-player {
 			z-index: 101;
 			width: 20rem;
 			position: absolute;
 			bottom: 0;
-			right: 0;
-			/* left: 0; */
+			/* right: 0; */
+			left: 0;
 		}
 
 		.animate-pulse {
@@ -1032,9 +1032,9 @@
 		@media (max-width: 768px) {
 			.music-player {
 				max-width: 280px !important;
-				right: 0.5rem !important;
-				/* left: 0.5rem !important; */
-				bottom: 0.5rem !important;
+				/* right: 0.5rem !important; */
+				left: 1rem !important;
+				/* bottom: 0.5rem !important; */
 			}
 			.mini-player {
 				width: 280px;
@@ -1043,13 +1043,13 @@
 				width: calc(100vw - 16px);
 				max-width: none;
 				bottom: 0.5rem !important;
-				right: 0.5rem !important;
-				/* left: 0.5rem !important; */
+				/* right: 0.5rem !important; */
+				left: 0.5rem !important;
 			}
 			.playlist-panel {
 				width: calc(100vw - 16px) !important;
-				right: 0.5rem !important;
-				/* left: 0.5rem !important; */
+				/* right: 0.5rem !important; */
+				left: 0.5rem !important;
 				max-width: none;
 			}
 			.controls {

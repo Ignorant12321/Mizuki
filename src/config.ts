@@ -519,9 +519,9 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件显示顺序（数字越小越靠前）
 			order: 1,
 			// 组件位置："top" 表示固定在顶部
-			position: "sticky",
+			position: "top",
 			// 所在侧边栏
-			sidebar: "right",
+			sidebar: "left",
 			// CSS 类名，用于应用样式和动画
 			class: "onload-animation",
 			// 动画延迟时间（毫秒），用于错开动画效果
@@ -535,9 +535,9 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件显示顺序
 			order: 2,
 			// 组件位置："top" 表示固定在顶部
-			position: "sticky",
+			position: "top",
 			// 所在侧边栏
-			sidebar: "right",
+			sidebar: "left",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -551,9 +551,9 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件显示顺序
 			order: 3,
 			// 组件位置
-			position: "top",
+			position: "sticky",
 			// 所在侧边栏
-			sidebar: "left",
+			sidebar: "right",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -567,9 +567,9 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件显示顺序
 			order: 4,
 			// 组件位置："sticky" 表示粘性定位，可滚动
-			position: "top",
+			position: "sticky",
 			// 所在侧边栏
-			sidebar: "left",
+			sidebar: "right",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -588,9 +588,9 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件显示顺序
 			order: 5,
 			// 组件位置："sticky" 表示粘性定位
-			position: "top",
+			position: "sticky",
 			// 所在侧边栏
-			sidebar: "left",
+			sidebar: "right",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间

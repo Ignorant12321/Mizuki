@@ -104,4 +104,32 @@ const waifuPath =
 	#waifu-toggle {
 		z-index: 99 !important;
 	}
+	#waifu {
+		left: auto !important;
+		right: 1.5rem !important;
+	}
+	/* 将 waifu-toggle 固定到右侧 */
+	#waifu-toggle {
+		left: auto !important;
+		right: 0 !important;
+		transform: rotateY(180deg);
+		margin-right: -100px;
+		transition: margin-right 1s;
+	}
+
+	/* 从右侧滑入/滑出的过渡效果 */
+	#waifu-toggle.waifu-toggle-active {
+		margin-right: -45px !important;
+	}
+	#waifu-toggle:hover {
+		margin-right: -35px !important;
+	}
+
+	/* 移动端也保持右侧行为 */
+	@media (max-width: 768px), (hover: none) {
+		#waifu-toggle.waifu-toggle-active {
+			margin-right: -30px !important;
+			margin-left: 0 !important;
+		}
+	}
 </style>
