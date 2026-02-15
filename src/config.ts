@@ -362,9 +362,8 @@ export const navBarConfig: NavBarConfig = {
 
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/lty.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
-	avatarFrame: "assets/images/avatarFrame.png",
 	name: "北に向かう",
-	bio: "世界は大きい、君は行かなければならない",
+	bio: "孩儿立志出乡关，学不成名誓不还",
 	typewriter: {
 		enable: true, // 启用个人简介打字机效果
 		speed: 80, // 打字速度（毫秒）

@@ -224,7 +224,6 @@ export type NavBarConfig = {
 
 export type ProfileConfig = {
 	avatar?: string;
-	avatarFrame?: string;
 	name: string;
 	bio?: string;
 	links: {

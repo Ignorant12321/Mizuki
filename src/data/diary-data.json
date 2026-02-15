@@ -1,0 +1,11 @@
+[
+	{
+		"id": 1,
+		"content": "今天天气真好，樱花落下的速度是每秒5厘米。",
+		"date": "2025-01-15T10:30:00Z",
+		"images": ["/images/diary/sakura.jpg", "/images/diary/1.jpg"],
+		"location": "东京",
+		"mood": "Sentimental",
+		"tags": ["anime", "life"]
+	}
+]
