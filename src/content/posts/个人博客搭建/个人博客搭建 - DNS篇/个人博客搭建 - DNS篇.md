@@ -8,7 +8,7 @@ updated: 2026-02-03
 
 description: 'DNS的名词解析，阿里云如何为服务器添加解析'
 
-image: ''
+image: './个人博客搭建 - DNS篇.webp'
 
 tags: [Blogging,Freshman,DNS]
 

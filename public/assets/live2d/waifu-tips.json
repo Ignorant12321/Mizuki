@@ -145,7 +145,6 @@
 				"正在阅读 <span>{text}</span> 吗？要认真看哦！",
 				"原来你对 <span>{text}</span> 感兴趣呀？",
 				"这篇文章 <span>{text}</span> 好像很深奥的样子...",
-				"好长好长的标题：<span>{text}</span>！",
 				"快来看看 <span>{text}</span> 里写了什么秘密！",
 				"看到 <span>{text}</span> 了哦，不仅要看标题，内容也要读完呢！"
 			]

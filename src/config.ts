@@ -25,7 +25,7 @@ const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UT
 export const siteConfig: SiteConfig = {
 	title: "Ignorant's Blog",
 	subtitle: "Ignorant 的个人博客",
-	siteURL: "https://218501.xyz/", // 请替换为你的站点URL，以斜杠结尾
+	siteURL: "https://ignorant.top/", // 请替换为你的站点URL，以斜杠结尾
 	siteStartDate: "2026-01-01", // 站点开始运行日期，用于站点统计组件计算运行天数
 
 	timeZone: SITE_TIMEZONE,
@@ -455,7 +455,7 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 export const commentConfig: CommentConfig = {
 	enable: true, // 启用评论功能。当设置为 false 时，评论组件将不会显示在文章区域。
 	twikoo: {
-		envId: "https://comment-01.218501.xyz",
+		envId: "https://twikoo-01.ignorant.top",
 		lang: SITE_LANG,
 	},
 };
@@ -697,6 +697,6 @@ export const umamiConfig = {
 		import.meta.env.UMAMI_API_KEY || "api_ds6dVQgZUWwrcA8S1UWP64cLi7x7twnN", // API密钥优先从环境变量读取，否则使用配置文件中的值
 	baseUrl: "https://api.umami.is", // Umami Cloud API地址
 	scripts: `
-<script defer src="https://cloud.umami.is/script.js" data-website-id="76481de8-a898-442f-8bcf-45eac353add1"></script>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="a15ed2f9-0136-4ba0-aa30-3fa3744b40a7"></script>
   `.trim(), // 上面填你要插入的Script,不用再去Layout中插入
 } as const;

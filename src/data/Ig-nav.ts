@@ -17,7 +17,7 @@ export const igNavsData: IgNavItem[] = [
 		title: "寄驿",
 		imgurl: "/assets/icon/StreamlineEmojisDeliveryTruck.svg",
 		desc: "开箱即用的文件快传系统",
-		siteurl: "https://delivery.218501.xyz",
+		siteurl: "https://filecodebox.ignorant.top",
 		tags: ["Ignorant", "器录"],
 	},
 	{
@@ -25,7 +25,7 @@ export const igNavsData: IgNavItem[] = [
 		title: "图阁",
 		imgurl: "/assets/icon/StreamlineUltimateColorPictureSun.svg",
 		desc: "支持多文件上传的图床",
-		siteurl: "https://easyimage.218501.xyz",
+		siteurl: "https://easyimage.ignorant.top",
 		tags: ["Ignorant", "器录"],
 	},
 	{
@@ -33,7 +33,7 @@ export const igNavsData: IgNavItem[] = [
 		title: "运序",
 		imgurl: "/assets/icon/StreamlineFlexColorMonitorError.svg",
 		desc: "轻量级开源监控工具",
-		siteurl: "https://uptime.218501.xyz/status/website",
+		siteurl: "https://uptime.ignorant.top/status/website",
 		tags: ["Ignorant", "观星"],
 	},
 	{
@@ -41,7 +41,7 @@ export const igNavsData: IgNavItem[] = [
 		title: "溯踪",
 		imgurl: "/assets/icon/FlatColorIconsStatistics.svg",
 		desc: "网站浏览行为分析工具",
-		siteurl: "https://cloud.umami.is/share/kBYtuya0KQCIaPH3",
+		siteurl: "https://cloud.umami.is/analytics/us/share/fl6gANbC7Y79IHZt",
 		tags: ["Ignorant", "观星"],
 	},
 	{
