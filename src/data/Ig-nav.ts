@@ -33,7 +33,7 @@ export const igNavsData: IgNavItem[] = [
 		title: "运序",
 		imgurl: "/assets/icon/StreamlineFlexColorMonitorError.svg",
 		desc: "轻量级开源监控工具",
-		siteurl: "https://uptime.ignorant.top/status/website",
+		siteurl: "https://uptimeflare.218501.xyz/",
 		tags: ["Ignorant", "观星"],
 	},
 	{

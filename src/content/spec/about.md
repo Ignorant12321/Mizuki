@@ -25,14 +25,12 @@
 ::github{repo="icret/EasyImages2.0"}
 
 ## 💓 服务监控
-本站的服务在线状态监控使用 [Uptime Kuma](https://github.com/louislam/uptime-kuma)，界面美观且支持多种通知方式。
+本站的服务在线状态监控使用基于 Cloudflare Worker 的开源项目 [UptimeFlare](https://github.com/lyc8503/UptimeFlare)（Uptimeclare），实现轻量级、无服务器的全球节点实时监控。
 
-::github{repo="louislam/uptime-kuma"}
+::github{repo="lyc8503/UptimeFlare"}
 
 ## 📊 网站统计
-网站流量分析采用了隐私友好的 [Umami Cloud](https://umami.is/) 服务，专注于匿名统计，不收集用户个人数据。
-
-::github{repo="umami-software/umami"}
+网站流量分析直接调用了 [Umami API](https://umami.is/) 云端服务进行统计，专注于匿名数据分析，不收集用户个人隐私，且无需自行搭建和维护后端代码。
 
 ## 📰 资讯聚合
 日常的 RSS 资讯订阅与阅读使用 [Inoreader](https://www.innoreader.com/) 服务。

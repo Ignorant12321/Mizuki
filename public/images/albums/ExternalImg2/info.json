@@ -22,7 +22,7 @@
 		},
 		{
 			"id": "external-1",
-			"src": "https://bing.img.run/rand_1366x768.php?t=1",
+			"src": "https://picsum.photos/800/600?random=1",
 			"alt": "随机图片 1",
 			"title": "随机图片 1",
 			"description": "随机图片 1",
@@ -32,7 +32,7 @@
 		},
 		{
 			"id": "external-2",
-			"src": "https://bing.img.run/rand_1366x768.php?t=2",
+			"src": "https://picsum.photos/800/600?random=2",
 			"alt": "随机图片 2",
 			"title": "随机图片 2",
 			"description": "随机图片 2",
@@ -42,7 +42,7 @@
 		},
 		{
 			"id": "external-3",
-			"src": "https://bing.img.run/rand_1366x768.php?t=3",
+			"src": "https://picsum.photos/800/600?random=3",
 			"alt": "随机图片 3",
 			"title": "随机图片 3",
 			"description": "随机图片 3",
