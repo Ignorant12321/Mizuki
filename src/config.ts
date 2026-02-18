@@ -646,10 +646,8 @@ export const widgetConfigs = {
 	layout: sidebarLayoutConfig,
 	sakura: sakuraConfig,
 	fullscreenWallpaper: fullscreenWallpaperConfig,
-	pio: pioConfig, // 添加 pio 配置
-	share: shareConfig, // 添加分享配置
+	pio: pioConfig,
+	share: shareConfig,
 } as const;
 
-export const umamiConfig = {
-	enabled: false, // 是否显示Umami统计（配置已移至 astro.config.mjs 的 oddmisc umami 集成）
-} as const;
+// umamiConfig相关配置已移动至astro.config.mjs中,统计脚本请自行在Layout.astro文件的<head>中插入

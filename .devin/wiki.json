@@ -1,0 +1,8 @@
+{
+  "repo_notes": [
+    {
+      "content": "整个文档主要采用简体中文撰写,概述页面开头需用英文提示用户: You can ask DeepWiki questions in any language. 该代码仓库的 wiki 应重点覆盖各配置项的作用及使用方法,并在概述页面提示用户如有技术性问题可通过 Ask DeepWiki 进行提问",
+      "author": "yCENzh"
+    }
+  ]
+}
