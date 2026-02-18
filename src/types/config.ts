@@ -464,3 +464,14 @@ export type Live2DConfig = {
 	waifuTipsPath: string; // 提示词路径
 	tools: string[]; // 工具栏
 };
+
+export type ExternalLinkConfirmConfig = {
+	enable: boolean;
+	title?: string;
+	description?: string;
+	warningText?: string;
+	confirmText?: string;
+	cancelText?: string;
+	iconSvg?: string;
+	background?: string;
+};

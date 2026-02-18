@@ -1,10 +1,15 @@
 ---
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import MusicPlayer from "@components/widget/MusicPlayer.svelte";
-import Live2D from "../components/widget/Live2D.astro";
-import { musicPlayerConfig, profileConfig, siteConfig } from "@/config";
+import Live2D from "@components/widget/Live2D.astro";
+import ExternalLinkConfirm from "@components/ExternalLinkConfirm.astro";
+import {
+	musicPlayerConfig,
+	profileConfig,
+	siteConfig,
+	externalLinkConfirmConfig,
+} from "@/config";
 import { umamiConfig } from "../config";
-
 const BANNER_HEIGHT = 35;
 const BANNER_HEIGHT_EXTEND = 30;
 const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
@@ -611,6 +616,13 @@ if (siteConfig.font) {
 
 		<!-- 看帮娘 -->
 		<Live2D />
+
+		<!-- 外部链接确认组件 -->
+		{
+			externalLinkConfirmConfig.enable && (
+				<ExternalLinkConfirm {...externalLinkConfirmConfig} />
+			)
+		}
 
 		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
 		<div id="page-height-extend" class="hidden h-[300vh]"></div>

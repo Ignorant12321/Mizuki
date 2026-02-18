@@ -14,6 +14,7 @@ import type {
 	ShareConfig,
 	SidebarLayoutConfig,
 	SiteConfig,
+	ExternalLinkConfirmConfig,
 } from "./types/config";
 import { LinkPreset } from "./types/config";
 
@@ -677,6 +678,18 @@ export const sakuraConfig: SakuraConfig = {
 		fadeSpeed: 0.03, // 消失速度，不应大于最小不透明度
 	},
 	zIndex: 100, // 层级，确保樱花在合适的层级显示
+};
+
+export const externalLinkConfirmConfig: ExternalLinkConfirmConfig = {
+	enable: true, // 是否启用外部链接确认功能
+	title: "喂！要出站啦！",
+	description: "要探险未知世界吗？目标地址是：",
+	warningText: "外面的世界很危险，大灰狼出没警告！",
+	confirmText: "我意已决",
+	cancelText: "点错了",
+	background:
+		"url('https://api.nekosapi.com/v4/images/random/file?rating=suggestive&10')",
+	iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M480-120 200-272v-248q0-111 73.5-197.5T480-820q133 16 206.5 102.5T760-520v248L480-120Z"/></svg>`,
 };
 
 // 导出所有配置的统一接口
