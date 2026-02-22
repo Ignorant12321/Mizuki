@@ -1,30 +1,41 @@
 ---
 import type { ExternalLinkConfirmConfig } from "@/types/config";
-
+import { i18n } from "@i18n/translation";
+import I18nKey from "@i18n/i18nKey";
+import { externalLinkWhiteList } from "src/data/ExternalLinkConfirm-data";
 export type Props = ExternalLinkConfirmConfig;
 
-// 直接从 Astro.props 中解构，并使用 = 赋予默认值
 const {
-	title = "离开本站",
-	description = "您即将前往外部链接：",
-	warningText = "请注意您的账号与财产安全",
-	confirmText = "继续访问",
-	cancelText = "取消",
-	background = "none",
-	iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"/></svg>`,
+	title = i18n(I18nKey.externalLinkTitle),
+	description = i18n(I18nKey.externalLinkDescription),
+	warningText = i18n(I18nKey.externalLinkWarn),
+	confirmText = i18n(I18nKey.externalLinkConfirm),
+	cancelText = i18n(I18nKey.externalLinkCancel),
+	whiteList = externalLinkWhiteList,
+	iconSvg = "",
+	background = "",
 } = Astro.props;
+
+const bgStyle = background ? `url('${background}')` : "none";
 ---
 
 <dialog
 	id="external-link-dialog"
 	class="mizuki-dialog"
-	style={`--dialog-bg-img: ${background};`}
+	style={`--dialog-bg-img: ${bgStyle};`}
+	data-whitelist={JSON.stringify(whiteList)}
 >
 	<div class="dialog-bg-layer"></div>
 
 	<div class="dialog-inner">
 		<div class="dialog-header">
-			<div class="icon-box" set:html={iconSvg} />
+			{
+				iconSvg && (
+					<div class="icon-box">
+						<img src={iconSvg} alt="" class="header-image-icon" />
+					</div>
+				)
+			}
 			<h3 class="dialog-title">{title}</h3>
 		</div>
 
@@ -37,30 +48,32 @@ const {
 					id="external-link-copy"
 					class="copy-btn"
 					title="复制链接"
+					aria-label="复制链接"
 				>
 					<svg
-						class="copy-icon"
+						class="icon-copy"
 						xmlns="http://www.w3.org/2000/svg"
 						height="20"
 						viewBox="0 -960 960 960"
 						width="20"
 						fill="currentColor"
-						><path
+					>
+						<path
 							d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"
-						></path></svg
-					>
+						></path>
+					</svg>
 					<svg
-						class="check-icon"
-						style="display:none;"
+						class="icon-check"
 						xmlns="http://www.w3.org/2000/svg"
 						height="20"
 						viewBox="0 -960 960 960"
 						width="20"
 						fill="currentColor"
-						><path
-							d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
-						></path></svg
 					>
+						<path
+							d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+						></path>
+					</svg>
 				</button>
 			</div>
 
@@ -72,10 +85,11 @@ const {
 					viewBox="0 -960 960 960"
 					width="18"
 					fill="currentColor"
-					><path
-						d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
-					></path></svg
 				>
+					<path
+						d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+					></path>
+				</svg>
 				{warningText}
 			</p>
 		</div>
@@ -106,12 +120,16 @@ const {
 		width: 90%;
 		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 		overflow: hidden;
-
 		opacity: 0;
 		transform: scale(0.95) translateY(10px);
 		transition:
 			opacity 0.25s ease,
 			transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+		z-index: 1000;
+	}
+
+	.mizuki-dialog[open] {
+		display: block; /* Fallback */
 	}
 
 	.mizuki-dialog.dialog-show {
@@ -125,6 +143,7 @@ const {
 		opacity: 0;
 		transition: opacity 0.25s ease;
 	}
+
 	.mizuki-dialog.dialog-show::backdrop {
 		opacity: 1;
 	}
@@ -137,8 +156,8 @@ const {
 		background-position: right bottom;
 		background-repeat: no-repeat;
 		opacity: 0.18;
-		z-index: 0;
 		pointer-events: none;
+		z-index: 0;
 	}
 
 	.dialog-inner {
@@ -158,8 +177,11 @@ const {
 		color: var(--primary);
 	}
 
-	.icon-box {
-		display: flex;
+	.header-image-icon {
+		width: 24px;
+		height: 24px;
+		object-fit: contain;
+		border-radius: 4px;
 	}
 
 	.dialog-title {
@@ -218,10 +240,39 @@ const {
 		align-items: center;
 		justify-content: center;
 		transition: background-color 0.2s;
+		position: relative;
+		width: 32px;
+		height: 32px;
 	}
 
 	.copy-btn:hover {
 		background-color: var(--btn-plain-bg-hover);
+	}
+
+	.copy-btn .icon-copy {
+		transition:
+			opacity 0.2s,
+			transform 0.2s;
+		position: absolute;
+	}
+
+	.copy-btn .icon-check {
+		opacity: 0;
+		transform: scale(0.5);
+		transition:
+			opacity 0.2s,
+			transform 0.2s;
+		position: absolute;
+	}
+
+	.copy-btn.copied .icon-copy {
+		opacity: 0;
+		transform: scale(0.5);
+	}
+
+	.copy-btn.copied .icon-check {
+		opacity: 1;
+		transform: scale(1);
 	}
 
 	.warning-text {
@@ -279,104 +330,109 @@ const {
 </style>
 
 <script>
-	document.addEventListener("click", (e) => {
-		const link = (e.target as HTMLElement).closest("a");
-		if (!link || !link.href) return;
+	(() => {
+		const dialog = document.getElementById(
+			"external-link-dialog",
+		) as HTMLDialogElement;
+		const urlDisplay = document.getElementById("external-link-url");
+		const btnCancel = document.getElementById("external-link-cancel");
+		const btnConfirm = document.getElementById("external-link-confirm");
+		const btnCopy = document.getElementById("external-link-copy");
 
+		if (!dialog) return;
+		let whitelist: string[] = [];
 		try {
-			const targetUrl = new URL(link.href);
-			const currentDomain = window.location.hostname;
+			const data = dialog.dataset.whitelist;
+			if (data) whitelist = JSON.parse(data);
+		} catch (e) {
+			console.error("Whitelist parse error", e);
+		}
 
-			if (
-				targetUrl.hostname &&
-				targetUrl.hostname !== currentDomain &&
-				targetUrl.protocol.startsWith("http")
-			) {
-				e.preventDefault();
+		let currentLink: HTMLAnchorElement | null = null;
+		let closeTimer: number | undefined;
 
-				const dialog = document.getElementById(
-					"external-link-dialog",
-				) as HTMLDialogElement;
-				const urlDisplay = document.getElementById("external-link-url");
-				const btnCancel = document.getElementById(
-					"external-link-cancel",
-				);
-				const btnConfirm = document.getElementById(
-					"external-link-confirm",
-				);
-				const btnCopy = document.getElementById("external-link-copy");
+		// 检查是否需要拦截
+		const shouldIntercept = (url: URL): boolean => {
+			const isHttp =
+				url.protocol === "http:" || url.protocol === "https:";
+			const isExternal = url.hostname !== window.location.hostname;
+			if (!isHttp || !isExternal) return false;
 
-				if (!dialog) return;
+			// 检查白名单
+			return !whitelist.some(
+				(domain) =>
+					url.hostname === domain ||
+					url.hostname.endsWith(`.${domain}`),
+			);
+		};
 
-				if (urlDisplay) {
-					urlDisplay.textContent = link.href;
-					urlDisplay.title = link.href;
-				}
-
-				dialog.showModal();
-
-				requestAnimationFrame(() => {
-					dialog.classList.add("dialog-show");
-				});
-
-				const closeDialog = () => {
-					dialog.classList.remove("dialog-show");
-					setTimeout(() => dialog.close(), 250);
-				};
-
-				dialog.onclick = (event) => {
-					if (event.target === dialog) {
-						closeDialog();
-					}
-				};
-
-				if (btnCancel) btnCancel.onclick = closeDialog;
-
-				if (btnConfirm) {
-					btnConfirm.onclick = () => {
-						closeDialog();
-						setTimeout(() => {
-							if (link.target === "_blank") {
-								window.open(
-									link.href,
-									"_blank",
-									"noopener,noreferrer",
-								);
-							} else {
-								window.location.href = link.href;
-							}
-						}, 250);
-					};
-				}
-
-				if (btnCopy) {
-					btnCopy.onclick = async () => {
-						const urlToCopy = urlDisplay?.textContent || "";
-						if (!urlToCopy) return;
-
-						try {
-							await navigator.clipboard.writeText(urlToCopy);
-							const copyIcon = btnCopy.querySelector(
-								".copy-icon",
-							) as HTMLElement;
-							const checkIcon = btnCopy.querySelector(
-								".check-icon",
-							) as HTMLElement;
-
-							if (copyIcon && checkIcon) {
-								copyIcon.style.display = "none";
-								checkIcon.style.display = "block";
-								setTimeout(() => {
-									copyIcon.style.display = "block";
-									checkIcon.style.display = "none";
-								}, 1500);
-							}
-						} catch (err) {
-							console.error("复制失败", err);
-						}
-					};
-				}
+		const openDialog = (href: string) => {
+			if (urlDisplay) {
+				urlDisplay.textContent = href;
+				urlDisplay.title = href;
 			}
-		} catch (err) {}
-	});
+			dialog.showModal();
+			requestAnimationFrame(() => dialog.classList.add("dialog-show"));
+		};
+
+		const closeDialog = () => {
+			dialog.classList.remove("dialog-show");
+			clearTimeout(closeTimer);
+			closeTimer = window.setTimeout(() => dialog.close(), 250);
+		};
+
+		document.addEventListener("click", (e) => {
+			const target = e.target as HTMLElement;
+			const link = target.closest("a");
+
+			if (!link || !link.href) return;
+
+			try {
+				const url = new URL(link.href);
+				if (shouldIntercept(url)) {
+					e.preventDefault();
+					currentLink = link;
+					openDialog(link.href);
+				}
+			} catch (err) {
+				// 忽略无效 URL
+			}
+		});
+
+		// 弹窗交互绑定
+		dialog.addEventListener("click", (e) => {
+			if (e.target === dialog) closeDialog();
+		});
+
+		btnCancel?.addEventListener("click", closeDialog);
+
+		btnConfirm?.addEventListener("click", () => {
+			if (!currentLink) return;
+			const href = currentLink.href;
+			const target = currentLink.target;
+
+			closeDialog();
+			setTimeout(() => {
+				if (target === "_blank") {
+					window.open(href, "_blank", "noopener,noreferrer");
+				} else {
+					window.location.href = href;
+				}
+			}, 250);
+		});
+
+		// 复制功能
+		btnCopy?.addEventListener("click", async () => {
+			const text = urlDisplay?.textContent;
+			if (!text) return;
+
+			try {
+				await navigator.clipboard.writeText(text);
+				btnCopy.classList.add("copied");
+				setTimeout(() => btnCopy.classList.remove("copied"), 1500);
+			} catch (err) {
+				console.error("Copy failed", err);
+			}
+		});
+	})();
 </script>

@@ -10,15 +10,17 @@
 			/>
 		</div>
 		<a
+			id="psb-record"
 			class="text-[#749AE3] hover:underline"
-			href="https://beian.mps.gov.cn/#/query/webSearch?code=44070502000693"
+			href="https://beian.mps.gov.cn/#/query/webSearch?code=44070502000700"
 			target="_blank"
 		>
-			粤公网安备44070502000693号
+			粤公网安备44070502000700号
 		</a>
 	</div>
 
 	<a
+		id="icp-record"
 		class="text-[#749AE3] hover:underline"
 		href="https://beian.miit.gov.cn/#/Integrated/index"
 		target="_blank"
@@ -26,3 +28,19 @@
 		桂ICP备2026001541号
 	</a>
 </div>
+
+<script>
+	// 获取当前域名
+	const currentDomain = window.location.hostname;
+
+	// 判断域名是否包含 '218501'【从域名】
+	if (currentDomain.includes("218501")) {
+		// 修改公安备案号及链接
+		const psbElement = document.getElementById("psb-record");
+		if (psbElement) {
+			psbElement.href =
+				"https://beian.mps.gov.cn/#/query/webSearch?code=44070502000693";
+			psbElement.innerText = "粤公网安备44070502000693号";
+		}
+	}
+</script>

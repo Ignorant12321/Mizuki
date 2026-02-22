@@ -324,6 +324,13 @@ enum I18nKey {
 	// 布局切换按钮
 	switchToGridMode = "switchToGridMode",
 	switchToListMode = "switchToListMode",
+
+	// 跳转外链
+	externalLinkTitle = "externalLinkTitle",
+	externalLinkDescription = "externalLinkDescription",
+	externalLinkWarn = "externalLinkWarn",
+	externalLinkConfirm = "externalLinkConfirm",
+	externalLinkCancel = "externalLinkCancel",
 }
 
 export default I18nKey;

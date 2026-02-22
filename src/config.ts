@@ -688,8 +688,10 @@ export const externalLinkConfirmConfig: ExternalLinkConfirmConfig = {
 	confirmText: "我意已决",
 	cancelText: "点错了",
 	background:
-		"url('https://api.nekosapi.com/v4/images/random/file?rating=suggestive&10')",
-	iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M480-120 200-272v-248q0-111 73.5-197.5T480-820q133 16 206.5 102.5T760-520v248L480-120Z"/></svg>`,
+		"https://api.nekosapi.com/v4/images/random/file?rating=suggestive&10",
+	iconSvg: "/assets/icon/ExternLinkIcon.svg",
+	// 白名单在src/data/ExternalLinkConfirm-data.ts文件中配置
+	// whiteList: [],
 };
 
 // 导出所有配置的统一接口

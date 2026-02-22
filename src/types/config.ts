@@ -474,4 +474,5 @@ export type ExternalLinkConfirmConfig = {
 	cancelText?: string;
 	iconSvg?: string;
 	background?: string;
+	whiteList?: string[];
 };

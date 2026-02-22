@@ -332,4 +332,11 @@ export const zh_CN: Translation = {
 	// 布局切换按钮
 	[Key.switchToGridMode]: "切换到网格模式",
 	[Key.switchToListMode]: "切换到列表模式",
+
+	// 跳转外链
+	[Key.externalLinkTitle]: "跳转外链",
+	[Key.externalLinkDescription]: "您即将前往外部链接：",
+	[Key.externalLinkWarn]: "请注意您的账号与财产安全",
+	[Key.externalLinkConfirm]: "继续访问",
+	[Key.externalLinkCancel]: "取消",
 };

@@ -347,4 +347,11 @@ export const ja: Translation = {
 	// レイアウト切り替えボタン
 	[Key.switchToGridMode]: "グリッドビュー切り替え",
 	[Key.switchToListMode]: "リストビューに切り替え",
+
+	// 外部リンクへ移動
+	[Key.externalLinkTitle]: "外部リンクへ移動",
+	[Key.externalLinkDescription]: "外部サイトへ移動しようとしています：",
+	[Key.externalLinkWarn]: "アカウントと資産の安全にご注意ください。",
+	[Key.externalLinkConfirm]: "アクセスを続ける",
+	[Key.externalLinkCancel]: "キャンセル",
 };
