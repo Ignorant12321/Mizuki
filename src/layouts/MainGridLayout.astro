@@ -1448,6 +1448,22 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
         margin-top: 0 !important; /* 确保没有垂直间距干扰 */
         margin-bottom: 0 !important;
     }
+    
+    /* 公告栏特殊样式调整 */
+    :global(#main-grid[data-layout-mode="grid"] #sidebar widget-layout[data-id="announcement"] .flex.items-center.justify-between > div:first-child) {
+        width: 100% !important;
+        flex: 1 !important;
+    }
+    /* 公告栏拉伸链接按钮 */
+    :global(#main-grid[data-layout-mode="grid"] #sidebar widget-layout[data-id="announcement"] a) {
+        display: block !important;
+        width: 100% !important;
+        text-align: center !important;
+    }
+    /* 公告栏隐藏关闭按钮 */
+    :global(#main-grid[data-layout-mode="grid"] #sidebar widget-layout[data-id="announcement"] button[onclick="closeAnnouncement()"]) {
+        display: none !important;
+    }
 }
 
 /* 桌面设备Grid模式：使用双列布局 */
