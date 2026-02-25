@@ -1,17 +1,28 @@
 ---
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import MusicPlayer from "@components/widget/MusicPlayer.svelte";
-import Pio from "@components/widget/Pio.svelte"; // 使用 Svelte 版本的 Pio 组件
+import Live2d from "@components/widget/Live2d.svelte";
+import BackToTop from "@components/control/BackToTop.astro";
+import BackToBottom from "@components/control/BackToBottom.astro";
+import FloatingTOC from "@components/control/FloatingTOC.astro";
+import ExternalLinkConfirm from "@components/ExternalLinkConfirm.astro";
+import ClickEffect from "../components/ClickEffect.astro";
 import {
 	musicPlayerConfig,
-	pioConfig,
+	clickEffectConfig,
+	live2dConfig,
 	profileConfig,
 	siteConfig,
+	externalLinkConfirmConfig,
 } from "@/config";
 
 const BANNER_HEIGHT = 35;
 const BANNER_HEIGHT_EXTEND = 30;
 const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
+
+// TOC模式配置
+const tocMode = siteConfig.toc.mode || "float";
+const isFloatTOC = tocMode === "float";
 
 import {
 	DARK_MODE,
@@ -315,24 +326,29 @@ if (siteConfig.font) {
 			);
 
 			// 自动缩放逻辑 (Moved from MainGridLayout to here for earlier execution)
-			(function() {
+			(function () {
 				if (pageScaling && pageScaling.enable) {
 					function adjustPageScale() {
 						const isTouch =
 							(window.matchMedia &&
-								(window.matchMedia("(pointer:coarse)").matches ||
-									window.matchMedia("(hover: none)").matches)) ||
-							("ontouchstart" in window);
+								(window.matchMedia("(pointer:coarse)")
+									.matches ||
+									window.matchMedia("(hover: none)")
+										.matches)) ||
+							"ontouchstart" in window;
 						const isPortrait =
 							window.matchMedia &&
-							window.matchMedia("(orientation: portrait)").matches;
-						const isTabletLike = isTouch || window.innerWidth <= 1280;
+							window.matchMedia("(orientation: portrait)")
+								.matches;
+						const isTabletLike =
+							isTouch || window.innerWidth <= 1280;
 						if (isTabletLike || isPortrait) {
 							document.documentElement.style.fontSize = "";
 							return;
 						}
 						const targetWidth = pageScaling.targetWidth || 2000;
-						const currentWidth = document.documentElement.clientWidth;
+						const currentWidth =
+							document.documentElement.clientWidth;
 						let scale = currentWidth / targetWidth;
 						if (scale > 1) scale = 1;
 						if (scale < 0.85) scale = 0.85;
@@ -341,13 +357,19 @@ if (siteConfig.font) {
 
 					// 立即执行一次
 					adjustPageScale();
-					
+
 					// 监听窗口大小变化
-					window.addEventListener('resize', adjustPageScale);
-					
+					window.addEventListener("resize", adjustPageScale);
+
 					// Swup 页面切换后也需要检查
-					document.addEventListener('swup:page:view', adjustPageScale);
-					window.addEventListener('orientationchange', adjustPageScale);
+					document.addEventListener(
+						"swup:page:view",
+						adjustPageScale,
+					);
+					window.addEventListener(
+						"orientationchange",
+						adjustPageScale,
+					);
 				}
 			})();
 		</script>
@@ -361,26 +383,45 @@ if (siteConfig.font) {
 		<!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why -->
 		<slot name="head" />
 
-		<!-- Pio 看板娘样式 - 仅在启用时加载 -->
+		<!-- Live2d 看板娘样式 - 仅在启用时加载 -->
 		{
-			pioConfig.enable && (
-				<link rel="stylesheet" href="/pio/static/pio.css" />
+			live2dConfig.enable && (
+				<link
+					rel="stylesheet"
+					href={live2dConfig.live2dPath + "waifu.css"}
+				/>
 			)
 		}
+		<!-- 点击特效样式 -->
+		{clickEffectConfig.enable && <ClickEffect />}
+		<!-- 顶部按钮 -->
+		<BackToTop />
+		<!-- 浮动目录 -->
+		{siteConfig.toc.enable && isFloatTOC && <FloatingTOC />}
+		<!-- 底部按钮 -->
+		<BackToBottom />
 
+		<!-- 外部链接确认组件 -->
+		{
+			externalLinkConfirmConfig.enable && (
+				<ExternalLinkConfirm {...externalLinkConfirmConfig} />
+			)
+		}
 		<link
 			rel="alternate"
 			type="application/rss+xml"
 			title={profileConfig.name}
 			href={`${Astro.site}rss.xml`}
 		/>
-		
+		<!-- Umami 统计脚本 -->
+		<script
+			defer
+			src="https://cloud.umami.is/script.js"
+			data-website-id="a15ed2f9-0136-4ba0-aa30-3fa3744b40a7"></script>
 	</head>
 	<body
 		class="min-h-screen"
-		class:list={[
-			{ "is-home": isHomePage, "enable-banner": enableBanner },
-		]}
+		class:list={[{ "is-home": isHomePage, "enable-banner": enableBanner }]}
 		style={bodyFontFamily ? `font-family: ${bodyFontFamily};` : ""}
 		data-overlayscrollbars-initialize
 	>
@@ -400,8 +441,8 @@ if (siteConfig.font) {
 		<!-- Music Player - 仅在启用时加载 -->
 		{musicPlayerConfig.enable && <MusicPlayer client:idle />}
 
-		<!-- Pio 看板娘组件 - 仅在启用时加载 -->
-		{pioConfig.enable && <Pio client:idle />}
+		<!-- Live2d 看板娘组件 - 仅在启用时加载 -->
+		{live2dConfig.enable && <Live2d client:idle />}
 
 		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
 		<div id="page-height-extend" class="hidden h-[300vh]"></div>
@@ -457,7 +498,7 @@ if (siteConfig.font) {
 			}
 		}
 	}
- </style>
+</style>
 
 <script>
 	// import { animationManager } from '../utils/animation-utils';
@@ -1247,9 +1288,9 @@ function disableAnimation() {
 	function scrollFunction() {
 		const scrollTop = document.documentElement.scrollTop;
 		const bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
-		
+
 		// 尝试获取内容区域的起始位置
-		const contentWrapper = document.getElementById('content-wrapper');
+		const contentWrapper = document.getElementById("content-wrapper");
 		let showBackToTopThreshold = bannerHeight + 100; // 默认回退值
 
 		if (contentWrapper) {
@@ -1276,7 +1317,8 @@ function disableAnimation() {
 			}
 
 			if (bannerEnabled && toc) {
-				const isBannerMode = document.body.classList.contains("enable-banner");
+				const isBannerMode =
+					document.body.classList.contains("enable-banner");
 				if (isBannerMode) {
 					if (scrollTop > bannerHeight) {
 						toc.classList.remove("toc-hide");

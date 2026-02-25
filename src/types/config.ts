@@ -345,7 +345,7 @@ export type WidgetComponentType =
 	| "tags"
 	| "toc"
 	| "music-player"
-	| "pio" // 添加 pio 组件类型
+	| "live2d" // 添加 live2d 组件类型
 	| "site-stats" // 站点统计组件
 	| "calendar" // 日历组件
 	| "custom";
@@ -430,29 +430,24 @@ export type FullscreenWallpaperConfig = {
 };
 
 /**
- * Pio 看板娘配置
+ * 鼠标点击效果配置
  */
-export type PioConfig = {
-	enable: boolean; // 是否启用看板娘
-	models?: string[]; // 模型文件路径数组
-	position?: "left" | "right"; // 看板娘位置
-	width?: number; // 看板娘宽度
-	height?: number; // 看板娘高度
-	mode?: "static" | "fixed" | "draggable"; // 展现模式
-	hiddenOnMobile?: boolean; // 是否在移动设备上隐藏
-	dialog?: {
-		welcome?: string | string[]; // 欢迎词
-		touch?: string | string[]; // 触摸提示
-		home?: string; // 首页提示
-		skin?: [string, string]; // 换装提示 [切换前, 切换后]
-		close?: string; // 关闭提示
-		link?: string; // 关于链接
-		custom?: Array<{
-			selector: string; // CSS选择器
-			type: "read" | "link"; // 类型
-			text?: string; // 自定义文本
-		}>;
-	};
+export type ClickEffectConfig = {
+	enable: boolean; // 是否启用鼠标点击效果
+};
+
+/**
+ * Live2d 看板娘配置
+ */
+export type Live2DConfig = {
+	enable: boolean; // 是否启用Live2D看板娘
+	mobile: boolean; // 是否在移动端显示
+	drag: boolean; // 是否启用拖拽功能
+	modelId: number; // 模型ID
+	logLevel: "error" | "warn" | "info" | "trace"; // 日志级别
+	live2dPath: string; // Live2D模型路径
+	waifuTipsPath: string; // 提示词路径
+	tools: string[]; // 工具栏
 };
 
 /**
@@ -460,4 +455,20 @@ export type PioConfig = {
  */
 export type ShareConfig = {
 	enable: boolean; // 是否启用分享功能
+};
+
+/**
+ * 外部链接拦截组件配置
+ */
+export type ExternalLinkConfirmConfig = {
+	enable: boolean;
+	title?: string;
+	description?: string;
+	warningText?: string;
+	confirmText?: string;
+	cancelText?: string;
+	iconSvg?: string;
+	background?: string;
+	whiteListSite?: string[];
+	whiteListPage?: string[];
 };

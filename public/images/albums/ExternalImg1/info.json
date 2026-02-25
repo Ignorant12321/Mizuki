@@ -1,0 +1,194 @@
+{
+	"mode": "external",
+	"hidden": false,
+	"title": "随机动漫相册",
+	"description": "来自api接口的随机二次元图片",
+	"date": "2026-01-01",
+	"location": "网络",
+	"tags": ["动漫", "随机", "API"],
+	"layout": "masonry",
+	"columns": 3,
+	"cover": "https://www.loliapi.com/acg?t=1",
+	"photos": [
+		{
+			"id": "rand-01",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&0",
+			"alt": "随机动漫 0",
+			"title": "随机动漫 0",
+			"description": "随机动漫 0",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-02",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=safe&1",
+			"alt": "随机动漫 2",
+			"title": "随机动漫 2",
+			"description": "随机动漫 2",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-03",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&2",
+			"alt": "随机动漫 3",
+			"title": "随机动漫 3",
+			"description": "随机动漫 3",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-04",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=safe&3",
+			"alt": "随机动漫 4",
+			"title": "随机动漫 4",
+			"description": "随机动漫 4",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-05",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&4",
+			"alt": "随机动漫 5",
+			"title": "随机动漫 5",
+			"description": "随机动漫 5",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-06",
+			"src": "https://www.loliapi.com/acg?t=1",
+			"alt": "随机动漫 6",
+			"title": "随机动漫 6",
+			"description": "随机动漫 6",
+			"tags": ["随机", "动漫", "loliapi"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-07",
+			"src": "https://www.loliapi.com/acg?t=2",
+			"alt": "随机动漫 7",
+			"title": "随机动漫 7",
+			"description": "随机动漫 7",
+			"tags": ["随机", "动漫", "loliapi"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-08",
+			"src": "https://www.loliapi.com/acg?t=3",
+			"alt": "随机动漫 8",
+			"title": "随机动漫 8",
+			"description": "随机动漫 8",
+			"tags": ["随机", "动漫", "loliapi"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-09",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=safe&9",
+			"alt": "随机动漫 9",
+			"title": "随机动漫 9",
+			"description": "随机动漫 9",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-10",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&10",
+			"alt": "随机动漫 10",
+			"title": "随机动漫 10",
+			"description": "随机动漫 10",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-11",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=safe&11",
+			"alt": "随机动漫 11",
+			"title": "随机动漫 11",
+			"description": "随机动漫 11",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-12",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&12",
+			"alt": "随机动漫 12",
+			"title": "随机动漫 12",
+			"description": "随机动漫 12",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-13",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=safe&13",
+			"alt": "随机动漫 13",
+			"title": "随机动漫 13",
+			"description": "随机动漫 13",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-14",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=safe&14",
+			"alt": "随机动漫 14",
+			"title": "随机动漫 14",
+			"description": "随机动漫 14",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-15",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&5",
+			"alt": "随机动漫 15",
+			"title": "随机动漫 15",
+			"description": "随机动漫 15",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-16",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&6",
+			"alt": "随机动漫 16",
+			"title": "随机动漫 16",
+			"description": "随机动漫 16",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-17",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=safe&7",
+			"alt": "随机动漫 17",
+			"title": "随机动漫 17",
+			"description": "随机动漫 17",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-18",
+			"src": "https://api.nekosapi.com/v4/images/random/file?rating=suggestive&8",
+			"alt": "随机动漫 18",
+			"title": "随机动漫 18",
+			"description": "随机动漫 18",
+			"tags": ["随机", "动漫", "nekosapi.com"],
+			"width": 800,
+			"height": 600
+		}
+	]
+}

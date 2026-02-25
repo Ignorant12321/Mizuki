@@ -1,0 +1,355 @@
+---
+import { getEntry, render } from "astro:content";
+import Markdown from "@components/misc/Markdown.astro";
+import { getShuffledIgNavsList } from "../data/Ig-nav";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+
+const title = "津渡";
+const description = "Ignorant的一站式导航服务页";
+const placeholder = "搜索网站...";
+
+// 注意：这里使用全小写 "ignavs" 以避免 Windows 下的大小写冲突 bug
+const igNavsPost = await getEntry("spec", "ignavs");
+
+const igNavsFilterAll = "全部";
+const igNavsVisit = "访问";
+const igNavsCopyLink = "复制链接";
+const igNavsNoResults = "未找到匹配的链接";
+const igNavsCopySuccess = "已复制";
+
+if (!igNavsPost) {
+	throw new Error("igNavs page content not found");
+}
+
+const { Content } = await render(igNavsPost);
+const igNavsList = getShuffledIgNavsList();
+const allTags = Array.from(new Set(igNavsList.flatMap((item) => item.tags)));
+---
+
+<MainGridLayout title={title} description={description}>
+	<script is:inline>
+		window.isIgNavsPage = true;
+	</script>
+	<script>
+		import("../scripts/right-sidebar-layout.js");
+	</script>
+
+	<div
+		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
+	>
+		<div class="card-base z-10 px-5 py-6 relative w-full sm:px-9">
+			<div class="flex flex-col items-start justify-center mb-8">
+				<h1
+					class="text-3xl sm:text-4xl font-bold text-black/90 dark:text-white/90 mb-2 relative
+						  before:w-1 before:h-8 before:rounded-md before:bg-[var(--primary)]
+						  before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
+				>
+					{title}
+				</h1>
+				<p
+					class="text-base sm:text-lg text-black/60 dark:text-white/60"
+				>
+					{description}
+				</p>
+			</div>
+
+			<div class="mb-6 space-y-3">
+				<div class="w-full">
+					<div class="relative">
+						<input
+							type="text"
+							id="igNav-search"
+							placeholder={placeholder}
+							class="w-full px-4 py-2 pl-10 rounded-lg bg-[var(--btn-regular-bg)]
+									text-black/90 dark:text-white/90
+									border border-black/10 dark:border-white/10
+									focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50
+									transition-all duration-200"
+						/>
+						<svg
+							class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-black/40 dark:text-white/40"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+							></path>
+						</svg>
+					</div>
+				</div>
+
+				<div class="filter-container flex flex-wrap gap-2">
+					<button class="filter-tag active" data-tag="all"
+						>{igNavsFilterAll}</button
+					>
+					{
+						allTags.map((tag) => (
+							<button
+								class="filter-tag"
+								data-tag={tag.toLowerCase()}
+							>
+								{tag}
+							</button>
+						))
+					}
+				</div>
+			</div>
+
+			<div id="igNavs-grid" class="grid grid-cols-1 gap-4 mb-6">
+				{
+					igNavsList.map((item) => (
+						<div
+							class="igNav-card group relative bg-transparent rounded-xl border border-black/10 dark:border-white/10
+								 overflow-hidden transition-all duration-300
+								 hover:shadow-xl hover:-translate-y-1"
+							data-title={item.title.toLowerCase()}
+							data-desc={item.desc.toLowerCase()}
+							data-tags={item.tags.join(",").toLowerCase()}
+						>
+							{/* 布局核心修改：
+                            1. Mobile (默认): 使用 grid grid-cols-[auto_1fr] 网格布局。
+                               - 左边是图标 (auto)
+                               - 右边是文字 (1fr)
+                               - 底部按钮通过 col-span-2 跨越两列，实现"整行显示"
+                            2. Desktop (sm:): 使用 flex 布局，恢复原来的横向排列
+                        */}
+							<div class="p-3 sm:p-5 grid grid-cols-[auto_1fr] items-center gap-3 sm:flex sm:flex-row sm:items-center sm:gap-6">
+								{/* 1. 图标区域 (左侧) */}
+								<div class="flex-shrink-0">
+									<div
+										class="w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden 
+											bg-[var(--btn-regular-bg)] 
+											ring-1 ring-black/5 dark:ring-white/10
+											transition-all duration-300 flex items-center justify-center"
+									>
+										<img
+											src={item.imgurl}
+											alt={item.title}
+											class="w-full h-full object-cover transform scale-[0.8] group-hover:scale-[0.9] transition-transform duration-300"
+											loading="lazy"
+										/>
+									</div>
+								</div>
+
+								{/* 2. 中间信息区域 */}
+								<div class="flex flex-col gap-1 min-w-0 sm:flex-1">
+									{/* 标题栏 */}
+									<div class="flex items-center gap-2 mb-0.5">
+										<h3
+											class="text-lg sm:text-xl font-bold text-black/90 dark:text-white/90 truncate
+												group-hover:text-[var(--primary)] transition-colors duration-200"
+										>
+											{item.title}
+										</h3>
+										{/* 标签 (仅在电脑端显示在标题旁) */}
+										<div class="sm:flex flex-wrap gap-1">
+											{item.tags.map((tag) => (
+												<span
+													class="px-1.5 py-0.5 text-[10px] rounded-md 
+															bg-[var(--primary)]/10 text-[var(--primary)] 
+															font-medium uppercase tracking-wider"
+												>
+													{tag}
+												</span>
+											))}
+										</div>
+									</div>
+
+									{/* 修改：将 URL 移到 描述 上方 */}
+									<a
+										href={item.siteurl}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-xs text-black/40 dark:text-white/40 hover:text-[var(--primary)] transition-colors truncate block"
+									>
+										{new URL(item.siteurl).hostname}
+									</a>
+
+									{/* 描述 */}
+									<p class="text-sm text-black/60 dark:text-white/60 line-clamp-1">
+										{item.desc}
+									</p>
+								</div>
+
+								{/* 3. 操作按钮区域 */}
+								{/* 布局修复：
+                                - Mobile: col-span-2 使其跨越网格的两列，从而占据整个底部行的宽度，填补左侧空白。
+                                - Desktop: sm:w-auto 恢复自然宽度。
+                            */}
+								<div class="col-span-2 w-full sm:w-auto mt-1 sm:mt-0 flex gap-2">
+									<a
+										href={item.siteurl}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 sm:px-6 sm:py-2.5 
+											rounded-lg bg-[var(--primary)] text-white 
+											hover:bg-[var(--primary)]/90 
+											active:scale-95 transition-all duration-200
+											font-medium text-xs sm:text-sm shadow-sm shadow-[var(--primary)]/20"
+									>
+										{igNavsVisit}
+										<svg
+											class="w-3.5 h-3.5 sm:w-4 sm:h-4"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M14 5l7 7m0 0l-7 7m7-7H3"
+											/>
+										</svg>
+									</a>
+
+									<button
+										class="copy-link-btn flex-none px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg 
+											bg-[var(--btn-regular-bg)] 
+											hover:bg-[var(--btn-regular-bg-hover)] 
+											active:scale-95 transition-all duration-200
+											text-black/70 dark:text-white/70 border border-black/5 dark:border-white/5"
+										data-url={item.siteurl}
+										title={igNavsCopyLink}
+									>
+										<svg
+											class="w-4 h-4 sm:w-5 sm:h-5"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+											/>
+										</svg>
+									</button>
+								</div>
+							</div>
+
+							{/* 悬停装饰效果 */}
+							<div
+								class="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/5 to-transparent 
+										opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+							/>
+						</div>
+					))
+				}
+			</div>
+
+			<div id="no-results" class="hidden text-center py-12">
+				<svg
+					class="w-16 h-16 mx-auto mb-4 text-black/20 dark:text-white/20"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+					></path>
+				</svg>
+				<p class="text-black/50 dark:text-white/50 text-lg">
+					{igNavsNoResults}
+				</p>
+			</div>
+
+			<Markdown class="mt-8 prose dark:prose-invert max-w-none">
+				<Content />
+			</Markdown>
+
+			<div id="igNavs-copy-success-text" style="display: none;">
+				{igNavsCopySuccess}
+			</div>
+		</div>
+	</div>
+
+	<script is:inline src="/js/igNavs-page-handler.js"></script>
+</MainGridLayout>
+
+<style>
+	.igNav-card {
+		animation: fadeInUp 0.5s ease-out forwards;
+		opacity: 0;
+	}
+
+	.igNav-card:nth-child(1) {
+		animation-delay: 0.05s;
+	}
+	.igNav-card:nth-child(2) {
+		animation-delay: 0.1s;
+	}
+	.igNav-card:nth-child(3) {
+		animation-delay: 0.15s;
+	}
+	.igNav-card:nth-child(4) {
+		animation-delay: 0.2s;
+	}
+	.igNav-card:nth-child(5) {
+		animation-delay: 0.25s;
+	}
+	.igNav-card:nth-child(6) {
+		animation-delay: 0.3s;
+	}
+
+	@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	#igNav-search:focus {
+		box-shadow: 0 0 0 3px var(--primary) / 0.1;
+	}
+
+	.filter-container {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.filter-tag {
+		padding: 0.5rem 1rem;
+		border: 1px solid var(--line-divider);
+		border-radius: var(--radius-large);
+		background: var(--btn-regular-bg);
+		color: var(--btn-content);
+		font-size: 0.875rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		white-space: nowrap;
+	}
+
+	.filter-tag:hover:not(.active) {
+		background: var(--btn-hover-bg);
+		border-color: var(--primary);
+		transform: translateY(-1px);
+	}
+
+	.filter-tag.active {
+		background: var(--primary);
+		color: white;
+		border-color: var(--primary);
+	}
+
+	.filter-tag.active:hover {
+		background: var(--primary) !important;
+		color: white !important;
+		border-color: var(--primary) !important;
+		transform: translateY(-1px);
+	}
+</style>

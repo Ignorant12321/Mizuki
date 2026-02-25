@@ -15,7 +15,7 @@ export const WIDGET_COMPONENT_MAP = {
 	tags: "../components/widget/Tags.astro",
 	toc: "../components/widget/TOC.astro",
 	"music-player": "../components/widget/MusicPlayer.svelte",
-	pio: "../components/widget/Pio.astro", // 添加 Pio 组件映射
+	live2d: "../components/widget/Live2d.svelte", // 添加 live2d 组件映射
 	"site-stats": "../components/widget/SiteStats.astro", // 站点统计组件
 	calendar: "../components/widget/Calendar.astro", // 日历组件
 	custom: null, // 自定义组件需要在配置中指定路径
@@ -71,7 +71,9 @@ export class WidgetManager {
 
 		return componentTypes
 			.map((type) => {
-				const prop = this.config.properties.find((p) => p.type === type);
+				const prop = this.config.properties.find(
+					(p) => p.type === type,
+				);
 				if (prop && prop.position === position) {
 					return prop;
 				}

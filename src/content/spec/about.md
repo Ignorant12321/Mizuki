@@ -1,49 +1,36 @@
+# 致谢
 
-This website is built with the **Astro** framework using the [Mizuki](https://github.com/matsuzaka-yuki/mizuki) theme.
+本站的构建离不开开源社区的贡献，特别感谢以下优秀项目的作者：
+
+## 🎨 博客主题
+本站基于 Astro 框架构建，使用的主题是 [Mizuki](https://github.com/matsuzaka-yuki/mizuki)。
 
 ::github{repo="matsuzaka-yuki/Mizuki"}
 
-## 🌟 Theme Features
+## 🐾 看板娘 (Live2D)
+左下角的 Live2D 看板娘挂件修改自 [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)，后端 API 服务使用了 [live2d_api](https://github.com/fghrsh/live2d_api)。
 
-### 🎨 Design & User Experience
-- **Modern & Elegant Design** - Clean, minimalist interface with beautiful typography
-- **Fully Responsive** - Optimized for all devices from mobile to desktop
-- **Dark/Light Mode** - Automatic theme switching with smooth transitions
-- **Beautiful Typography** - Enhanced readability with JetBrains Mono font
-- **Smooth Animations** - Fluid page transitions and interactive elements
+::github{repo="stevenjoezhang/live2d-widget"}
 
-### 🔍 Content & Search
-- **Advanced Search** - Powered by [Pagefind](https://pagefind.app/) for fast, accurate results
-- **Enhanced Markdown** - Extended syntax with code highlighting and math support
-- **Interactive Table of Contents** - Auto-scroll navigation for long articles
-- **RSS Feed Generation** - Stay updated with automatic feed generation
-- **Reading Time Estimation** - Know how long articles take to read
-- **Post Categorization** - Organize content with tags and categories
+::github{repo="fghrsh/live2d_api"}
 
+## 📦 文件快递柜
+本站的文件临时传输服务（FileCodeBox）基于 [FileCodeBox](https://github.com/vastsa/FileCodeBox) 搭建，用于轻量级文件分享。
 
+::github{repo="vastsa/FileCodeBox"}
 
-### 📱 Special Pages
-- **Anime Tracking Page** - Track your anime watching progress with ratings
-- **Friends Links Page** - Showcase friend websites with beautiful cards
-- **Diary/Moments Page** - Share life moments like social media posts
-- **Archive Page** - Organized timeline view of all posts
-- **About Page** - Customizable personal introduction (this page!)
+## 🖼️ 简单图床
+图片托管服务基于 [EasyImages2.0](https://github.com/icret/EasyImages2.0) 搭建，支持多文件上传与 API 分发，轻量且高效。
 
-### 🛠 Technical Features
-- **Enhanced Code Blocks** - Powered by [Expressive Code](https://expressive-code.com/)
-- **Math Support** - LaTeX rendering with KaTeX for mathematical expressions
-- **Image Optimization** - PhotoSwipe gallery with lazy loading
-- **SEO Optimized** - Built-in sitemap and meta tags for better search visibility
-- **Performance Optimized** - Fast loading with caching and optimization
-- **Comment System Ready** - Integration support for Twikoo comments
+::github{repo="icret/EasyImages2.0"}
 
-### 🎯 Advanced Markdown Features
-- **Callouts & Admonitions** - Beautiful info boxes with `> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`
-- **Mathematical Equations** - Write LaTeX math with `$inline$` and `$$block$$` syntax
-- **GitHub Cards** - Embed repository cards with `::github{repo="user/repo"}`
-- **Syntax Highlighting** - Advanced code highlighting with line numbers
-- **Copy Code Buttons** - Easy code copying functionality
+## 💓 服务监控
+本站的服务在线状态监控使用基于 Cloudflare Worker 的开源项目 [UptimeFlare](https://github.com/lyc8503/UptimeFlare)（Uptimeclare），实现轻量级、无服务器的全球节点实时监控。
 
----
+::github{repo="lyc8503/UptimeFlare"}
 
-*Built with ❤️ using Astro and inspired by modern web design principles.*
+## 📊 网站统计
+网站流量分析直接调用了 [Umami API](https://umami.is/) 云端服务进行统计，专注于匿名数据分析，不收集用户个人隐私，且无需自行搭建和维护后端代码。
+
+## 📰 资讯聚合
+日常的 RSS 资讯订阅与阅读使用 [Inoreader](https://www.innoreader.com/) 服务。

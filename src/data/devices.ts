@@ -16,24 +16,31 @@ export type DeviceCategory = {
 };
 
 export const devicesData: DeviceCategory = {
-	OnePlus: [
+	Phone: [
 		{
-			name: "OnePlus 13T",
-			image: "/images/device/oneplus13t.png",
-			specs: "Gray / 16G + 1TB",
-			description:
-				"Flagship performance, Hasselblad imaging, 80W SuperVOOC.",
-			link: "https://www.oneplus.com/cn/13t",
+			name: "vivo Y74s",
+			image: "/images/device/vivo Y74s.webp",
+			specs: "Blue | 12G+256GB",
+			description: "44W闪充 | 天玑810芯片",
+			link: "https://shop.vivo.com.cn/product/10007009",
 		},
 	],
-	Router: [
+	Matepad: [
 		{
-			name: "GL-MT3000",
-			image: "/images/device/mt3000.png",
-			specs: "1000Mbps / 2.5G",
-			description:
-				"Portable WiFi 6 router suitable for business trips and home use.",
-			link: "https://www.gl-inet.cn/products/gl-mt3000/",
+			name: "HUAWEI MatePad Air 12",
+			image: "/images/device/HUAWEI MatePad Air 12.png",
+			specs: "Grey | 12GB+256GB",
+			description: "12 英寸云晰柔光屏 | HarmonyOS 6",
+			link: "https://consumer.huawei.com/cn/tablets/matepad-air/",
+		},
+	],
+	Laptop: [
+		{
+			name: "HASEE S7-DA7NP",
+			image: "/images/device/HASEE S7-DA7NP.png",
+			specs: "Grey | 16GB+512GB",
+			description: "12代英特尔 酷睿 i7-1255U",
+			link: "http://www.hasee.com/goods/detail/42",
 		},
 	],
 };
