@@ -637,7 +637,9 @@ export const live2dConfig: Live2DConfig = {
 	drag: true,
 	modelId: 1,
 	logLevel: "warn",
-	live2dPath: "/assets/live2d/",
+	live2dPath:
+		"https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.0-rc.6/dist/",
+	// live2dPath: "/assets/live2d/",
 	waifuTipsPath: "/assets/live2d/waifu-tips.json",
 	tools: [
 		"home",
