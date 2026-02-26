@@ -10,6 +10,7 @@ export const ja: Translation = {
 
 	// ナビゲーションバータイトル
 	[Key.navLinks]: "リンク",
+	[Key.navNews]: "波瀾を見る",
 	[Key.navMy]: "私の",
 	[Key.navAbout]: "情報",
 	[Key.navOthers]: "その他",
@@ -355,4 +356,10 @@ export const ja: Translation = {
 	// レイアウト切り替えボタン
 	[Key.switchToGridMode]: "グリッド表示に切り替え",
 	[Key.switchToListMode]: "リスト表示に切り替え",
+	// 外部リンクへ移動
+	[Key.externalLinkTitle]: "外部リンクへ移動",
+	[Key.externalLinkDescription]: "外部サイトへ移動しようとしています：",
+	[Key.externalLinkWarn]: "アカウントと資産の安全にご注意ください。",
+	[Key.externalLinkConfirm]: "アクセスを続ける",
+	[Key.externalLinkCancel]: "キャンセル",
 };

@@ -11,6 +11,7 @@ export const zh_TW: Translation = {
 	// 導航欄標題
 	[Key.navLinks]: "連結",
 	[Key.navMy]: "我的",
+	[Key.navNews]: "觀瀾",
 	[Key.navAbout]: "關於",
 	[Key.navOthers]: "其他",
 
@@ -341,4 +342,10 @@ export const zh_TW: Translation = {
 	// 布局切換按鈕
 	[Key.switchToGridMode]: "切換到網格模式",
 	[Key.switchToListMode]: "切換到列表模式",
+	// 跳轉外鏈
+	[Key.externalLinkTitle]: "跳轉外鏈",
+	[Key.externalLinkDescription]: "您即將前往外部連結：",
+	[Key.externalLinkWarn]: "請注意您的賬號與財產安全",
+	[Key.externalLinkConfirm]: "繼續訪問",
+	[Key.externalLinkCancel]: "取消",
 };

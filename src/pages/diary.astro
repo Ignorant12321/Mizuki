@@ -21,24 +21,24 @@ function formatDateSimple(dateString: string): string {
 	return `${y}.${m}.${d}`;
 }
 
-function formatTimeAgo(dateString: string): string {
-	const timeGap =
-		siteConfig.timeZone >= -12 && siteConfig.timeZone <= 12
-			? siteConfig.timeZone
-			: 8;
-	const diffInMinutes = Math.floor(
-		(new Date().getTime() +
-			timeGap * 60 * 60 * 1000 -
-			new Date(dateString).getTime()) /
-			60000,
-	);
+// function formatTimeAgo(dateString: string): string {
+// 	const timeGap =
+// 		siteConfig.timeZone >= -12 && siteConfig.timeZone <= 12
+// 			? siteConfig.timeZone
+// 			: 8;
+// 	const diffInMinutes = Math.floor(
+// 		(new Date().getTime() +
+// 			timeGap * 60 * 60 * 1000 -
+// 			new Date(dateString).getTime()) /
+// 			60000,
+// 	);
 
-	if (diffInMinutes < 60)
-		return `${diffInMinutes} ${i18n(I18nKey.diaryMinutesAgo)}`;
-	if (diffInMinutes < 1440)
-		return `${Math.floor(diffInMinutes / 60)} ${i18n(I18nKey.diaryHoursAgo)}`;
-	return `${Math.floor(diffInMinutes / 1440)} ${i18n(I18nKey.diaryDaysAgo)}`;
-}
+// 	if (diffInMinutes < 60)
+// 		return `${diffInMinutes} ${i18n(I18nKey.diaryMinutesAgo)}`;
+// 	if (diffInMinutes < 1440)
+// 		return `${Math.floor(diffInMinutes / 60)} ${i18n(I18nKey.diaryHoursAgo)}`;
+// 	return `${Math.floor(diffInMinutes / 1440)} ${i18n(I18nKey.diaryDaysAgo)}`;
+// }
 ---
 
 <MainGridLayout title={i18n(I18nKey.diary)} description="即刻短文">

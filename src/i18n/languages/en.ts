@@ -11,6 +11,7 @@ export const en: Translation = {
 	// Navigation bar titles
 	[Key.navLinks]: "Links",
 	[Key.navMy]: "My",
+	[Key.navNews]: "News",
 	[Key.navAbout]: "About",
 	[Key.navOthers]: "Others",
 
@@ -352,4 +353,11 @@ export const en: Translation = {
 	// Layout Switch Button
 	[Key.switchToGridMode]: "Switch to Grid Mode",
 	[Key.switchToListMode]: "Switch to List Mode",
+	// External Link
+	[Key.externalLinkTitle]: "External Link",
+	[Key.externalLinkDescription]: "You are about to visit an external link:",
+	[Key.externalLinkWarn]:
+		"Please be mindful of your account and property security.",
+	[Key.externalLinkConfirm]: "Continue",
+	[Key.externalLinkCancel]: "Cancel",
 };
