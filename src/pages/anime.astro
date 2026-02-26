@@ -429,6 +429,12 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 									);
 								})}
 							</div>
+							</div>
+							<div id="category-empty-state" class="hidden w-full text-center py-16 transition-opacity duration-300" style="opacity: 0;">
+								<div class="text-5xl mb-4 opacity-80">🍃</div>
+								<h3 class="text-xl font-bold text-90 mb-2">这里空空如也</h3>
+								<p class="text-60 text-sm">该状态下暂无任何番剧记录</p>
+							</div>
 
 							<template id="anime-lazy-store">
 								{hiddenAnimeList.map((anime) => {
@@ -845,6 +851,24 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 						});
 					});
 					const runAnimation = () => {
+						const emptyState = document.getElementById("category-empty-state");
+						if (itemsToKeep.length === 0 && itemsToShow.length === 0) {
+							// 如果当前要保留和要显示的卡片数量都是 0，说明这个分类是空的
+							if (emptyState) {
+								emptyState.classList.remove("hidden");
+								requestAnimationFrame(() => {
+									emptyState.style.opacity = "1";
+								});
+							}
+						} else {
+							// 这个分类下有数据，隐藏空状态提示
+							if (emptyState) {
+								emptyState.style.opacity = "0";
+								setTimeout(() => {
+									emptyState.classList.add("hidden");
+								}, 300); // 300ms 配合过渡动画时间
+							}
+						}
 						itemsToHide.forEach((item) => {
 							item.classList.add("anime-hidden");
 							item.classList.remove("anime-fade-out");
