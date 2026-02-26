@@ -2,54 +2,48 @@
 	import Icon from "@iconify/svelte";
 	import { onDestroy, onMount } from "svelte";
 	import { slide } from "svelte/transition";
-	// 从配置文件中导入音乐播放器配置
 	import { musicPlayerConfig } from "../../config";
-	// 导入国际化相关的 Key 和 i18n 实例
 	import Key from "../../i18n/i18nKey";
 	import { i18n } from "../../i18n/translation";
 
-	// 音乐播放器模式，可选 "local" 或 "meting"，从本地配置中获取或使用默认值 "meting"
-	let mode = musicPlayerConfig.mode ?? "meting";
-	// Meting API 地址，从配置中获取或使用默认地址(bilibili.uno(由哔哩哔哩松坂有希公益管理)),服务器在海外,部分音乐平台可能不支持并且速度可能慢,也可以自建Meting API
-	let meting_api =
-		musicPlayerConfig.meting_api ??
-		"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r";
-	// Meting API 的 ID，从配置中获取或使用默认值
-	let meting_id = musicPlayerConfig.id ?? "14164869977";
-	// Meting API 的服务器，从配置中获取或使用默认值,有的meting的api源支持更多平台,一般来说,netease=网易云音乐, tencent=QQ音乐, kugou=酷狗音乐, xiami=虾米音乐, baidu=百度音乐
-	let meting_server = musicPlayerConfig.server ?? "netease";
-	// Meting API 的类型，从配置中获取或使用默认值
-	let meting_type = musicPlayerConfig.type ?? "playlist";
+	// 基础配置获取
+	let globalMode = musicPlayerConfig.mode ?? "meting";
+	let globalMetingApi = musicPlayerConfig.meting_api;
 
-	// 播放状态，默认为 false (未播放)
+	// 【核心逻辑】：向下兼容，如果没有配置 playlists 数组，自动用原版的根配置兜底
+	let playlistsConfig =
+		musicPlayerConfig.playlists && musicPlayerConfig.playlists.length > 0
+			? musicPlayerConfig.playlists
+			: [
+					{
+						name: "默认歌单",
+						mode: globalMode,
+						meting_api: globalMetingApi,
+						server: musicPlayerConfig.server,
+						type: musicPlayerConfig.type,
+						id: musicPlayerConfig.id,
+					},
+				];
+
+	let currentListIndex = 0;
+	let playlistCache: Record<string, Song[]> = {}; // 歌单缓存池
+
+	// 播放器状态
 	let isPlaying = false;
-	// 播放器是否展开，默认为 false
 	let isExpanded = false;
-	// 播放器是否隐藏，默认为 false
 	let isHidden = true;
-	// 是否显示播放列表，默认为 false
 	let showPlaylist = false;
-	// 当前播放时间，默认为 0
 	let currentTime = 0;
-	// 歌曲总时长，默认为 0
 	let duration = 0;
 
-	// localStorage 存储音量
+	// 音量与设置
 	const STORAGE_KEY_VOLUME = "music-player-volume";
-
-	// 音量，默认为 0.7
 	let volume = 0.7;
-	// 是否静音，默认为 false
 	let isMuted = false;
-	// 是否正在加载，默认为 false
 	let isLoading = false;
-	// 是否随机播放，默认为 false
 	let isShuffled = true;
-	// 循环模式，0: 不循环, 1: 单曲循环, 2: 列表循环，默认为 0
-	let isRepeating = 2;
-	// 错误信息，默认为空字符串
+	let isRepeating = 2; // 0: 不循环, 1: 单曲循环, 2: 列表循环
 	let errorMessage = "";
-	// 是否显示错误信息，默认为 false
 	let showError = false;
 
 	// 当前歌曲信息
@@ -76,7 +70,7 @@
 	let progressBar: HTMLElement;
 	let volumeBar: HTMLElement;
 
-	const localPlaylist = [
+	const localPlaylist: Song[] = [
 		{
 			id: 1,
 			title: "勾指起誓",
@@ -93,33 +87,8 @@
 			url: "assets/music/url/霜雪千年 (cover 洛天依乐正绫) - 真栗.mp3",
 			duration: 180,
 		},
-		{
-			id: 3,
-			title: "权御天下",
-			artist: "洛天依",
-			cover: "assets/music/cover/权御天下 - 洛天依.jpg",
-			url: "assets/music/url/权御天下 - 洛天依.mp3",
-			duration: 200,
-		},
-		{
-			id: 4,
-			title: "达拉崩吧 (Live)",
-			artist: "周深",
-			cover: "assets/music/cover/达拉崩吧 (Live) - 周深.jpg",
-			url: "assets/music/url/达拉崩吧 (Live) - 周深.mp3",
-			duration: 200,
-		},
-		{
-			id: 5,
-			title: "蝴蝶",
-			artist: "洛天依",
-			cover: "assets/music/cover/蝴蝶 - 洛天依.jpg",
-			url: "assets/music/url/蝴蝶 - 洛天依.mp3",
-			duration: 200,
-		},
 	];
 
-	// 从localStorage加载音量设置
 	function loadVolumeSettings() {
 		try {
 			if (typeof localStorage !== "undefined") {
@@ -129,60 +98,119 @@
 				}
 			}
 		} catch (e) {
-			console.warn(
-				"Failed to load volume settings from localStorage:",
-				e,
-			);
+			console.warn("Failed to load volume settings:", e);
 		}
 	}
-	// 保存音量设置到localStorage
+
 	function saveVolumeSettings() {
 		try {
 			if (typeof localStorage !== "undefined") {
 				localStorage.setItem(STORAGE_KEY_VOLUME, volume.toString());
 			}
 		} catch (e) {
-			console.warn("Failed to save volume settings to localStorage:", e);
+			console.warn("Failed to save volume settings:", e);
 		}
 	}
 
-	async function fetchMetingPlaylist() {
-		if (!meting_api || !meting_id) return;
+	function parseMetingSong(song: any): Song {
+		let title = song.name ?? song.title ?? i18n(Key.unknownSong);
+		let artist = song.artist ?? song.author ?? i18n(Key.unknownArtist);
+		let dur = song.duration ?? 0;
+		if (dur > 10000) dur = Math.floor(dur / 1000);
+		if (!Number.isFinite(dur) || dur <= 0) dur = 0;
+		return {
+			id: song.id,
+			title,
+			artist,
+			cover: song.pic ?? "",
+			url: song.url ?? "",
+			duration: dur,
+		};
+	}
+
+	// 核心：智能加载歌单数据 (兼顾 local 和 meting，以及独立 API)
+	async function loadPlaylistData(listIndex = 0) {
+		if (playlistsConfig.length === 0) return;
+		const config = playlistsConfig[listIndex];
+
+		// 确定当前歌单的模式（优先读取独立的，没有就用全局）
+		const currentMode = config.mode ?? globalMode;
+
+		// 生成缓存Key
+		let cacheKey = "";
+		if (currentMode === "local") {
+			cacheKey = `local-${config.name}`;
+		} else {
+			cacheKey = `meting-${config.server}-${config.type}-${config.id}`;
+		}
+
+		// 如果有缓存，直接用缓存
+		if (playlistCache[cacheKey]) {
+			playlist = playlistCache[cacheKey];
+			currentIndex = 0;
+			if (playlist.length > 0) loadSong(playlist[0]);
+			return;
+		}
+
+		// 处理 Local 模式
+		if (currentMode === "local") {
+			const localData = config.audioList ?? localPlaylist;
+			playlistCache[cacheKey] = [...localData];
+			if (listIndex === currentListIndex) {
+				playlist = playlistCache[cacheKey];
+				currentIndex = 0;
+				if (playlist.length > 0) loadSong(playlist[0]);
+			}
+			return;
+		}
+
+		// 处理 Meting 模式
+		const currentApi = config.meting_api ?? globalMetingApi;
+		if (!currentApi || !config.id) return;
+
 		isLoading = true;
-		const apiUrl = meting_api
-			.replace(":server", meting_server)
-			.replace(":type", meting_type)
-			.replace(":id", meting_id)
+		const apiUrl = currentApi
+			.replace(":server", config.server ?? "netease")
+			.replace(":type", config.type ?? "playlist")
+			.replace(":id", config.id)
 			.replace(":auth", "")
 			.replace(":r", Date.now().toString());
+
 		try {
 			const res = await fetch(apiUrl);
 			if (!res.ok) throw new Error("meting api error");
 			const list = await res.json();
-			playlist = list.map((song: any) => {
-				let title = song.name ?? song.title ?? i18n(Key.unknownSong);
-				let artist =
-					song.artist ?? song.author ?? i18n(Key.unknownArtist);
-				let dur = song.duration ?? 0;
-				if (dur > 10000) dur = Math.floor(dur / 1000);
-				if (!Number.isFinite(dur) || dur <= 0) dur = 0;
-				return {
-					id: song.id,
-					title,
-					artist,
-					cover: song.pic ?? "",
-					url: song.url ?? "",
-					duration: dur,
-				};
-			});
-			if (playlist.length > 0) {
-				loadSong(playlist[0]);
+			const newPlaylist = list.map(parseMetingSong);
+
+			playlistCache[cacheKey] = newPlaylist;
+
+			if (listIndex === currentListIndex) {
+				playlist = newPlaylist;
+				currentIndex = 0;
+				if (playlist.length > 0) {
+					loadSong(playlist[0]);
+				}
 			}
-			isLoading = false;
 		} catch (e) {
 			showErrorMessage(i18n(Key.musicPlayerErrorPlaylist));
+		} finally {
 			isLoading = false;
 		}
+	}
+
+	// 切换歌单操作
+	function switchPlaylist(index: number) {
+		if (currentListIndex === index) return;
+		currentListIndex = index;
+		const wasPlaying = isPlaying;
+		if (wasPlaying && audio) audio.pause();
+
+		loadPlaylistData(index).then(() => {
+			if (wasPlaying && playlist.length > 0) {
+				willAutoPlay = true;
+				if (audio) audio.play().catch(() => {});
+			}
+		});
 	}
 
 	function togglePlay() {
@@ -250,15 +278,23 @@
 		playSong(newIndex, autoPlay);
 	}
 
-	// 记录切歌时的播放意图，用于解决加载失败时的状态传递问题
 	let willAutoPlay = false;
 
 	function playSong(index: number, autoPlay = true) {
 		if (index < 0 || index >= playlist.length) return;
-
 		willAutoPlay = autoPlay;
 		currentIndex = index;
 		loadSong(playlist[currentIndex]);
+	}
+
+	function handlePlaylistClick(index: number) {
+		if (index === currentIndex) {
+			// 如果点的是当前歌曲，直接切换 播放/暂停 状态
+			togglePlay();
+		} else {
+			// 如果点的是其他歌曲，则切歌
+			playSong(index);
+		}
 	}
 
 	function getAssetPath(path: string): string {
@@ -280,7 +316,6 @@
 		}
 	}
 
-	// 标记是否因浏览器策略导致自动播放失败
 	let autoplayFailed = false;
 
 	function handleLoadSuccess() {
@@ -350,6 +385,7 @@
 			showError = false;
 		}, 3000);
 	}
+
 	function hideError() {
 		showError = false;
 	}
@@ -410,7 +446,6 @@
 
 	function updateVolumeLogic(clientX: number) {
 		if (!audio || !volumeBar) return;
-
 		const rect = volumeBarRect || volumeBar.getBoundingClientRect();
 		const percent = Math.max(
 			0,
@@ -439,19 +474,13 @@
 			});
 		});
 
-		if (!musicPlayerConfig.enable) {
-			return;
-		}
-		if (mode === "meting") {
-			fetchMetingPlaylist();
+		if (!musicPlayerConfig.enable) return;
+
+		if (playlistsConfig.length > 0) {
+			// 只加载第一个歌单，不再执行 preloadOtherPlaylists
+			loadPlaylistData(0);
 		} else {
-			// 使用本地播放列表，不发送任何API请求
-			playlist = [...localPlaylist];
-			if (playlist.length > 0) {
-				loadSong(playlist[0]);
-			} else {
-				showErrorMessage("本地播放列表为空");
-			}
+			showErrorMessage("播放列表配置为空");
 		}
 	});
 
@@ -509,7 +538,6 @@
 		class:expanded={isExpanded}
 		class:hidden-mode={isHidden}
 	>
-		<!-- 隐藏状态的小圆球 -->
 		<div
 			class="orb-player w-12 h-12 bg-(--primary) rounded-full shadow-lg cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
 			class:opacity-0={!isHidden}
@@ -553,7 +581,6 @@
 				/>
 			{/if}
 		</div>
-		<!-- 收缩状态的迷你播放器（封面圆形） -->
 		<div
 			class="mini-player card-base bg-(--float-panel-bg) shadow-xl rounded-2xl p-3 transition-all duration-500 ease-in-out"
 			class:opacity-0={isExpanded || isHidden}
@@ -561,7 +588,6 @@
 			class:pointer-events-none={isExpanded || isHidden}
 		>
 			<div class="flex items-center gap-3">
-				<!-- 封面区域：点击控制播放/暂停 -->
 				<div
 					class="cover-container relative w-12 h-12 rounded-full overflow-hidden cursor-pointer"
 					on:click={togglePlay}
@@ -605,7 +631,6 @@
 						{/if}
 					</div>
 				</div>
-				<!-- 歌曲信息区域：点击展开播放器 -->
 				<div
 					class="flex-1 min-w-0 cursor-pointer"
 					on:click={toggleExpanded}
@@ -649,7 +674,6 @@
 				</div>
 			</div>
 		</div>
-		<!-- 展开状态的完整播放器（封面圆形） -->
 		<div
 			class="expanded-player card-base bg-(--float-panel-bg) shadow-xl rounded-2xl p-4 transition-all duration-500 ease-in-out"
 			class:opacity-0={!isExpanded}
@@ -759,7 +783,7 @@
 					/>
 				</button>
 				<button
-					class="btn-regular w-12 h-12 rounded-full"
+					class="btn-regular w-12 h-12 rounded-full flex items-center justify-center"
 					class:opacity-50={isLoading}
 					disabled={isLoading}
 					on:click={togglePlay}
@@ -860,24 +884,51 @@
 		</div>
 		{#if showPlaylist}
 			<div
-				class="playlist-panel float-panel fixed bottom-20 left-5 w-80 max-h-96 overflow-hidden z-50"
+				class="playlist-panel float-panel fixed bottom-20 left-5 w-80 max-h-96 overflow-hidden z-50 flex flex-col"
 				transition:slide={{ duration: 300, axis: "y" }}
 			>
 				<div
-					class="playlist-header flex items-center justify-between p-4 border-b border-(--line-divider)"
+					class="playlist-header flex flex-col p-4 border-b border-(--line-divider) gap-3 shrink-0"
 				>
-					<h3 class="text-lg font-semibold text-90">
-						{i18n(Key.musicPlayerPlaylist)}
-					</h3>
-					<button
-						class="btn-plain w-8 h-8 rounded-lg"
-						on:click={togglePlaylist}
-					>
-						<Icon icon="material-symbols:close" class="text-lg" />
-					</button>
+					<div class="flex items-center justify-between w-full">
+						<h3 class="text-lg font-semibold text-90">
+							{i18n(Key.musicPlayerPlaylist)}
+						</h3>
+						<button
+							class="btn-plain w-8 h-8 rounded-lg"
+							on:click={togglePlaylist}
+						>
+							<Icon
+								icon="material-symbols:close"
+								class="text-lg"
+							/>
+						</button>
+					</div>
+
+					{#if playlistsConfig.length > 1}
+						<div
+							class="custom-scrollbar flex items-center gap-2 overflow-x-auto w-full p-1"
+						>
+							{#each playlistsConfig as pConfig, pIndex}
+								<button
+									class="shrink-0 h-8 px-4 text-sm font-medium rounded-full transition-colors flex items-center justify-center"
+									class:bg-[var(--primary)]={currentListIndex ===
+										pIndex}
+									class:text-white={currentListIndex ===
+										pIndex}
+									class:bg-[var(--btn-regular-bg)]={currentListIndex !==
+										pIndex}
+									class:text-90={currentListIndex !== pIndex}
+									on:click={() => switchPlaylist(pIndex)}
+								>
+									{pConfig.name}
+								</button>
+							{/each}
+						</div>
+					{/if}
 				</div>
 				<div
-					class="playlist-content overflow-y-auto max-h-80 hide-scrollbar"
+					class="custom-scrollbar playlist-content overflow-y-auto flex-1 max-h-80"
 				>
 					{#each playlist as song, index}
 						<div
@@ -885,11 +936,11 @@
 							class:bg-[var(--btn-plain-bg)]={index ===
 								currentIndex}
 							class:text-[var(--primary)]={index === currentIndex}
-							on:click={() => playSong(index)}
+							on:click={() => handlePlaylistClick(index)}
 							on:keydown={(e) => {
 								if (e.key === "Enter" || e.key === " ") {
 									e.preventDefault();
-									playSong(index);
+									handlePlaylistClick(index);
 								}
 							}}
 							role="button"
@@ -897,7 +948,7 @@
 							aria-label="播放 {song.title} - {song.artist}"
 						>
 							<div
-								class="w-6 h-6 flex items-center justify-center"
+								class="w-6 h-6 flex items-center justify-center shrink-0"
 							>
 								{#if index === currentIndex && isPlaying}
 									<Icon
@@ -950,6 +1001,22 @@
 	</div>
 
 	<style>
+		/* 定制化横向和纵向滚动条，保留滑动体验但不臃肿 */
+		.custom-scrollbar::-webkit-scrollbar {
+			height: 4px;
+			width: 4px;
+		}
+		.custom-scrollbar::-webkit-scrollbar-track {
+			background: transparent;
+		}
+		.custom-scrollbar::-webkit-scrollbar-thumb {
+			background: var(--btn-regular-bg);
+			border-radius: 4px;
+		}
+		.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+			background: var(--primary);
+		}
+
 		.orb-player {
 			position: relative;
 			backdrop-filter: blur(10px);
@@ -1006,17 +1073,14 @@
 			width: 17.5rem;
 			position: absolute;
 			bottom: 0;
-			/* right: 0; */
 			left: 0;
 		}
 		.expanded-player {
 			width: 20rem;
 			position: absolute;
 			bottom: 0;
-			/* right: 0; */
 			left: 0;
 		}
-
 		.animate-pulse {
 			animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 		}
@@ -1039,7 +1103,6 @@
 				max-width: 280px !important;
 				left: 1.3rem !important;
 				bottom: 0.5rem !important;
-				/* right: 0.5rem !important; */
 			}
 			.mini-player {
 				width: 280px;
@@ -1048,12 +1111,10 @@
 				width: calc(100vw - 16px);
 				max-width: none;
 				left: 0.5rem !important;
-				/* right: 0.5rem !important; */
 			}
 			.playlist-panel {
 				width: calc(100vw - 16px) !important;
 				left: 0.5rem !important;
-				/* right: 0.5rem !important; */
 				max-width: none;
 			}
 			.controls {
@@ -1121,7 +1182,6 @@
 				height: 12px;
 			}
 		}
-		/* 自定义旋转动画，停止时保持当前位置 */
 		@keyframes spin-continuous {
 			from {
 				transform: rotate(0deg);
@@ -1130,17 +1190,13 @@
 				transform: rotate(360deg);
 			}
 		}
-
 		.cover-container img {
 			animation: spin-continuous 3s linear infinite;
 			animation-play-state: paused;
 		}
-
 		.cover-container img.spinning {
 			animation-play-state: running;
 		}
-
-		/* 让主题色按钮更有视觉反馈 */
 		button.bg-\[var\(--primary\)\] {
 			box-shadow: 0 0 0 2px var(--primary);
 			border: none;
@@ -1149,12 +1205,10 @@
 
 	<style>
 		.music-bar {
-			transform-origin: bottom; /* 关键：强制让动画从底部向上生长，而不是中心扩散 */
+			transform-origin: bottom;
 			animation: musicWave 0.6s ease-in-out infinite alternate;
-			will-change: transform; /* 开启硬件加速，防止跳动时边缘发虚 */
+			will-change: transform;
 		}
-
-		/* 设定不同的初始高度和负延迟（负延迟能让动画一渲染就处于错开状态，不需从头等） */
 		.bar-1 {
 			height: 60%;
 			animation-delay: 0ms;
@@ -1175,7 +1229,6 @@
 			height: 50%;
 			animation-delay: -600ms;
 		}
-
 		@keyframes musicWave {
 			0% {
 				transform: scaleY(0.2);

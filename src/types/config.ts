@@ -339,13 +339,26 @@ export type AnnouncementConfig = {
 	content: AnnouncementItem[] | string;
 };
 
+// 单个歌单独立配置（用于多歌单列表）
+export type PlaylistConfig = {
+	name: string; // 歌单显示名称
+	mode?: "meting" | "local"; // 独立模式（可选），如果为空则继承外层全局 mode
+	meting_api?: string; // 独立API（可选），如果为空则继承外层全局 API
+	id?: string; // 歌单 ID (meting专用)
+	server?: string; // 音乐源服务器 (meting专用)
+	type?: string; // 音乐类型 (meting专用)
+	audioList?: any[]; // local 模式专用：本地歌曲数组
+};
+
+// 音乐播放器主配置
 export type MusicPlayerConfig = {
 	enable: boolean; // 是否启用音乐播放器功能
 	mode: "meting" | "local"; // 音乐播放器模式
 	meting_api: string; // Meting API 地址
-	id: string; // 歌单ID
+	id: string; // 歌单 ID
 	server: string; // 音乐源服务器
 	type: string; // 音乐类型
+	playlists?: PlaylistConfig[]; // 多歌单配置数组
 };
 
 export type FooterConfig = {

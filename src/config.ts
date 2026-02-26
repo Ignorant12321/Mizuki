@@ -470,13 +470,31 @@ export const announcementConfig: AnnouncementConfig = {
 };
 
 export const musicPlayerConfig: MusicPlayerConfig = {
-	enable: true, // 启用音乐播放器功能
-	mode: "meting", // 音乐播放器模式，可选 "local" 或 "meting"
+	enable: true,
+	mode: "meting",
 	meting_api:
-		"https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r", // Meting API 地址
-	id: "17699694803", // 歌单ID
-	server: "netease", // 音乐源服务器。有的meting的api源支持更多平台,一般来说,netease=网易云音乐, tencent=QQ音乐, kugou=酷狗音乐, xiami=虾米音乐, baidu=百度音乐
-	type: "playlist", // 播单类型
+		"https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r",
+	id: "17699694803",
+	server: "netease",
+	type: "playlist",
+
+	playlists: [
+		{
+			name: "洛天依",
+			server: "netease",
+			type: "playlist",
+			id: "17699694803",
+		},
+		{
+			name: "游四方",
+			mode: "meting",
+			meting_api:
+				"https://meting.mikus.ink/api?server=:server&type=:type&id=:id&auth=:auth&r=:r",
+			server: "netease",
+			type: "playlist",
+			id: "17699636947",
+		},
+	],
 };
 
 export const footerConfig: FooterConfig = {
