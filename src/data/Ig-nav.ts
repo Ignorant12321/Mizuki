@@ -1,5 +1,5 @@
-// 友情链接数据配置
-// 用于管理友情链接页面的数据
+// 导航链接数据配置
+// 用于管理导航链接页面的数据
 
 export interface IgNavItem {
 	id: number;
@@ -10,7 +10,7 @@ export interface IgNavItem {
 	tags: string[];
 }
 
-// 友情链接数据
+// 导航链接数据
 export const igNavsData: IgNavItem[] = [
 	{
 		id: 1,
@@ -29,7 +29,15 @@ export const igNavsData: IgNavItem[] = [
 		tags: ["Ignorant", "器录"],
 	},
 	{
-		id: 3,
+		id: 5,
+		title: "云汇",
+		imgurl: "/assets/icon/StreamlineCyberColorHarddisk.svg",
+		desc: "网站浏览行为分析工具",
+		siteurl: "https://openlist.ignorant.top",
+		tags: ["Ignorant", "器录"],
+	},
+	{
+		id: 4,
 		title: "运序",
 		imgurl: "/assets/icon/StreamlineFlexColorMonitorError.svg",
 		desc: "轻量级开源监控工具",
@@ -37,7 +45,7 @@ export const igNavsData: IgNavItem[] = [
 		tags: ["Ignorant", "观星"],
 	},
 	{
-		id: 4,
+		id: 5,
 		title: "溯踪",
 		imgurl: "/assets/icon/FlatColorIconsStatistics.svg",
 		desc: "网站浏览行为分析工具",
@@ -45,7 +53,7 @@ export const igNavsData: IgNavItem[] = [
 		tags: ["Ignorant", "观星"],
 	},
 	{
-		id: 5,
+		id: 6,
 		title: "IT-Tools",
 		imgurl: "/assets/icon/StreamlineUltimateColorToolBox.svg",
 		desc: "一款开源的IT工具箱",

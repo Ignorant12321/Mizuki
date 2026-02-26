@@ -519,7 +519,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件类型：分类组件
 			type: "categories",
 			// 组件位置："sticky" 表示粘性定位，可滚动
-			position: "sticky",
+			position: "top",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -570,7 +570,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 	// 侧栏组件布局配置
 	components: {
 		left: ["profile", "announcement"],
-		right: ["site-stats", "categories", "tags", "calendar"],
+		right: ["site-stats", "tags", "categories", "calendar"],
 		drawer: ["profile", "announcement", "categories", "tags"],
 	},
 
@@ -644,10 +644,11 @@ export const live2dConfig: Live2DConfig = {
 	tools: [
 		"home",
 		"hitokoto",
-		"asteroids",
+		// "asteroids",
 		"switch-model",
 		"switch-texture",
 		"photo",
+		// "info",
 		"quit",
 	],
 };

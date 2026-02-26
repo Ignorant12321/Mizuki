@@ -1,36 +1,43 @@
-# 致谢
+# 鸣谢与开源支持
 
-本站的构建离不开开源社区的贡献，特别感谢以下优秀项目的作者：
+本站的平稳运行与丰富功能，离不开开源社区的无私奉献与各大优质云服务的支持。饮水思源，特别感谢以下出色的开源项目、开发者及服务提供商：
 
-## 🎨 博客主题
-本站基于 Astro 框架构建，使用的主题是 [Mizuki](https://github.com/matsuzaka-yuki/mizuki)。
+---
+
+## 🎨 博客主题 (Theme)
+> 本站的前端呈现基于轻量级框架 Astro 构建，采用了设计优雅、细节丰富的 [Mizuki](https://github.com/matsuzaka-yuki/mizuki) 主题，为用户提供沉浸式的阅读体验。
 
 ::github{repo="matsuzaka-yuki/Mizuki"}
 
-## 🐾 看板娘 (Live2D)
-左下角的 Live2D 看板娘挂件修改自 [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)，后端 API 服务使用了 [live2d_api](https://github.com/fghrsh/live2d_api)。
+## 🖴 聚合网盘 (OpenList)
+> 本站的资源分享与下载中心使用强大的文件列表程序驱动。它完美实现了多云盘的统一挂载、密码保护与极速分发，极大提升了站点的资源托管能力。
+
+::github{repo="alist-org/alist"}
+
+## 🐾 动态互动 (Live2D)
+> 页面左下角生动可爱的 Live2D 看板娘，前端挂件修改自 [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)，后端 API 语音与动作交互服务则基于 [live2d_api](https://github.com/fghrsh/live2d_api) 搭建。
 
 ::github{repo="stevenjoezhang/live2d-widget"}
-
 ::github{repo="fghrsh/live2d_api"}
 
-## 📦 文件快递柜
-本站的文件临时传输服务（FileCodeBox）基于 [FileCodeBox](https://github.com/vastsa/FileCodeBox) 搭建，用于轻量级文件分享。
+## 📦 临时快传 (File Transfer)
+> 本站的“文件快递柜”服务基于 [FileCodeBox](https://github.com/vastsa/FileCodeBox) 搭建。它提供了一个轻量、便捷的临时文件分享环境，支持取件码快速提取。
 
 ::github{repo="vastsa/FileCodeBox"}
 
-## 🖼️ 简单图床
-图片托管服务基于 [EasyImages2.0](https://github.com/icret/EasyImages2.0) 搭建，支持多文件上传与 API 分发，轻量且高效。
+## 🖼️ 简单图床 (Image Hosting)
+> 全站的图片存储与分发依赖于 [EasyImages2.0](https://github.com/icret/EasyImages2.0)。其轻量高效的架构与 API 支持，为本站提供了稳定流畅的图床服务。
 
 ::github{repo="icret/EasyImages2.0"}
 
-## 💓 服务监控
-本站的服务在线状态监控使用基于 Cloudflare Worker 的开源项目 [UptimeFlare](https://github.com/lyc8503/UptimeFlare)（Uptimeclare），实现轻量级、无服务器的全球节点实时监控。
+## 💓 探针监控 (Status Monitor)
+> 为了保障站点的高可用性，我们使用了基于 Cloudflare Worker 的开源项目 [UptimeFlare](https://github.com/lyc8503/UptimeFlare)。它提供了无服务器架构的全球节点实时监控与故障告警。
 
 ::github{repo="lyc8503/UptimeFlare"}
 
-## 📊 网站统计
-网站流量分析直接调用了 [Umami API](https://umami.is/) 云端服务进行统计，专注于匿名数据分析，不收集用户个人隐私，且无需自行搭建和维护后端代码。
+---
 
-## 📰 资讯聚合
-日常的 RSS 资讯订阅与阅读使用 [Inoreader](https://www.innoreader.com/) 服务。
+## 📊 数据与订阅服务 (Services)
+
+* **网站统计：** 流量分析接入了 **[Umami API](https://umami.is/)** 云端服务。我们专注于网站体验优化，采用匿名数据聚合，**坚决不收集任何用户个人隐私**。
+* **资讯聚合：** 日常的 RSS 资讯订阅与高质量内容阅读，主要通过 **[Inoreader](https://www.inoreader.com/)** 服务进行管理与分发。
