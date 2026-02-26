@@ -1,6 +1,10 @@
 {
 	"mouseover": [
 		{
+			"selector": "#waifu-tool-home",
+			"text": ["点我回到首页哦～", "要回主页看看吗？"]
+		},
+		{
 			"selector": "#waifu-tool-hitokoto",
 			"text": [
 				"猜猜我要说些什么？",

@@ -317,6 +317,8 @@ export type AnnouncementItem = {
 	pinned?: boolean; // 是否置顶(分组)
 	order?: number; // 显示顺序，数字越大越靠前
 	date?: string; // 发布时间
+	expired?: boolean; // 是否强制标记为过期
+	expireDate?: string; // 到期自动过期的日期，格式如 "2026-03-01"
 	closable?: boolean; // 单条公告是否允许关闭 (默认 true)
 	link?: {
 		enable: boolean;

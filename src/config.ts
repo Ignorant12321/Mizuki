@@ -378,29 +378,24 @@ export const profileConfig: ProfileConfig = {
 	},
 	links: [
 		{
+			name: "GitHub",
+			icon: "fa7-brands:github",
+			url: "https://github.com/Ignorant12321",
+		},
+		{
 			name: "Bilibili",
 			icon: "fa7-brands:bilibili",
-			url: "https://space.bilibili.com/701864046",
+			url: "https://space.bilibili.com/2063167092",
+		},
+		{
+			name: "Steam",
+			icon: "fa7-brands:steam",
+			url: "https://steamcommunity.com/profiles/76561199543339625/",
 		},
 		{
 			name: "Gitee",
-			icon: "mdi:git",
-			url: "https://gitee.com/matsuzakayuki",
-		},
-		{
-			name: "GitHub",
-			icon: "fa7-brands:github",
-			url: "https://github.com/matsuzaka-yuki",
-		},
-		{
-			name: "Codeberg",
-			icon: "simple-icons:codeberg",
-			url: "https://codeberg.org",
-		},
-		{
-			name: "Discord",
-			icon: "fa7-brands:discord",
-			url: "https://discord.gg/MqW6TcQtVM",
+			icon: "simple-icons:gitee",
+			url: "https://gitee.com/ignorantand",
 		},
 	],
 };
@@ -639,18 +634,18 @@ export const clickEffectConfig: ClickEffectConfig = {
 export const live2dConfig: Live2DConfig = {
 	enable: true,
 	mobile: true,
-	drag: false,
+	drag: true,
 	modelId: 1,
 	logLevel: "warn",
 	live2dPath: "/assets/live2d/",
 	waifuTipsPath: "/assets/live2d/waifu-tips.json",
 	tools: [
+		"home",
 		"hitokoto",
 		"asteroids",
 		"switch-model",
 		"switch-texture",
 		"photo",
-		"info",
 		"quit",
 	],
 };

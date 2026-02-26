@@ -174,7 +174,11 @@ const uid = Math.random().toString(36).slice(2, 8);
 	(function () {
 		const allData = runtimeData;
 		const PAGE_SIZE = itemsPerPage;
+
+		// 🌟 双轨制记录：分别记录“手动关闭的正常公告”和“手动还原的过期公告”
 		const STORAGE_KEY = "closed_announcement_ids";
+		const RESTORED_KEY = "restored_announcement_ids";
+
 		let currentPage = 1;
 		let isHistoryMode = false;
 
@@ -187,9 +191,30 @@ const uid = Math.random().toString(36).slice(2, 8);
 				return [];
 			}
 		}
-
 		function saveClosedIds(ids) {
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+		}
+
+		function getRestoredIds() {
+			if (!globalClosable) return [];
+			try {
+				return JSON.parse(localStorage.getItem(RESTORED_KEY)) || [];
+			} catch (e) {
+				return [];
+			}
+		}
+		function saveRestoredIds(ids) {
+			localStorage.setItem(RESTORED_KEY, JSON.stringify(ids));
+		}
+
+		// 判断该公告是否已经过期
+		function isItemExpired(item) {
+			if (item.expired === true) return true;
+			if (item.expireDate) {
+				const expTime = new Date(item.expireDate).getTime();
+				if (!isNaN(expTime) && Date.now() > expTime) return true;
+			}
+			return false;
 		}
 
 		// --- 核心排序逻辑 ---
@@ -207,18 +232,29 @@ const uid = Math.random().toString(36).slice(2, 8);
 			});
 		}
 
+		// 🌟 核心修改：双轨制过滤逻辑
 		function getDisplayData() {
-			let filtered = [];
-			if (!globalClosable) {
-				filtered = [...allData];
-			} else {
-				const closedIds = getClosedIds();
-				filtered = allData.filter((item) =>
-					isHistoryMode
-						? closedIds.includes(item.id)
-						: !closedIds.includes(item.id),
-				);
-			}
+			const closedIds = getClosedIds();
+			const restoredIds = getRestoredIds();
+
+			const filtered = allData.filter((item) => {
+				const expired = isItemExpired(item);
+
+				if (!globalClosable) {
+					return !expired;
+				}
+
+				if (expired) {
+					// 对于过期的公告：默认在历史记录。如果被 restored，才去首页
+					const isRestored = restoredIds.includes(item.id);
+					return isHistoryMode ? !isRestored : isRestored;
+				} else {
+					// 对于正常的公告：默认在首页。如果被 closed，才去历史记录
+					const isClosed = closedIds.includes(item.id);
+					return isHistoryMode ? isClosed : !isClosed;
+				}
+			});
+
 			return sortAnnouncements(filtered);
 		}
 
@@ -234,11 +270,27 @@ const uid = Math.random().toString(36).slice(2, 8);
 
 			if (el) el.classList.add("item-exit");
 			setTimeout(() => {
-				const closedIds = getClosedIds();
-				const index = closedIds.indexOf(id);
-				if (index > -1) closedIds.splice(index, 1);
-				else closedIds.push(id);
-				saveClosedIds(closedIds);
+				const item = allData.find((x) => x.id === id);
+				const expired = item ? isItemExpired(item) : false;
+
+				if (expired) {
+					// 过期公告的点击逻辑：切换 restored 状态
+					const restoredIds = getRestoredIds();
+					const index = restoredIds.indexOf(id);
+					if (index > -1)
+						restoredIds.splice(index, 1); // 再次关闭
+					else restoredIds.push(id); // 还原到首页
+					saveRestoredIds(restoredIds);
+				} else {
+					// 正常公告的点击逻辑：切换 closed 状态
+					const closedIds = getClosedIds();
+					const index = closedIds.indexOf(id);
+					if (index > -1)
+						closedIds.splice(index, 1); // 还原到首页
+					else closedIds.push(id); // 关闭到历史
+					saveClosedIds(closedIds);
+				}
+
 				const newData = getDisplayData();
 				const totalPages = Math.ceil(newData.length / PAGE_SIZE);
 				if (currentPage > totalPages && totalPages > 0)
@@ -351,14 +403,16 @@ const uid = Math.random().toString(36).slice(2, 8);
 
 			pageItems.forEach((item, idx) => {
 				const delay = idx * 50;
-				// 操作按钮（历史模式是还原，普通模式是关闭）
+				const expired = isItemExpired(item);
+
 				const actionIcon = isHistoryMode
 					? `<path fill="currentColor" d="M480 256c0 123.4-100.5 223.9-223.9 223.9c-49.7 0-96.1-16.2-134.5-44c-12.8-9.3-15.6-27.1-6.3-39.9s27.1-15.6 39.9-6.3c29.7 21.5 65.6 34.1 104.9 34.1c96.5 0 174.9-78.4 174.9-174.9S356.5 73 260 73c-64.8 0-122 35.8-152.6 89.2l61.8 0c15.8 0 28.6 12.8 28.6 28.6s-12.8 28.6-28.6 28.6l-123.8 0c-15.8 0-28.6-12.8-28.6-28.6l0-123.8c0-15.8 12.8-28.6 28.6-28.6s28.6 12.8 28.6 28.6l0 52.8C103.5 45.4 178 8 260.1 8C397 8 508 119 508 256z"/>`
 					: `<path fill="currentColor" d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>`;
 				const actionTitle = isHistoryMode ? "还原" : "关闭";
 
-				// 关闭按钮
-				const showCloseBtn = isHistoryMode || item.closable !== false;
+				// 🌟 重新允许显示还原按钮：不论是否过期，都可以操作
+				const showCloseBtn =
+					isHistoryMode || item.closable !== false || expired;
 				const closeBtnHtml = showCloseBtn
 					? `<button 
 						class="text-neutral-400 hover:text-[var(--primary)] hover:bg-[var(--btn-regular-bg)] rounded-md transition-all p-1 shrink-0 ml-3"
@@ -369,30 +423,29 @@ const uid = Math.random().toString(36).slice(2, 8);
 					   </button>`
 					: "";
 
-				// Icon HTML
 				const iconHtml = item.icon
 					? `<span class="mr-2 shrink-0 text-sm text-[var(--primary)]">${item.icon}</span>`
 					: "";
 
-				// 链接 HTML
 				const linkHtml =
 					item.link && item.link.enable
-						? `
-					<a href="${item.link.url}" target="${item.link.external ? "_blank" : "_self"}" 
+						? `<a href="${item.link.url}" target="${item.link.external ? "_blank" : "_self"}" 
 					   class="text-xs font-medium text-[var(--primary)] hover:opacity-80 transition-opacity flex items-center gap-1 bg-[var(--btn-regular-bg)] px-2 py-0.5 rounded-full">
 						${item.link.text}
 						<svg viewBox="0 0 320 512" class="h-2 w-2" fill="currentColor"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>
 					</a>`
 						: "";
 
-				// 日期 HTML
 				const dateHtml = item.date
-					? `
-					<div class="flex items-center gap-1.5 text-xs text-neutral-400">
+					? `<div class="flex items-center gap-1.5 text-xs text-neutral-400">
 						<svg viewBox="0 0 512 512" class="h-2.5 w-2.5 opacity-70" fill="currentColor"><path d="M464 256A208 208 0 1 1 48 256a208 208 0 0 1 416 0zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></svg>
 						<span>${item.date}</span>
 					</div>`
 					: "<span></span>";
+
+				const expiredBadge = expired
+					? `<span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800/50 flex-shrink-0 font-normal">已过期</span>`
+					: "";
 
 				html += `
 				<div class="announcement-item item-enter relative flex flex-col bg-[var(--card-bg)] rounded-xl p-3 border border-neutral-200 dark:border-neutral-700/50 shadow-sm overflow-hidden" 
@@ -401,8 +454,9 @@ const uid = Math.random().toString(36).slice(2, 8);
 					<div class="flex items-start justify-between mb-2">
 						<div class="flex items-start flex-1 min-w-0">
 							 ${iconHtml}
-							 <div class="font-bold text-sm text-neutral-800 dark:text-neutral-200 leading-tight break-words pt-[1px]">
+							 <div class="font-bold text-sm text-neutral-800 dark:text-neutral-200 leading-tight break-words pt-[1px] flex items-center flex-wrap">
 								${item.title}
+								${expiredBadge}
 							 </div>
 						</div>
 						${closeBtnHtml}
@@ -420,7 +474,6 @@ const uid = Math.random().toString(36).slice(2, 8);
 
 			container.innerHTML = html;
 
-			// --- 更新分页控件 ---
 			const firstBtn = document.getElementById(`first-page-${uid}`);
 			const prevBtn = document.getElementById(`prev-page-${uid}`);
 			const nextBtn = document.getElementById(`next-page-${uid}`);
