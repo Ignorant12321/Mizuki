@@ -1,8 +1,10 @@
-// 日记数据配置
-// 用于管理日记页面的数据
+import { getCollection } from "astro:content";
+
+// 数据源配置: 'md' (Astro Content Collection) 或 'json'
+const DATA_SOURCE: "md" | "json" = "md";
 
 export interface DiaryItem {
-	id: number;
+	id: string | number; // 兼容原版 number 类型的 ID
 	content: string;
 	date: string;
 	images?: string[];
@@ -11,25 +13,70 @@ export interface DiaryItem {
 	tags?: string[];
 }
 
-// 示例日记数据
-const diaryData: DiaryItem[] = [
-	{
-		id: 1,
-		content:
-			"The falling speed of cherry blossoms is five centimeters per second!",
-		date: "2025-01-15T10:30:00Z",
-		images: ["/images/diary/sakura.jpg", "/images/diary/1.jpg"],
-	},
-];
+// 内存缓存，避免在同一个构建周期内重复读取和排序文件
+let cachedDiaryData: DiaryItem[] | null = null;
 
-// 获取日记统计数据
-export const getDiaryStats = () => {
-	const total = diaryData.length;
-	const hasImages = diaryData.filter(
-		(item) => item.images && item.images.length > 0,
-	).length;
-	const hasLocation = diaryData.filter((item) => item.location).length;
-	const hasMood = diaryData.filter((item) => item.mood).length;
+async function fetchDiaryData(): Promise<DiaryItem[]> {
+	if (DATA_SOURCE === "json") {
+		try {
+			const module = await import("../data/diary-data.json");
+			const rawData = module.default || module;
+			return Array.isArray(rawData) ? rawData : [];
+		} catch (error) {
+			console.warn(
+				"⚠️ [Diary] 未找到 src/data/diary-data.json 或格式错误，将返回空列表。",
+			);
+			return [];
+		}
+	}
+
+	// 默认从 Astro Content 读取 Markdown
+	const entries = await getCollection("diary");
+	return entries.map((entry) => ({
+		id: entry.data.id || entry.id, // 优先使用 frontmatter 中的 id
+		content: entry.body || "",
+		date: entry.data.date
+			? new Date(entry.data.date).toISOString()
+			: new Date().toISOString(),
+		images: entry.data.images || [],
+		location: entry.data.location || "",
+		mood: entry.data.mood || "",
+		tags: entry.data.tags || [],
+	}));
+}
+
+export async function getDiaryData(): Promise<DiaryItem[]> {
+	if (cachedDiaryData) return cachedDiaryData;
+
+	const data = await fetchDiaryData();
+
+	// 统一按时间倒序
+	cachedDiaryData = data.sort(
+		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+	);
+
+	return cachedDiaryData;
+}
+
+export const getDiaryStats = async () => {
+	const data = await getDiaryData();
+	const total = data.length;
+
+	if (total === 0) {
+		return {
+			total: 0,
+			hasImages: 0,
+			hasLocation: 0,
+			hasMood: 0,
+			imagePercentage: 0,
+			locationPercentage: 0,
+			moodPercentage: 0,
+		};
+	}
+
+	const hasImages = data.filter((i) => i.images?.length).length;
+	const hasLocation = data.filter((i) => !!i.location).length;
+	const hasMood = data.filter((i) => !!i.mood).length;
 
 	return {
 		total,
@@ -42,52 +89,40 @@ export const getDiaryStats = () => {
 	};
 };
 
-// 获取日记列表（按时间倒序）
-export const getDiaryList = (limit?: number) => {
-	const sortedData = diaryData.sort(
-		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-	);
-
-	if (limit && limit > 0) {
-		return sortedData.slice(0, limit);
-	}
-
-	return sortedData;
+export const getDiaryList = async (limit?: number) => {
+	const data = await getDiaryData();
+	return limit && limit > 0 ? data.slice(0, limit) : data;
 };
 
-// 获取最新的日记
-export const getLatestDiary = () => {
-	return getDiaryList(1)[0];
+export const getLatestDiary = async () => {
+	const list = await getDiaryList(1);
+	return list[0];
 };
 
-// 根据ID获取日记
-export const getDiaryById = (id: number) => {
-	return diaryData.find((item) => item.id === id);
+export const getDiaryById = async (id: string | number) => {
+	const data = await getDiaryData();
+	return data.find((item) => String(item.id) === String(id));
 };
 
-// 获取包含图片的日记
-export const getDiaryWithImages = () => {
-	return diaryData.filter((item) => item.images && item.images.length > 0);
+export const getDiaryWithImages = async () => {
+	const data = await getDiaryData();
+	return data.filter((item) => item.images?.length);
 };
 
-// 根据标签筛选日记
-export const getDiaryByTag = (tag: string) => {
-	return diaryData
-		.filter((item) => item.tags?.includes(tag))
-		.sort(
-			(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-		);
+export const getDiaryByTag = async (tag: string) => {
+	const data = await getDiaryData();
+	return data.filter((item) => item.tags?.includes(tag));
 };
 
-// 获取所有标签
-export const getAllTags = () => {
+export const getAllTags = async () => {
+	const data = await getDiaryData();
 	const tags = new Set<string>();
-	diaryData.forEach((item) => {
-		if (item.tags) {
-			item.tags.forEach((tag) => tags.add(tag));
-		}
+
+	data.forEach((item) => {
+		item.tags?.forEach((tag) => tags.add(tag));
 	});
+
 	return Array.from(tags).sort();
 };
 
-export default diaryData;
+export default getDiaryData;

@@ -5,112 +5,311 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 
-// 检查日记页面是否启用
 if (!siteConfig.featurePages.diary) {
 	return Astro.redirect("/404/");
 }
 
-// 获取日记数据
-const moments = getDiaryList();
-const diaryStats = getDiaryStats();
+const moments = await getDiaryList();
+const diaryStats = await getDiaryStats();
 
-// 时间格式化函数
-function formatTime(dateString: string): string {
-	var TG = 8;
-	if (siteConfig.timeZone >= -12 && siteConfig.timeZone <= 12)
-		TG = siteConfig.timeZone;
-	const timeGap = TG;
-
-	// const lang = siteConfig.lang;
-	const now = new Date();
+// 格式化日期为 YYYY.MM.DD
+function formatDateSimple(dateString: string): string {
 	const date = new Date(dateString);
+	const y = date.getFullYear();
+	const m = String(date.getMonth() + 1).padStart(2, "0");
+	const d = String(date.getDate()).padStart(2, "0");
+	return `${y}.${m}.${d}`;
+}
+
+function formatTimeAgo(dateString: string): string {
+	const timeGap =
+		siteConfig.timeZone >= -12 && siteConfig.timeZone <= 12
+			? siteConfig.timeZone
+			: 8;
 	const diffInMinutes = Math.floor(
-		(now.getTime() + timeGap * 60 * 60 * 1000 - date.getTime()) / (1000 * 60),
+		(new Date().getTime() +
+			timeGap * 60 * 60 * 1000 -
+			new Date(dateString).getTime()) /
+			60000,
 	);
 
-	if (diffInMinutes < 60) {
-		return `${diffInMinutes}${i18n(I18nKey.diaryMinutesAgo)}`;
-	}
-	if (diffInMinutes < 1440) {
-		// 24小时
-		const hours = Math.floor(diffInMinutes / 60);
-		return `${hours}${i18n(I18nKey.diaryHoursAgo)}`;
-	}
-	const days = Math.floor(diffInMinutes / 1440);
-	return `${days}${i18n(I18nKey.diaryDaysAgo)}`;
+	if (diffInMinutes < 60)
+		return `${diffInMinutes} ${i18n(I18nKey.diaryMinutesAgo)}`;
+	if (diffInMinutes < 1440)
+		return `${Math.floor(diffInMinutes / 60)} ${i18n(I18nKey.diaryHoursAgo)}`;
+	return `${Math.floor(diffInMinutes / 1440)} ${i18n(I18nKey.diaryDaysAgo)}`;
 }
 ---
 
 <MainGridLayout title={i18n(I18nKey.diary)} description="即刻短文">
-	<!-- 引入右侧边栏布局管理器 -->
-  <script>
-    import('../scripts/right-sidebar-layout.js');
-  </script>
-	<div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
-		<div class="card-base z-10 px-4 py-4 md:px-6 md:py-5 relative w-full">
-		<div class="relative max-w-4xl w-full px-2 md:px-0">
-				<!-- 页面头部 -->
-				<div class="moments-header mb-6">
-					<div class="header-content">
-						<div class="header-info">
-							<h1 class="moments-title text-xl md:text-2xl lg:text-3xl font-bold text-90 mb-1">{i18n(I18nKey.diary)}</h1>
-							<p class="moments-subtitle text-sm md:text-base lg:text-lg text-75">{i18n(I18nKey.diarySubtitle)}</p>
+	<script>
+		import("../scripts/right-sidebar-layout.js");
+	</script>
+	<div
+		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
+	>
+		<div
+			class="card-base z-10 px-4 py-4 md:px-6 md:py-5 relative w-full bg-[var(--page-bg)]"
+		>
+			<div class="relative max-w-3xl w-full mx-auto px-2 md:px-0">
+				<div class="moments-header mb-8 mx-auto w-full">
+					<div
+						class="header-content text-center md:text-left relative z-10"
+					>
+						<div>
+							<h1
+								class="text-2xl md:text-3xl font-bold text-white mb-2"
+							>
+								{i18n(I18nKey.diary)}
+							</h1>
+							<p class="text-sm md:text-base text-white/80">
+								{i18n(I18nKey.diarySubtitle)}
+							</p>
 						</div>
-						<div class="header-stats">
-							<div class="stat-item text-center">
-								<span class="stat-number text-lg md:text-xl lg:text-2xl font-bold text-(--primary)">{diaryStats.total}</span>
-								<span class="stat-label text-xs md:text-sm lg:text-base text-75">{i18n(I18nKey.diaryCount)}</span>
+						<div
+							class="mt-4 md:mt-0 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2"
+						>
+							<div
+								class="inline-flex flex-col items-center bg-white/10 rounded-lg px-4 py-2 backdrop-blur-sm"
+							>
+								<span
+									class="text-xl md:text-2xl font-bold text-white"
+									>{diaryStats.total}</span
+								>
+								<span class="text-xs text-white/70"
+									>{i18n(I18nKey.diaryCount)}</span
+								>
 							</div>
 						</div>
 					</div>
+					<div
+						class="absolute inset-0 bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] opacity-90 mix-blend-multiply"
+					>
+					</div>
+					<div
+						class="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+					>
+					</div>
 				</div>
 
-				<!-- 短文列表 -->
-				<div class="moments-timeline">
-					<div class="timeline-list space-y-4">
-					{moments.map((moment, index) => (
-						<div class="moment-item card-base-daily p-4 md:p-6 lg:p-8 hover:shadow-lg transition-all">
-								<div class="moment-content">
-									<p class="moment-text text-sm md:text-base lg:text-lg text-90 leading-relaxed mb-3 md:mb-4">{moment.content}</p>
-									
-									{moment.images && moment.images.length > 0 && (
-				<div class="diary-images grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4">
-					{moment.images.map((image, _index) => (
-					<div class="image-item relative rounded-md overflow-hidden aspect-square cursor-pointer hover:scale-105 transition-transform">
-						<a href="javascript:void(0)" data-src={image} data-fancybox={`gallery-${index}-${_index}`} class="block w-full h-full">
-							<img 
-								src={image} 
-								alt="diary moment image"
-								class="w-full h-full object-cover"
-								loading="lazy"
-							/>
-						</a>
+				<div class="moments-timeline relative z-10">
+					<div
+						class="absolute left-4 md:left-[2px] top-4 bottom-4 w-0.5 bg-[var(--line-divider)] opacity-50 hidden md:block"
+					>
 					</div>
-					))}
-				</div>
-			)}
-								</div>
-								
-								<hr class="moment-divider border-t border-(--line-divider) my-3 md:my-4" />
-								
-								<div class="moment-footer flex justify-between items-center">
-									<div class="moment-time flex items-center gap-1.5 text-75 text-xs md:text-sm lg:text-base">
-										<i class="time-icon text-xs md:text-sm">🕐</i>
-										<time datetime={moment.date}>
-											{formatTime(moment.date)}
-										</time>
+					<div class="timeline-list space-y-8" id="post-container">
+						{
+							moments.map((moment, index) => {
+								const imageCount = moment.images?.length || 0;
+
+								let gridClass =
+									"diary-images mt-4 gap-2 md:gap-3 grid w-full";
+								if (imageCount === 1) {
+									gridClass += " grid-cols-1"; // 1张图直接 1 列拉满
+								} else {
+									gridClass += " grid-cols-6"; // 多图统一使用 6 列网格，方便下面做除法
+								}
+								const dateStr = formatDateSimple(moment.date);
+								return (
+									<div class="moment-item relative pl-0 md:pl-8 group">
+										<div class="absolute left-0 top-5 w-2 h-2 rounded-full bg-[var(--primary)] ring-4 ring-[var(--page-bg)] hidden md:block" />
+										<div class="card-base-daily rounded-[var(--radius-large)] bg-[var(--card-bg)] transition-all hover:shadow-xl overflow-hidden">
+											<div class="moment-header flex items-center justify-between px-5 pt-5 pb-3 md:px-7 md:pt-6">
+												<div class="flex items-baseline gap-2">
+													<h1
+														id={`diary-${dateStr}-${index}`}
+														class="text-lg md:text-xl font-bold text-[var(--text-main)] font-mono tracking-tight"
+													>
+														{dateStr}
+													</h1>
+												</div>
+												{/* <time datetime={moment.date} class="text-xs md:text-sm text-[var(--text-muted)] whitespace-nowrap" > {formatTimeAgo(moment.date)} </time> */}
+												<div
+													id={`diary-${dateStr}`}
+													class="flex flex-wrap items-center justify-end gap-3 text-xs md:text-sm text-[var(--text-muted)]"
+												>
+													{moment.location && (
+														<div
+															class="flex items-center gap-1 shrink-0"
+															title={
+																moment.location
+															}
+														>
+															<p class="text-[var(--primary)] opacity-80">
+																🗺
+															</p>
+															<span class="truncate max-w-[100px] md:max-w-[150px]">
+																{
+																	moment.location
+																}
+															</span>
+														</div>
+													)}
+													{moment.mood && (
+														<div class="flex items-center gap-1 shrink-0">
+															<p class="opacity-80">
+																❤️
+															</p>
+															<span>
+																{moment.mood}
+															</span>
+														</div>
+													)}
+												</div>
+											</div>
+
+											<div class="moment-content px-5 md:px-7 pb-4">
+												<p class="text-base md:text-[1.05rem] text-[var(--text-main)] leading-relaxed whitespace-pre-wrap">
+													{moment.content}
+												</p>
+
+												{imageCount > 0 && (
+													<div class={gridClass}>
+														{moment.images!.map(
+															(image, index) => {
+																const isSingle =
+																	imageCount ===
+																	1;
+
+																// 默认样式
+																let spanClass =
+																	"col-span-1";
+																let aspectClass =
+																	isSingle
+																		? ""
+																		: "aspect-square"; // 默认正方形
+
+																if (!isSingle) {
+																	// 计算总行数和当前图片所在的行（基于每行 3 张）
+																	const totalRows =
+																		Math.ceil(
+																			imageCount /
+																				3,
+																		);
+																	const currentRow =
+																		Math.floor(
+																			index /
+																				3,
+																		);
+																	const isLastRow =
+																		currentRow ===
+																		totalRows -
+																			1;
+
+																	// 计算最后一行剩下几张图 (如果除尽了就是 3)
+																	const remainder =
+																		imageCount %
+																			3 ===
+																		0
+																			? 3
+																			: imageCount %
+																				3;
+
+																	if (
+																		isLastRow
+																	) {
+																		if (
+																			remainder ===
+																			1
+																		) {
+																			// 剩余 1 张：占满 6 列 (拉满全宽)
+																			spanClass =
+																				"col-span-6";
+																			aspectClass =
+																				"aspect-[21/9] md:aspect-[3/1]"; // 压扁一点防止太高
+																		} else if (
+																			remainder ===
+																			2
+																		) {
+																			// 剩余 2 张：每张占 3 列 (平分一半)
+																			spanClass =
+																				"col-span-3";
+																			aspectClass =
+																				"aspect-[4/3]"; // 比例稍微扁一点
+																		} else {
+																			// 剩余 3 张：每张占 2 列 (三分之一)
+																			spanClass =
+																				"col-span-2";
+																		}
+																	} else {
+																		// 不是最后一行的图片，永远是 3 张平分 (每张占 2 列)
+																		spanClass =
+																			"col-span-2";
+																	}
+																}
+
+																// 组合类名
+																const imgWrapperClass = `image-item relative rounded-lg overflow-hidden cursor-pointer bg-[var(--card-bg-alt)] w-full shadow-sm ${spanClass} ${aspectClass} ${isSingle ? "max-h-[400px]" : ""}`;
+
+																return (
+																	<div
+																		class={
+																			imgWrapperClass
+																		}
+																	>
+																		<a
+																			href="javascript:void(0)"
+																			data-src={
+																				image
+																			}
+																			data-fancybox={`gallery-${index}`}
+																			class="block w-full h-full"
+																		>
+																			<img
+																				src={
+																					image
+																				}
+																				alt="diary moment"
+																				class={`w-full h-full transition-transform duration-500 group-hover:scale-105 ${isSingle ? "object-contain" : "object-cover"}`}
+																				loading="lazy"
+																			/>
+																		</a>
+																	</div>
+																);
+															},
+														)}
+													</div>
+												)}
+											</div>
+
+											{moment.tags &&
+												moment.tags.length > 0 && (
+													<div class="moment-footer px-5 py-3 md:px-7 bg-[var(--card-bg-alt)]/50 border-t border-[var(--line-divider)]/50 flex flex-wrap items-center justify-between gap-y-2 text-xs md:text-sm text-[var(--text-muted)]">
+														{moment.tags &&
+															moment.tags.length >
+																0 && (
+																<div class="flex flex-wrap items-center gap-x-3 gap-y-1 ml-auto pl-4">
+																	{moment.tags.map(
+																		(
+																			tag,
+																		) => (
+																			<span class="btn-regular h-6 text-xs px-2 rounded-lg">
+																				<span class="opacity-50 mr-0.5">
+																					#
+																				</span>
+																				{
+																					tag
+																				}
+																			</span>
+																		),
+																	)}
+																</div>
+															)}
+													</div>
+												)}
+										</div>
 									</div>
-									
-								</div>
-							</div>
-						))}
+								);
+							})
+						}
 					</div>
 				</div>
+			</div>
 
-				<!-- 底部提示 -->
-				<div class="moments-tips text-center mt-6 md:mt-8 lg:mt-10 text-75 text-xs md:text-sm lg:text-base italic">
-					{i18n(I18nKey.diaryTips)}
-				</div>
+			<div
+				class="moments-tips text-center mt-12 mb-8 text-[var(--text-muted)] text-xs md:text-sm opacity-80"
+			>
+				—— {i18n(I18nKey.diaryTips)} ——
 			</div>
 		</div>
 	</div>
@@ -118,152 +317,35 @@ function formatTime(dateString: string): string {
 
 <style>
 	.card-base-daily {
-		@apply rounded-(--radius-large) overflow-hidden bg-[var(--card-bg)];
-		border: 1px solid var(--line-divider);
-		transition: all 0.3s ease;
+		box-shadow:
+			0 2px 8px -2px rgba(0, 0, 0, 0.05),
+			0 0 1px rgba(0, 0, 0, 0.1);
+		transition:
+			box-shadow 0.3s ease,
+			transform 0.3s ease;
 	}
-	
+
 	.moments-header {
-		padding: 1rem;
-		border-radius: 8px;
-		background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, var(--primary)) 100%);
-		color: white;
+		padding: 2rem;
+		border-radius: 16px;
 		position: relative;
 		overflow: hidden;
+		background-color: var(--primary);
 	}
-	
-	.header-content {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		position: relative;
-		z-index: 1;
-	}
-	
-	.moments-title {
-		color: white;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-	}
-	
-	.moments-subtitle {
-		color: rgba(255, 255, 255, 0.9);
-	}
-	
-	.stat-number {
-		color: white;
-	}
-	
-	.stat-label {
-		color: rgba(255, 255, 255, 0.8);
-	}
-	
-	.image-item img {
-		transition: transform 0.3s ease;
-	}
-	
-	.image-item:hover img {
-		transform: scale(1.05);
-	}
-	
-	.action-btn {
-		background: none;
-		border: none;
-		cursor: pointer;
-		color: var(--text-muted);
-	}
-	
-	.action-btn:hover {
-		color: var(--primary);
-	}
-	
-	/* 响应式设计 */
-	/* 手机端 (小于768px) */
+
 	@media (max-width: 768px) {
 		.moments-header {
-			padding: 0.75rem;
+			padding: 1.5rem;
 		}
-		
-		.header-content {
-			flex-direction: column;
-			text-align: center;
-			gap: 0.75rem;
-		}
-		
-		.diary-images {
-			grid-template-columns: repeat(2, 1fr);
-		}
-		
 		.moment-footer {
-			flex-direction: column;
 			align-items: flex-start;
-			gap: 0.5rem;
 		}
-	}
-	
-	/* 平板竖屏 (769px - 1280px) - 优化显示 */
-	@media (min-width: 769px) and (max-width: 1280px) {
-		.moments-header {
-			padding: 1.25rem;
-		}
-		
-		.header-content {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-		}
-		
-		.moment-item {
-			padding: 1.5rem;
-		}
-		
-		.diary-images {
-			grid-template-columns: repeat(3, 1fr);
-			gap: 0.75rem;
-			max-width: 500px;
-		}
-		
-		.moment-text {
-			font-size: 1rem;
-			line-height: 1.7;
-		}
-		
-		.moment-footer {
-			margin-top: 1rem;
-		}
-	}
-	
-	/* 平板横屏和桌面端 (大于1280px) */
-	@media (min-width: 1281px) {
-		.moments-header {
-			padding: 1.5rem;
-		}
-		
-		.moment-item {
-			padding: 2rem;
-		}
-		
-		.diary-images {
-			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-			max-width: 600px;
-			gap: 1rem;
-		}
-		
-		.moment-text {
-			font-size: 1.1rem;
-			line-height: 1.8;
-		}
-	}
-	
-	/* 优化小屏幕显示 */
-	@media (max-width: 480px) {
-		.moment-item {
-			border-radius: 8px;
-		}
-		
-		.moments-header {
-			border-radius: 6px;
+		.moment-footer > div.ml-auto {
+			margin-right: 0;
+			padding-right: 0;
+			margin-top: 0.5rem;
+			width: 100%;
+			justify-content: flex-end;
 		}
 	}
 </style>
-
-
