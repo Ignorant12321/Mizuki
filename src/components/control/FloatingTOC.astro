@@ -380,10 +380,17 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 		private generateTOC() {
 			const container = document.getElementById("post-container");
-
+			const emptyStateHTML = `
+				<div class="floating-toc-item" style="justify-content: center;text-align: center; pointer-events: none; opacity: 0.5;">
+					<span class="floating-toc-text">暂无目录</span>
+				</div>
+			`;
 			if (!container) {
 				this.wrapper?.classList.remove("active-toc");
 				this.wrapper?.classList.add("no-toc");
+				if (this.content) {
+					this.content.innerHTML = emptyStateHTML;
+				}
 				return;
 			}
 
@@ -395,6 +402,9 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 				this.wrapper?.classList.remove("active-toc");
 				this.wrapper?.classList.add("no-toc");
 				this.headings = [];
+				if (this.content) {
+					this.content.innerHTML = emptyStateHTML;
+				}
 				return;
 			}
 
