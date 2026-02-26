@@ -394,12 +394,6 @@ if (siteConfig.font) {
 		}
 		<!-- 点击特效样式 -->
 		{clickEffectConfig.enable && <ClickEffect />}
-		<!-- 顶部按钮 -->
-		<BackToTop />
-		<!-- 浮动目录 -->
-		{siteConfig.toc.enable && isFloatTOC && <FloatingTOC />}
-		<!-- 底部按钮 -->
-		<BackToBottom />
 
 		<!-- 外部链接确认组件 -->
 		{
@@ -444,6 +438,13 @@ if (siteConfig.font) {
 
 		<!-- Live2d 看板娘组件 - 仅在启用时加载 -->
 		{live2dConfig.enable && <Live2d client:idle />}
+
+		<!-- 顶部按钮 -->
+		<BackToTop />
+		<!-- 浮动目录 -->
+		{siteConfig.toc.enable && isFloatTOC && <FloatingTOC />}
+		<!-- 底部按钮 -->
+		<BackToBottom />
 
 		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
 		<div id="page-height-extend" class="hidden h-[300vh]"></div>
