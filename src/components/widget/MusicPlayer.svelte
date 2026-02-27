@@ -87,6 +87,30 @@
 			url: "assets/music/url/霜雪千年 (cover 洛天依乐正绫) - 真栗.mp3",
 			duration: 180,
 		},
+		{
+			id: 3,
+			title: "权御天下",
+			artist: "洛天依",
+			cover: "assets/music/cover/权御天下 - 洛天依.jpg",
+			url: "assets/music/url/权御天下 - 洛天依.mp3",
+			duration: 200,
+		},
+		{
+			id: 4,
+			title: "达拉崩吧 (Live)",
+			artist: "周深",
+			cover: "assets/music/cover/达拉崩吧 (Live) - 周深.jpg",
+			url: "assets/music/url/达拉崩吧 (Live) - 周深.mp3",
+			duration: 200,
+		},
+		{
+			id: 5,
+			title: "蝴蝶",
+			artist: "洛天依",
+			cover: "assets/music/cover/蝴蝶 - 洛天依.jpg",
+			url: "assets/music/url/蝴蝶 - 洛天依.mp3",
+			duration: 200,
+		},
 	];
 
 	function loadVolumeSettings() {

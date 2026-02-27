@@ -356,7 +356,7 @@ export type MusicPlayerConfig = {
 	mode: "meting" | "local"; // 音乐播放器模式
 	meting_api: string; // Meting API 地址
 	id: string; // 歌单 ID
-	server: string; // 音乐源服务器
+	server: string; /// 音乐源服务器。有的meting的api源支持更多平台,一般来说,netease=网易云音乐, tencent=QQ音乐, kugou=酷狗音乐, xiami=虾米音乐, baidu=百度音乐
 	type: string; // 音乐类型
 	playlists?: PlaylistConfig[]; // 多歌单配置数组
 };

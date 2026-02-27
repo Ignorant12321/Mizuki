@@ -32,7 +32,7 @@ export const igNavsData: IgNavItem[] = [
 		id: 5,
 		title: "云汇",
 		imgurl: "/assets/icon/StreamlineCyberColorHarddisk.svg",
-		desc: "网站浏览行为分析工具",
+		desc: "开源社区驱动的文件列表程序",
 		siteurl: "https://openlist.ignorant.top",
 		tags: ["Ignorant", "器录"],
 	},

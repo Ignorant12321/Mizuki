@@ -10,9 +10,10 @@
 ::github{repo="matsuzaka-yuki/Mizuki"}
 
 ## 🖴 聚合网盘 (OpenList)
-> 本站的资源分享与下载中心使用强大的文件列表程序驱动。它完美实现了多云盘的统一挂载、密码保护与极速分发，极大提升了站点的资源托管能力。
+> 本站的资源分享与下载中心由强大的文件列表程序驱动，完美实现了多云盘的统一挂载、密码保护与极速分发，极大提升了站点的资源托管能力。同时，前端美化样式基于 SajunaOo/OpenList-Moe 项目深度定制。
 
 ::github{repo="alist-org/alist"}
+::github{repo="SajunaOo/OpenList-Moe"}
 
 ## 🐾 动态互动 (Live2D)
 > 页面左下角生动可爱的 Live2D 看板娘，前端挂件修改自 [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)，后端 API 语音与动作交互服务则基于 [live2d_api](https://github.com/fghrsh/live2d_api) 搭建。
