@@ -238,3 +238,7 @@ Make the emoji component display correctly when there are too many emoji packs
   border-top: 1px dashed var(--tk-border-color, #eaeaea); /* 虚线分割，颜色可自选 */
   padding-top: 0.5rem !important; /* 线与下方文字的距离 */
 }
+
+.tk-sort-select {
+  color: var(--primary);
+}
