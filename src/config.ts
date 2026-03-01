@@ -494,6 +494,28 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 			type: "playlist",
 			id: "17699636947",
 		},
+		// {
+		// 	name: "B站歌单",
+		// 	mode: "local",
+		// 	audioList: [
+		// 		{
+		// 			id: 1,
+		// 			title: "勾指起誓",
+		// 			artist: "洛天依、ilem",
+		// 			cover: "/assets/music/cover/勾指起誓 - 洛天依、ilem.jpg",
+		// 			url: "/assets/music/url/勾指起誓 - 洛天依、ilem.mp3",
+		// 			duration: 240,
+		// 		},
+		// 		{
+		// 			id: 2,
+		// 			title: "霜雪千年 (cover 洛天依乐正绫)",
+		// 			artist: "真栗",
+		// 			cover: "assets/music/cover/霜雪千年 (cover 洛天依乐正绫) - 真栗.jpg",
+		// 			url: "assets/music/url/霜雪千年 (cover 洛天依乐正绫) - 真栗.mp3",
+		// 			duration: 180,
+		// 		},
+		// 	],
+		// },
 	],
 };
 

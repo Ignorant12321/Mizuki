@@ -26,6 +26,11 @@
 
 ::github{repo="vastsa/FileCodeBox"}
 
+## 🎵 音频聚合 (Audio Aggregation)
+> 本站的音频资源聚合与播放能力，依托于功能强大的 [any-listen](https://github.com/any-listen/any-listen) 项目实现。该项目为站点提供了丰富的音频源接入、解析与播放适配能力，极大丰富了音频内容的呈现形式。
+
+::github{repo="any-listen/any-listen"}
+
 ## 🖼️ 简单图床 (Image Hosting)
 > 全站的图片存储与分发依赖于 [EasyImages2.0](https://github.com/icret/EasyImages2.0)。其轻量高效的架构与 API 支持，为本站提供了稳定流畅的图床服务。
 

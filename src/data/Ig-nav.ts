@@ -60,6 +60,14 @@ export const igNavsData: IgNavItem[] = [
 		siteurl: "https://it-tools.tech/",
 		tags: ["外链"],
 	},
+	{
+		id: 7,
+		title: "Any-Listen",
+		imgurl: "/assets/icon/anylisten.svg",
+		desc: "一款跨平台的私人音乐播放服务",
+		siteurl: "https://music.ignorant.top/",
+		tags: ["Ignorant", "弦音"],
+	},
 ];
 
 // 获取所有友情链接数据
