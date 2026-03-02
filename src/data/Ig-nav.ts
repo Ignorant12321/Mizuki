@@ -62,9 +62,9 @@ export const igNavsData: IgNavItem[] = [
 	},
 	{
 		id: 7,
-		title: "Any-Listen",
-		imgurl: "/assets/icon/anylisten.svg",
-		desc: "一款跨平台的私人音乐播放服务",
+		title: "Navidrome",
+		imgurl: "/assets/icon/Navidrome.svg",
+		desc: "Free, open-source, lightweight music server",
 		siteurl: "https://music.ignorant.top/",
 		tags: ["Ignorant", "弦音"],
 	},
