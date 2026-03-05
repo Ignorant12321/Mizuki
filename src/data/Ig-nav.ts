@@ -64,9 +64,17 @@ export const igNavsData: IgNavItem[] = [
 		id: 7,
 		title: "Navidrome",
 		imgurl: "/assets/icon/Navidrome.svg",
-		desc: "Free, open-source, lightweight music server",
+		desc: "个人音乐库管理与流媒体服务",
 		siteurl: "https://music.ignorant.top/",
 		tags: ["Ignorant", "弦音"],
+	},
+	{
+		id: 8,
+		title: "Python 教程",
+		imgurl: "/assets/icon/VscodeIconsFileTypePython.svg",
+		desc: "零基础入门Python3的中文教程",
+		siteurl: "https://www.runoob.com/python3/python3-tutorial.html",
+		tags: ["外链", "教程"],
 	},
 ];
 

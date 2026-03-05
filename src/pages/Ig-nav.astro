@@ -139,12 +139,13 @@ const allTags = Array.from(new Set(igNavsList.flatMap((item) => item.tags)));
 								<div class="flex flex-col gap-1 min-w-0 sm:flex-1">
 									{/* 标题栏 */}
 									<div class="flex items-center gap-2 mb-0.5">
-										<h3
+										<h1
+											id={`igNav-${item.id}`}
 											class="text-lg sm:text-xl font-bold text-black/90 dark:text-white/90 truncate
 												group-hover:text-[var(--primary)] transition-colors duration-200"
 										>
 											{item.title}
-										</h3>
+										</h1>
 										{/* 标签 (仅在电脑端显示在标题旁) */}
 										<div class="sm:flex flex-wrap gap-1">
 											{item.tags.map((tag) => (

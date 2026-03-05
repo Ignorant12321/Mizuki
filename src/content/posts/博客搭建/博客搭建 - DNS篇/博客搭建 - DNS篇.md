@@ -1,15 +1,15 @@
 ---
-title: 个人博客搭建 - DNS篇
+title: 博客搭建 - DNS篇
 published: 2026-02-04
 updated: 2026-02-04
 description: 'DNS的名词解析，阿里云如何为服务器添加解析'
-image: './个人博客搭建 - DNS篇.webp'
+image: './博客搭建 - DNS篇.webp'
 tags: [blog,developing,DNS]
 category: 'Experience'
 draft: false
 ---
 
-# 个人博客搭建 - DNS篇
+# 博客搭建 - DNS篇
 
 ## 名词解析
 

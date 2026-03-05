@@ -16,7 +16,7 @@
 ::github{repo="SajunaOo/OpenList-Moe"}
 
 ## 🐾 动态互动 (Live2D)
-> 页面左下角生动可爱的 Live2D 看板娘，前端挂件修改自 [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)，后端 API 语音与动作交互服务则基于 [live2d_api](https://github.com/fghrsh/live2d_api) 搭建。
+> 页面左右下角生动可爱的 Live2D 看板娘，前端挂件修改自 [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)，后端 API 模型与动作交互服务则基于 [live2d_api](https://github.com/fghrsh/live2d_api) 搭建。
 
 ::github{repo="stevenjoezhang/live2d-widget"}
 ::github{repo="fghrsh/live2d_api"}
@@ -27,9 +27,9 @@
 ::github{repo="vastsa/FileCodeBox"}
 
 ## 🎵 音频聚合 (Audio Aggregation)
-> 本站的音频资源聚合与播放能力，依托于功能强大的 [any-listen](https://github.com/any-listen/any-listen) 项目实现。该项目为站点提供了丰富的音频源接入、解析与播放适配能力，极大丰富了音频内容的呈现形式。
+> 本站的音频资源聚合与播放能力，依托于功能强大的 [navidrome](https://github.com/navidrome/navidrome) 项目实现。该项目为站点提供了丰富的音频源接入、解析与播放适配能力，极大丰富了音频内容的呈现形式。
 
-::github{repo="any-listen/any-listen"}
+::github{repo="navidrome/navidrome"}
 
 ## 🖼️ 简单图床 (Image Hosting)
 > 全站的图片存储与分发依赖于 [EasyImages2.0](https://github.com/icret/EasyImages2.0)。其轻量高效的架构与 API 支持，为本站提供了稳定流畅的图床服务。
@@ -41,9 +41,7 @@
 
 ::github{repo="lyc8503/UptimeFlare"}
 
----
-
 ## 📊 数据与订阅服务 (Services)
 
-* **网站统计：** 流量分析接入了 **[Umami API](https://umami.is/)** 云端服务。我们专注于网站体验优化，采用匿名数据聚合，**坚决不收集任何用户个人隐私**。
-* **资讯聚合：** 日常的 RSS 资讯订阅与高质量内容阅读，主要通过 **[Inoreader](https://www.inoreader.com/)** 服务进行管理与分发。
+* **网站统计：** 流量分析接入了 **[Umami API](https://umami.is/)** 云端服务。专注于网站体验优化，采用匿名数据聚合，**坚决不收集任何用户个人隐私**。
+* **资讯聚合：** 日常的 RSS 资讯订阅与高质量内容阅读，主要通过 **[Inoreader](https://www.innoreader.com/)** 服务进行管理与分发。

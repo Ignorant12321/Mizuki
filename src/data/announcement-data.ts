@@ -31,9 +31,9 @@ export const announcements: AnnouncementItem[] = [
 		order: 1,
 		closable: true,
 		content: `<div style="line-height: 1.6;">
-            <span>&nbsp;&nbsp;为了提供更稳定安全的服务，本站将于每日实行夜间安全维护，在此期间服务将暂时关闭，感谢您的理解。</span><br>
+            <span>&nbsp;&nbsp;为了提供更稳定安全的服务，本站将于<span style="color: #ff4757;">春节期间</span>实行夜间安全维护，在此期间服务将暂时关闭，感谢您的理解。</span><br>
             <div style="text-align: center;">
-            <span style="color: orange;">维护时段：</span>
+            <span style="color: purple;">维护时段：</span>
             <span style="color: #ff4d4f; font-weight: bold;">00:00</span> 至 <span style="color: #52c41a; font-weight: bold;">08:00</span></div>
         </div>`,
 		date: "2026-02-13",
