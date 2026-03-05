@@ -200,7 +200,7 @@ async function fetchMetingPlaylistText() {
 
 		// 检查音乐播放器是否启用
 		const enableMatch = configContent.match(
-			/musicPlayerConfig:\s*MusicPlayerConfig\s*=\s*\{[\s\S]*?enable:\s*(true|false)/,
+			/musicPlayerConfig[\s\S]*?enable:\s*(true|false)/,
 		);
 		if (!enableMatch || enableMatch[1] === "false") {
 			console.log(
@@ -209,132 +209,179 @@ async function fetchMetingPlaylistText() {
 			return new Set();
 		}
 
-		// 提取音乐播放器配置（使用默认值，因为配置可能不完整）
-		// 在实际的音乐播放器组件中，如果配置中没有指定模式，默认使用 "meting"
-		const musicConfigMatch = configContent.match(
-			/musicPlayerConfig:\s*MusicPlayerConfig\s*=\s*\{([\s\S]*?)\}/,
-		);
-		let mode = "meting"; // 默认模式
-		let meting_api =
+		// 提取整个 musicPlayerConfig 块
+		let configStr = "";
+		const startIndex = configContent.indexOf("musicPlayerConfig");
+		if (startIndex !== -1) {
+			let openBraces = 0;
+			let started = false;
+			for (let i = startIndex; i < configContent.length; i++) {
+				const char = configContent[i];
+				if (char === "{") {
+					openBraces++;
+					started = true;
+				} else if (char === "}") {
+					openBraces--;
+				}
+				if (started) {
+					configStr += char;
+					if (openBraces === 0) break;
+				}
+			}
+		} else {
+			return new Set();
+		}
+
+		// 提取配置值的工具函数
+		const extractValue = (str, key) => {
+			const match = str.match(new RegExp(`${key}:\\s*["']([^"']+)["']`));
+			return match ? match[1] : null;
+		};
+
+		// 获取外层全局默认配置
+		const globalMode = extractValue(configStr, "mode") || "meting";
+		const globalApi =
+			extractValue(configStr, "meting_api") ||
 			"https://meting.mikus.ink/api?server=:server&type=:type&id=:id&auth=:auth&r=:r";
-		let meting_id = "14164869977";
-		let meting_server = "netease";
-		let meting_type = "playlist";
+		const globalServer = extractValue(configStr, "server") || "netease";
+		const globalType = extractValue(configStr, "type") || "playlist";
+		const globalId = extractValue(configStr, "id");
 
-		if (musicConfigMatch) {
-			const configStr = musicConfigMatch[1];
+		const requests = [];
 
-			const modeMatch = configStr.match(/mode:\s*["']([^"']+)["']/);
-			if (modeMatch) {
-				mode = modeMatch[1];
-			}
+		// 1. 添加主配置中的歌单（向下兼容）
+		if (globalMode === "meting" && globalId) {
+			requests.push({
+				api: globalApi,
+				server: globalServer,
+				type: globalType,
+				id: globalId,
+			});
+		}
 
-			const apiMatch = configStr.match(/meting_api:\s*["']([^"']+)["']/);
-			if (apiMatch) {
-				meting_api = apiMatch[1];
-			}
+		// 2. 提取 playlists 数组中的所有歌单
+		const playlistsStartIndex = configStr.indexOf("playlists:");
+		if (playlistsStartIndex !== -1) {
+			// 按 "{" 分割，检查每个包含 "id:" 的代码块
+			const parts = configStr.slice(playlistsStartIndex).split("{");
+			for (const part of parts) {
+				const block = part.split("}")[0]; // 取闭合大括号之前的内容
+				if (block.includes("id:")) {
+					const mode = extractValue(block, "mode");
+					// 如果未配置 mode，则继承外层的 globalMode
+					const isMeting =
+						mode === "meting" || (!mode && globalMode === "meting");
 
-			const idMatch = configStr.match(/id:\s*["']([^"']+)["']/);
-			if (idMatch) {
-				meting_id = idMatch[1];
-			}
-
-			const serverMatch = configStr.match(/server:\s*["']([^"']+)["']/);
-			if (serverMatch) {
-				meting_server = serverMatch[1];
-			}
-
-			const typeMatch = configStr.match(/type:\s*["']([^"']+)["']/);
-			if (typeMatch) {
-				meting_type = typeMatch[1];
+					if (isMeting) {
+						const id = extractValue(block, "id");
+						// 确保是有引号的字符串 ID (避免匹配到 local 模式中的数字 id: 1)
+						if (id) {
+							requests.push({
+								api:
+									extractValue(block, "meting_api") ||
+									globalApi,
+								server:
+									extractValue(block, "server") ||
+									globalServer,
+								type: extractValue(block, "type") || globalType,
+								id: id,
+							});
+						}
+					}
+				}
 			}
 		}
 
-		if (mode !== "meting") {
+		// 3. 去重并生成完整的请求 URL
+		const uniqueRequests = [];
+		const seenUrls = new Set();
+		for (const req of requests) {
+			const urlKey = `${req.api}|${req.server}|${req.type}|${req.id}`;
+			if (!seenUrls.has(urlKey)) {
+				seenUrls.add(urlKey);
+				const apiUrl = req.api
+					.replace(":server", req.server)
+					.replace(":type", req.type)
+					.replace(":id", req.id)
+					.replace(":auth", "")
+					.replace(":r", Date.now().toString());
+				uniqueRequests.push(apiUrl);
+			}
+		}
+
+		if (uniqueRequests.length === 0) {
 			console.log(
-				'ℹ Music player mode is not "meting", skipping API text collection',
+				"ℹ No Meting API playlists found, skipping music text collection",
 			);
 			return new Set();
 		}
 
-		// 构建 API URL
-		const apiUrl = meting_api
-			.replace(":server", meting_server)
-			.replace(":type", meting_type)
-			.replace(":id", meting_id)
-			.replace(":auth", "")
-			.replace(":r", Date.now().toString());
-
-		console.log("ℹ Fetching music playlist from Meting API...");
-		console.log(`  URL: ${apiUrl}`);
-
-		// 设置请求超时
-		const controller = new AbortController();
-		const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
-
+		console.log(
+			`ℹ Fetching music playlists from ${uniqueRequests.length} Meting API endpoints...`,
+		);
 		const textSet = new Set();
 
-		try {
-			const response = await fetch(apiUrl, {
-				signal: controller.signal,
-				headers: {
-					"User-Agent":
-						"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-				},
-			});
-			clearTimeout(timeoutId);
+		// 4. 遍历所有 API 端点获取数据
+		for (const apiUrl of uniqueRequests) {
+			console.log(`  URL: ${apiUrl}`);
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
 
-			if (!response.ok) {
-				throw new Error(
-					`HTTP ${response.status}: ${response.statusText}`,
-				);
-			}
+			try {
+				const response = await fetch(apiUrl, {
+					signal: controller.signal,
+					headers: {
+						"User-Agent":
+							"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+					},
+				});
+				clearTimeout(timeoutId);
 
-			const playlist = await response.json();
-
-			if (!Array.isArray(playlist)) {
-				throw new Error("API response is not an array");
-			}
-
-			console.log(
-				`✓ Successfully fetched ${playlist.length} songs from Meting API`,
-			);
-
-			// 提取歌曲信息中的文字
-			let songCount = 0;
-			playlist.forEach((song) => {
-				const title = song.name ?? song.title ?? "";
-				const artist = song.artist ?? song.author ?? "";
-
-				// 只处理有效的歌曲信息
-				if (title.trim() || artist.trim()) {
-					songCount++;
-
-					// 添加歌名中的字符
-					for (const char of title) {
-						textSet.add(char);
-					}
-
-					// 添加歌手名中的字符
-					for (const char of artist) {
-						textSet.add(char);
-					}
+				if (!response.ok) {
+					throw new Error(
+						`HTTP ${response.status}: ${response.statusText}`,
+					);
 				}
-			});
-			if (songCount === 0) {
-				console.log("⚠ No valid song data found in API response");
-			}
-		} catch (fetchError) {
-			clearTimeout(timeoutId);
 
-			if (fetchError.name === "AbortError") {
+				const playlist = await response.json();
+
+				if (!Array.isArray(playlist)) {
+					throw new Error("API response is not an array");
+				}
+
 				console.log(
-					"⚠ Meting API request timeout (10s), skipping music text collection",
+					`  ✓ Successfully fetched ${playlist.length} songs`,
 				);
-			} else {
-				console.log(
-					`⚠ Failed to fetch Meting API data: ${fetchError.message}, skipping music text collection`,
-				);
+
+				// 提取歌曲信息中的文字
+				let songCount = 0;
+				playlist.forEach((song) => {
+					const title = song.name ?? song.title ?? "";
+					const artist = song.artist ?? song.author ?? "";
+
+					if (title.trim() || artist.trim()) {
+						songCount++;
+						for (const char of title) textSet.add(char);
+						for (const char of artist) textSet.add(char);
+					}
+				});
+
+				if (songCount === 0) {
+					console.log(
+						"  ⚠ No valid song data found in this API response",
+					);
+				}
+			} catch (fetchError) {
+				clearTimeout(timeoutId);
+				if (fetchError.name === "AbortError") {
+					console.log(
+						"  ⚠ Meting API request timeout (10s), skipping this playlist",
+					);
+				} else {
+					console.log(
+						`  ⚠ Failed to fetch Meting API data: ${fetchError.message}, skipping this playlist`,
+					);
+				}
 			}
 		}
 
@@ -697,6 +744,180 @@ async function fetchBangumiAnimeText() {
 		return new Set();
 	}
 }
+// 获取 Markdown 文件中 GitHub 卡片的动态文字（官方 API 提权版）
+async function fetchGitHubRepoText() {
+	try {
+		// 1. 确定内容目录（与 collectText 的解析逻辑保持一致）
+		let contentDir;
+		if (
+			process.env.ENABLE_CONTENT_SYNC === "true" &&
+			process.env.CONTENT_DIR
+		) {
+			contentDir = path.join(__dirname, "..", process.env.CONTENT_DIR);
+		} else {
+			contentDir = path.join(__dirname, "../src/content"); // 默认 Astro 内容目录
+		}
+
+		if (!fs.existsSync(contentDir)) {
+			console.log(
+				"ℹ Content directory not found, skipping GitHub text collection",
+			);
+			return new Set();
+		}
+
+		// 2. 复用全局的 readFilesRecursively 函数
+		const files = readFilesRecursively(contentDir);
+		const repos = new Set();
+
+		// 3. 匹配 ::github{repo="xxx/yyy"}
+		const githubRegex = /::github\{repo=["']([^"']+)["']\}/g;
+		for (const file of files) {
+			const ext = path.extname(file).toLowerCase();
+			if (ext === ".md" || ext === ".mdx") {
+				const content = fs.readFileSync(file, "utf-8");
+				let match;
+				while ((match = githubRegex.exec(content)) !== null) {
+					repos.add(match[1]);
+				}
+			}
+		}
+
+		if (repos.size === 0) {
+			console.log(
+				"ℹ No GitHub cards found, skipping GitHub text collection",
+			);
+			return new Set();
+		}
+
+		console.log(
+			`ℹ Fetching data for ${repos.size} GitHub repositories (via GitHub API)...`,
+		);
+
+		// 获取环境变量中的 GITHUB_TOKEN
+		const token = process.env.GITHUB_TOKEN;
+		if (!token) {
+			console.log("  ⚠ WARNING: GITHUB_TOKEN is not set!");
+			console.log(
+				"    Without a token, you are limited to 60 requests/hour.",
+			);
+		} else {
+			console.log(
+				"  ℹ Using provided GITHUB_TOKEN for authentication (5000 requests/hr).",
+			);
+		}
+
+		const textSet = new Set();
+
+		// 【双保险】把常见的编程语言字符直接加入字体库，防止卡片上的语言标签缺字
+		const commonLanguages =
+			"TypeScriptJavaScriptHTMLCSSVueReactAstroPythonJavaC++GoRustRubyPHPSwiftKotlinShellObjective-C";
+		for (const char of commonLanguages) textSet.add(char);
+
+		// 4. 遍历请求 GitHub API 获取介绍文字
+		for (const repo of repos) {
+			const url = `https://api.github.com/repos/${repo}`;
+			console.log(`  URL: ${url}`);
+
+			let success = false;
+			let retryCount = 2; // 最多重试 2 次
+
+			while (retryCount >= 0 && !success) {
+				const controller = new AbortController();
+				const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+
+				try {
+					const headers = {
+						"User-Agent":
+							"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+						Accept: "application/vnd.github.v3+json",
+					};
+
+					// 如果配置了 Token，就在请求头里带上
+					if (token) {
+						headers["Authorization"] = `Bearer ${token}`;
+					}
+
+					const response = await fetch(url, {
+						signal: controller.signal,
+						headers: headers,
+					});
+
+					clearTimeout(timeoutId);
+
+					if (!response.ok) {
+						// 专门捕捉速率限制错误
+						if (
+							response.status === 403 ||
+							response.status === 429
+						) {
+							throw new Error(
+								`API Rate Limit Exceeded or Forbidden (HTTP ${response.status})`,
+							);
+						}
+						throw new Error(
+							`HTTP ${response.status}: ${response.statusText}`,
+						);
+					}
+
+					const data = await response.json();
+
+					// 提取 API 返回的 JSON 数据：仓库名、描述、语言类型、全名
+					const textToExtract =
+						(data.name || "") +
+						(data.description || "") +
+						(data.language || "") +
+						repo;
+
+					let charCount = 0;
+					for (const char of textToExtract) {
+						textSet.add(char);
+						charCount++;
+					}
+
+					if (charCount > 0) {
+						console.log(
+							`  ✓ Successfully extracted text from ${repo}`,
+						);
+					} else {
+						console.log(`  ⚠ No text found for ${repo}`);
+					}
+
+					success = true; // 成功，跳出 while 循环
+				} catch (fetchError) {
+					clearTimeout(timeoutId);
+
+					if (retryCount > 0) {
+						console.log(
+							`  ⚠ Fetch failed (${fetchError.message}), retrying... (${retryCount} left)`,
+						);
+						// 失败后等待 2 秒再重试，防止并发过高
+						await new Promise((resolve) =>
+							setTimeout(resolve, 2000),
+						);
+					} else {
+						if (fetchError.name === "AbortError") {
+							console.log(
+								`  ⚠ GitHub API request timeout (10s), skipping ${repo}`,
+							);
+						} else {
+							console.log(
+								`  ⚠ Failed to fetch ${repo}: ${fetchError.message}`,
+							);
+						}
+					}
+				}
+				retryCount--;
+			}
+		}
+
+		return textSet;
+	} catch (error) {
+		console.log(
+			`⚠ Error processing GitHub repos: ${error.message}, skipping GitHub text collection`,
+		);
+		return new Set();
+	}
+}
 
 // 收集所有使用的文字（用于 CJK 字体）
 async function collectText() {
@@ -964,6 +1185,20 @@ async function collectText() {
 	if (bilibiliTextSet.size > 0) {
 		console.log(
 			`✓ Added ${bilibiliTextSet.size} unique characters from Bilibili anime data`,
+		);
+	}
+
+	// 8. 从 Markdown 文件中提取 GitHub 卡片文字
+	const githubTextSet = await fetchGitHubRepoText();
+
+	// 将 GitHub 的文字添加到主文字集合中
+	for (const char of githubTextSet) {
+		textSet.add(char);
+	}
+
+	if (githubTextSet.size > 0) {
+		console.log(
+			`✓ Added ${githubTextSet.size} unique characters from GitHub repositories`,
 		);
 	}
 

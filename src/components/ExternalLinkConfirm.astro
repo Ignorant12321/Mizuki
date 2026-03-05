@@ -432,7 +432,7 @@ const bgStyle = background ? `url('${background}')` : "none";
 			if (!currentLink) return;
 			const href = currentLink.href;
 			const target = currentLink.target;
-
+			currentLink = null; // 防止重复点击
 			closeDialog();
 			setTimeout(() => {
 				if (target === "_blank") {

@@ -10,9 +10,9 @@
 ::github{repo="matsuzaka-yuki/Mizuki"}
 
 ## 🖴 聚合网盘 (OpenList)
-> 本站的资源分享与下载中心由强大的文件列表程序驱动，完美实现了多云盘的统一挂载、密码保护与极速分发，极大提升了站点的资源托管能力。同时，前端美化样式基于 SajunaOo/OpenList-Moe 项目深度定制。
+> 本站的资源分享与下载中心由强大的文件列表程序驱动，完美实现了多云盘的统一挂载、密码保护与极速分发，极大提升了站点的资源托管能力。同时，前端美化样式基于 [OpenList-Moe](https://github.com/SajunaOo/OpenList-Moe) 项目深度定制。
 
-::github{repo="alist-org/alist"}
+::github{repo="OpenListTeam/OpenList"}
 ::github{repo="SajunaOo/OpenList-Moe"}
 
 ## 🐾 动态互动 (Live2D)

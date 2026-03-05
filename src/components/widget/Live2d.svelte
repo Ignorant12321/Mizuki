@@ -151,6 +151,37 @@
 				{ passive: true, capture: true },
 			);
 		}
+		// 触摸屏点击事件
+		if (typeof window !== "undefined") {
+			window.addEventListener(
+				"touchend",
+				(e) => {
+					const target = e.target;
+					// 判断触摸的是不是看板娘的 canvas 元素
+					if (target && target.id === "live2d") {
+						// 提取手指触摸的最后坐标
+						const touch = e.changedTouches[0];
+						const clientX = touch ? touch.clientX : 0;
+						const clientY = touch ? touch.clientY : 0;
+
+						// 稍微延迟，避开底层引擎的拦截处理
+						setTimeout(() => {
+							// 人工制造一个 click 事件，并附带上触摸坐标
+							const clickEvent = new MouseEvent("click", {
+								bubbles: true, // 允许冒泡被外层监听到
+								cancelable: true,
+								view: window,
+								clientX: clientX, // 传入真实的 X 坐标
+								clientY: clientY, // 传入真实的 Y 坐标
+							});
+							// 派发点击事件
+							target.dispatchEvent(clickEvent);
+						}, 50);
+					}
+				},
+				{ capture: true, passive: true },
+			);
+		}
 	});
 
 	onDestroy(() => {
