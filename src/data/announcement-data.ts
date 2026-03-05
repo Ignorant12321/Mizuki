@@ -44,4 +44,17 @@ export const announcements: AnnouncementItem[] = [
 			external: false,
 		},
 	},
+	// {
+	// 	id: "notice-003",
+	// 	title: "欢迎：",
+	// 	icon: "",
+	// 	pinned: false,
+	// 	order: 0,
+	// 	content: `
+	//         <video autoplay loop muted playsinline style=" margin-right: 8px; border-radius: 4px;">
+	//             <source src="../public/images/others/welcome.mp4" type="video/mp4">
+	//         </video>`,
+	// 	date: "2026-03-05",
+	// 	closable: true,
+	// },
 ];
