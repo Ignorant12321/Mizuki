@@ -1,8 +1,6 @@
 ---
 ---
 
----
-
 # 🐾 捕捉一只好伙伴！
 
 <div style="border-left: 4px solid var(--primary); background: var(--page-bg); padding: 12px 15px; margin: 15px 0; color: var(--text-primary); border-radius: 4px;">
