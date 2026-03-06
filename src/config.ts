@@ -668,6 +668,7 @@ export const sakuraConfig: SakuraConfig = {
 // 鼠标点击效果
 export const clickEffectConfig: ClickEffectConfig = {
 	enable: true, // 是否启用点击效果
+	blacklist: ["#waifu"], // 黑名单，点击这些元素不会触发效果
 };
 
 // Live2D Widget 配置

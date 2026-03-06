@@ -1,8 +1,13 @@
 ---
 // ClickEffect.astro
 // 鼠标点击粒子特效组件
+import { clickEffectConfig } from "@/config";
+// 获取黑名单，如果没有配置则默认为空数组
+const blacklist = clickEffectConfig.blacklist || [];
 ---
 
+<template id="click-effect-config" data-blacklist={JSON.stringify(blacklist)}
+></template>
 <style>
 	/* 点击粒子效果样式 */
 	:global(.click-particle) {
@@ -178,10 +183,33 @@
 		}, 1100);
 	}
 
+	// 读取 HTML 中存放的黑名单配置
+	const configEl = document.getElementById("click-effect-config");
+	let blacklist = [];
+	if (configEl && configEl.dataset.blacklist) {
+		try {
+			blacklist = JSON.parse(configEl.dataset.blacklist);
+		} catch (e) {
+			console.error("Failed to parse click effect blacklist", e);
+		}
+	}
+
 	// 监听全局点击事件
 	document.addEventListener("click", (e) => {
 		const particleCount = 10;
 		const baseDistance = 18;
+
+		// 只有当黑名单数组中有内容时，才去读取 DOM 并进行匹配
+		if (blacklist.length > 0) {
+			const target = e.target as HTMLElement;
+			// 如果点击的元素存在，且命中了黑名单中的任意一个选择器，则不生成粒子
+			if (
+				target &&
+				blacklist.some((selector) => target.closest(selector))
+			) {
+				return;
+			}
+		}
 
 		// 基础环形粒子
 		for (let i = 0; i < particleCount; i++) {
