@@ -49,7 +49,7 @@ const uid = Math.random().toString(36).slice(2, 8);
 			<div class="absolute top-4 right-5 z-10">
 				<button
 					id={`history-toggle-btn-${uid}`}
-					class="flex items-center gap-1.5 px-2 py-1 rounded-md text-neutral-400 hover:text-[var(--primary)] hover:bg-[var(--btn-regular-bg)] transition-colors cursor-pointer select-none"
+					class="flex items-center gap-1.5 px-2 py-1 rounded-md text-neutral-400 hover:text-(--primary) hover:bg-(--btn-regular-bg) transition-colors cursor-pointer select-none"
 					aria-label="Toggle History"
 				>
 					<span
@@ -80,7 +80,7 @@ const uid = Math.random().toString(36).slice(2, 8);
 			class="absolute inset-0 hidden flex-col items-center justify-center text-center select-none z-0"
 		>
 			<div
-				class="h-12 w-12 bg-[var(--card-bg)] rounded-full flex items-center justify-center mb-3 text-neutral-400 shadow-sm border border-neutral-100 dark:border-none"
+				class="h-12 w-12 bg-(--card-bg) rounded-full flex items-center justify-center mb-3 text-neutral-400 shadow-sm border border-neutral-100 dark:border-none"
 			>
 				<Icon name={finalPlaceholder.latest.icon} class="text-xl" />
 			</div>
@@ -96,7 +96,7 @@ const uid = Math.random().toString(36).slice(2, 8);
 			class="absolute inset-0 hidden flex-col items-center justify-center text-center select-none z-0"
 		>
 			<div
-				class="h-12 w-12 bg-[var(--card-bg)] rounded-full flex items-center justify-center mb-3 text-neutral-400 shadow-sm border border-neutral-100 dark:border-none"
+				class="h-12 w-12 bg-(--card-bg) rounded-full flex items-center justify-center mb-3 text-neutral-400 shadow-sm border border-neutral-100 dark:border-none"
 			>
 				<Icon name={finalPlaceholder.history.icon} class="text-xl" />
 			</div>
@@ -116,14 +116,14 @@ const uid = Math.random().toString(36).slice(2, 8);
 		<div class="flex items-center gap-1">
 			<button
 				id={`first-page-${uid}`}
-				class="p-1.5 rounded-md hover:bg-[var(--card-bg)] text-neutral-400 hover:text-[var(--primary)] disabled:opacity-30 disabled:pointer-events-none transition"
+				class="p-1.5 rounded-md hover:bg-(--card-bg) text-neutral-400 hover:text-(--primary) disabled:opacity-30 disabled:pointer-events-none transition"
 				aria-label="First Page"
 			>
 				<Icon name="fa7-solid:angles-left" class="text-xs" />
 			</button>
 			<button
 				id={`prev-page-${uid}`}
-				class="p-1.5 rounded-md hover:bg-[var(--card-bg)] text-neutral-400 hover:text-[var(--primary)] disabled:opacity-30 disabled:pointer-events-none transition"
+				class="p-1.5 rounded-md hover:bg-(--card-bg) text-neutral-400 hover:text-(--primary) disabled:opacity-30 disabled:pointer-events-none transition"
 				aria-label="Previous Page"
 			>
 				<Icon name="fa7-solid:chevron-left" class="text-xs" />
@@ -136,7 +136,7 @@ const uid = Math.random().toString(36).slice(2, 8);
 				id={`page-input-${uid}`}
 				value="1"
 				min="1"
-				class="w-10 h-6 text-center border border-neutral-200 dark:border-neutral-700 rounded bg-transparent focus:border-[var(--primary)] focus:text-[var(--primary)] focus:outline-none transition-colors"
+				class="w-10 h-6 text-center border border-neutral-200 dark:border-neutral-700 rounded bg-transparent focus:border-(--primary) focus:text-(--primary) focus:outline-none transition-colors"
 			/>
 			<span class="text-neutral-400">/</span>
 			<span id={`total-pages-text-${uid}`}>1</span>
@@ -145,14 +145,14 @@ const uid = Math.random().toString(36).slice(2, 8);
 		<div class="flex items-center gap-1">
 			<button
 				id={`next-page-${uid}`}
-				class="p-1.5 rounded-md hover:bg-[var(--card-bg)] text-neutral-400 hover:text-[var(--primary)] disabled:opacity-30 disabled:pointer-events-none transition"
+				class="p-1.5 rounded-md hover:bg-(--card-bg) text-neutral-400 hover:text-(--primary) disabled:opacity-30 disabled:pointer-events-none transition"
 				aria-label="Next Page"
 			>
 				<Icon name="fa7-solid:chevron-right" class="text-xs" />
 			</button>
 			<button
 				id={`last-page-${uid}`}
-				class="p-1.5 rounded-md hover:bg-[var(--card-bg)] text-neutral-400 hover:text-[var(--primary)] disabled:opacity-30 disabled:pointer-events-none transition"
+				class="p-1.5 rounded-md hover:bg-(--card-bg) text-neutral-400 hover:text-(--primary) disabled:opacity-30 disabled:pointer-events-none transition"
 				aria-label="Last Page"
 			>
 				<Icon name="fa7-solid:angles-right" class="text-xs" />
@@ -327,14 +327,14 @@ const uid = Math.random().toString(36).slice(2, 8);
 				if (isHistoryMode) {
 					btnText.innerText = "返回";
 					historyBtn.classList.add(
-						"text-[var(--primary)]",
-						"bg-[var(--btn-regular-bg)]",
+						"text-(--primary)",
+						"bg-(--btn-regular-bg)",
 					);
 				} else {
 					btnText.innerText = "历史";
 					historyBtn.classList.remove(
-						"text-[var(--primary)]",
-						"bg-[var(--btn-regular-bg)]",
+						"text-(--primary)",
+						"bg-(--btn-regular-bg)",
 					);
 				}
 				render();
@@ -415,7 +415,7 @@ const uid = Math.random().toString(36).slice(2, 8);
 					isHistoryMode || item.closable !== false || expired;
 				const closeBtnHtml = showCloseBtn
 					? `<button 
-						class="text-neutral-400 hover:text-[var(--primary)] hover:bg-[var(--btn-regular-bg)] rounded-md transition-all p-1 shrink-0 ml-3"
+						class="text-neutral-400 hover:text-(--primary) hover:bg-(--btn-regular-bg) rounded-md transition-all p-1 shrink-0 ml-3"
 						onclick="window['toggleAnnouncementStatus_' + '${uid}']('${item.id}')"
 						title="${actionTitle}"
 					   >
@@ -424,13 +424,13 @@ const uid = Math.random().toString(36).slice(2, 8);
 					: "";
 
 				const iconHtml = item.icon
-					? `<span class="mr-2 shrink-0 text-sm text-[var(--primary)]">${item.icon}</span>`
+					? `<span class="mr-2 shrink-0 text-sm text-(--primary)">${item.icon}</span>`
 					: "";
 
 				const linkHtml =
 					item.link && item.link.enable
 						? `<a href="${item.link.url}" target="${item.link.external ? "_blank" : "_self"}" 
-					   class="text-xs font-medium text-[var(--primary)] hover:opacity-80 transition-opacity flex items-center gap-1 bg-[var(--btn-regular-bg)] px-2 py-0.5 rounded-full">
+					   class="text-xs font-medium text-(--primary) hover:opacity-80 transition-opacity flex items-center gap-1 bg-(--btn-regular-bg) px-2 py-0.5 rounded-full">
 						${item.link.text}
 						<svg viewBox="0 0 320 512" class="h-2 w-2" fill="currentColor"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>
 					</a>`
@@ -444,24 +444,24 @@ const uid = Math.random().toString(36).slice(2, 8);
 					: "<span></span>";
 
 				const expiredBadge = expired
-					? `<span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800/50 flex-shrink-0 font-normal">已过期</span>`
+					? `<span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800/50 shrink-0 font-normal">已过期</span>`
 					: "";
 
 				html += `
-				<div class="announcement-item item-enter relative flex flex-col bg-[var(--card-bg)] rounded-xl p-3 border border-neutral-200 dark:border-neutral-700/50 shadow-sm overflow-hidden" 
+				<div class="announcement-item item-enter relative flex flex-col bg-(--card-bg) rounded-xl p-3 border border-neutral-200 dark:border-neutral-700/50 shadow-sm overflow-hidden" 
 					 data-id="${item.id}"
 					 style="animation-delay: ${delay}ms">
 					<div class="flex items-start justify-between mb-2">
 						<div class="flex items-start flex-1 min-w-0">
 							 ${iconHtml}
-							 <div class="font-bold text-sm text-neutral-800 dark:text-neutral-200 leading-tight break-words pt-[1px] flex items-center flex-wrap">
+							 <div class="font-bold text-sm text-neutral-800 dark:text-neutral-200 leading-tight wrap-break-word pt-px flex items-center flex-wrap">
 								${item.title}
 								${expiredBadge}
 							 </div>
 						</div>
 						${closeBtnHtml}
 					</div>
-					<div class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-3 break-words ml-1">
+					<div class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-3 wrap-break-word ml-1">
 						${item.content}
 					</div>
 					<div class="flex justify-between items-center mt-auto pt-2 border-t border-dashed border-neutral-200 dark:border-neutral-700/50">
