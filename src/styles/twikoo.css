@@ -69,10 +69,35 @@ html.dark {
   }
 }
 
+/* 评论卡片样式 */
 .tk-comment {
-  @apply border-[1px] border-[rgba(144,147,153,0.31)] p-4 rounded-2xl hover:shadow-md transition-all;
-  .tk-action-icon svg {
-    @apply fill-(--primary);
+  /* 1. 基础卡片样式 */
+  @apply border-[1px] border-(--line-divider) p-4 rounded-2xl transition-all duration-300;
+
+  /* 2. 渐变背景：从卡片背景色到极淡的主色渐变 */
+  background: linear-gradient(135deg, var(--card-bg) 0%, rgba(var(--primary), 0.02) 100%);
+
+  /* 3. 内部图标样式 */
+  .tk-action-icon {
+    @apply text-(--primary)!;
+    svg {
+      @apply fill-(--primary) hover:scale-110 transition-transform duration-200;
+    }
+  }
+
+  /* 4. 核心：鼠标移动到评论上的样式 */
+  &:hover {
+    /* 向上位移，产生悬浮感 */
+    transform: translateY(-2px);
+
+    /* 强化的阴影效果，让阴影更深更有层次感 */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+
+    /* 边框变色，突出当前选中的评论 */
+    @apply border-(--primary);
+
+    /* 确保悬浮时的阴影不会被相邻元素遮挡 */
+    z-index: 2;
   }
 }
 
@@ -120,15 +145,8 @@ html.dark {
 }
 
 /* Replies */
-.tk-replies {
-  .tk-comment {
-    @apply bg-(--page-bg);
-    .tk-content {
-      > span:first-of-type {
-        @apply text-xs;
-      }
-    }
-  }
+.tk-replies .tk-comment {
+  @apply border-l-4 border-l-(--btn-regular-bg)/30 p-3 hover:border-(--primary) transition-all duration-300;
 }
 
 .twikoo .code-block {

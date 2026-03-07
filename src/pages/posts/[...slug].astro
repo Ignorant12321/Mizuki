@@ -306,6 +306,21 @@ const jsonLd = {
                 )
             }
 
+            {licenseConfig.enable && (
+                <div id="license-component" class:list={["encrypted-hidden-wrapper", { "encrypted-hidden": isEncrypted }]}>
+                    <License
+                    title={entry.data.title}
+                    id={entry.id}
+                    pubDate={entry.data.published}
+                    author={entry.data.author}
+                    sourceLink={entry.data.sourceLink}
+                    licenseName={entry.data.licenseName}
+                    licenseUrl={entry.data.licenseUrl}
+                    class="mb-6 rounded-xl license-container onload-animation"
+                />
+                </div>
+            )}
+            
             {shareConfig.enable && (
                 <div id="share-component" class:list={["p-6 bg-(--license-block-bg) rounded-xl mb-6 onload-animation", { "encrypted-hidden": isEncrypted }]}>
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -339,21 +354,6 @@ const jsonLd = {
                             />
                         </div>
                     </div>
-                </div>
-            )}
-
-            {licenseConfig.enable && (
-                <div id="license-component" class:list={["encrypted-hidden-wrapper", { "encrypted-hidden": isEncrypted }]}>
-                    <License
-                    title={entry.data.title}
-                    id={entry.id}
-                    pubDate={entry.data.published}
-                    author={entry.data.author}
-                    sourceLink={entry.data.sourceLink}
-                    licenseName={entry.data.licenseName}
-                    licenseUrl={entry.data.licenseUrl}
-                    class="mb-6 rounded-xl license-container onload-animation"
-                />
                 </div>
             )}
         </div>

@@ -6,8 +6,10 @@
 
 ## 🎨 博客主题 (Theme)
 > 本站的前端呈现基于轻量级框架 Astro 构建，采用了设计优雅、细节丰富的 [Mizuki](https://github.com/matsuzaka-yuki/mizuki) 主题，为用户提供沉浸式的阅读体验。
+> 同时，本站在交互细节等方面，参考 [Firefly](https://github.com/CuteLeaf/Firefly) 项目。
 
 ::github{repo="matsuzaka-yuki/Mizuki"}
+::github{repo="CuteLeaf/Firefly"}
 
 ## 🖴 聚合网盘 (OpenList)
 > 本站的资源分享与下载中心由强大的文件列表程序驱动，完美实现了多云盘的统一挂载、密码保护与极速分发，极大提升了站点的资源托管能力。同时，前端美化样式基于 [OpenList-Moe](https://github.com/SajunaOo/OpenList-Moe) 项目深度定制。
