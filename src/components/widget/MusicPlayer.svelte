@@ -152,15 +152,28 @@
 		};
 	}
 
+	// 新增：平滑过渡歌曲状态的辅助函数
+	function syncCurrentSongWithPlaylist() {
+		if (!currentSong.url) {
+			// 如果播放器刚初始化，什么都没播放，默认加载新歌单的第一首歌
+			currentIndex = 0;
+			if (playlist.length > 0) loadSong(playlist[0]);
+		} else {
+			// 如果已经有歌曲在播放，去新歌单里找找看有没有同一首歌
+			const foundIndex = playlist.findIndex(
+				(s) => s.url === currentSong.url,
+			);
+			// 如果新歌单里没这首歌，会变成 -1，当前播放不会被打断，点“下一首”会自动从新歌单第一首开始
+			currentIndex = foundIndex;
+		}
+	}
+
 	// 核心：智能加载歌单数据 (兼顾 local 和 meting，以及独立 API)
 	async function loadPlaylistData(listIndex = 0) {
 		if (playlistsConfig.length === 0) return;
 		const config = playlistsConfig[listIndex];
-
-		// 确定当前歌单的模式（优先读取独立的，没有就用全局）
 		const currentMode = config.mode ?? globalMode;
 
-		// 生成缓存Key
 		let cacheKey = "";
 		if (currentMode === "local") {
 			cacheKey = `local-${config.name}`;
@@ -171,8 +184,7 @@
 		// 如果有缓存，直接用缓存
 		if (playlistCache[cacheKey]) {
 			playlist = playlistCache[cacheKey];
-			currentIndex = 0;
-			if (playlist.length > 0) loadSong(playlist[0]);
+			syncCurrentSongWithPlaylist(); // 替换了原来的强制切歌
 			return;
 		}
 
@@ -182,8 +194,7 @@
 			playlistCache[cacheKey] = [...localData];
 			if (listIndex === currentListIndex) {
 				playlist = playlistCache[cacheKey];
-				currentIndex = 0;
-				if (playlist.length > 0) loadSong(playlist[0]);
+				syncCurrentSongWithPlaylist(); // 替换了原来的强制切歌
 			}
 			return;
 		}
@@ -207,13 +218,9 @@
 			const newPlaylist = list.map(parseMetingSong);
 
 			playlistCache[cacheKey] = newPlaylist;
-
 			if (listIndex === currentListIndex) {
 				playlist = newPlaylist;
-				currentIndex = 0;
-				if (playlist.length > 0) {
-					loadSong(playlist[0]);
-				}
+				syncCurrentSongWithPlaylist(); // 替换了原来的强制切歌
 			}
 		} catch (e) {
 			showErrorMessage(i18n(Key.musicPlayerErrorPlaylist));
@@ -226,15 +233,9 @@
 	function switchPlaylist(index: number) {
 		if (currentListIndex === index) return;
 		currentListIndex = index;
-		const wasPlaying = isPlaying;
-		if (wasPlaying && audio) audio.pause();
 
-		loadPlaylistData(index).then(() => {
-			if (wasPlaying && playlist.length > 0) {
-				willAutoPlay = true;
-				if (audio) audio.play().catch(() => {});
-			}
-		});
+		// 仅仅加载新歌单数据更新UI，不再去管 audio 的 pause 和 play
+		loadPlaylistData(index);
 	}
 
 	function togglePlay() {
@@ -908,41 +909,39 @@
 		</div>
 		{#if showPlaylist}
 			<div
-				class="playlist-panel float-panel fixed bottom-20 left-5 w-80 max-h-96 overflow-hidden z-50 flex flex-col"
+				class="playlist-panel float-panel fixed bottom-20 left-5 w-[22rem] max-h-[32rem] overflow-hidden z-50 flex flex-col rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-(--card-bg) border border-(--line-divider)/50"
 				transition:slide={{ duration: 300, axis: "y" }}
 			>
 				<div
-					class="playlist-header flex flex-col p-4 border-b border-(--line-divider) gap-3 shrink-0"
+					class="flex flex-col pt-6 px-6 pb-3 border-b border-(--line-divider)/40 gap-4 shrink-0"
 				>
 					<div class="flex items-center justify-between w-full">
-						<h3 class="text-lg font-semibold text-90">
+						<h3
+							class="text-[1.35rem] font-bold text-90 tracking-wide"
+						>
 							{i18n(Key.musicPlayerPlaylist)}
 						</h3>
 						<button
-							class="btn-plain w-8 h-8 rounded-lg"
+							class="w-8 h-8 rounded-full flex items-center justify-center text-50 hover:text-90 hover:bg-(--btn-regular-bg) transition-colors"
 							on:click={togglePlaylist}
 						>
 							<Icon
-								icon="material-symbols:close"
-								class="text-lg"
+								icon="material-symbols:close-rounded"
+								class="text-[1.35rem]"
 							/>
 						</button>
 					</div>
 
 					{#if playlistsConfig.length > 1}
 						<div
-							class="custom-scrollbar flex items-center gap-2 overflow-x-auto w-full p-1"
+							class="custom-scrollbar flex items-center gap-3 overflow-x-auto w-full pb-1"
 						>
 							{#each playlistsConfig as pConfig, pIndex}
 								<button
-									class="shrink-0 h-8 px-4 text-sm font-medium rounded-full transition-colors flex items-center justify-center"
-									class:bg-[var(--primary)]={currentListIndex ===
-										pIndex}
-									class:text-white={currentListIndex ===
-										pIndex}
-									class:bg-[var(--btn-regular-bg)]={currentListIndex !==
-										pIndex}
-									class:text-90={currentListIndex !== pIndex}
+									class="shrink-0 px-4 py-1.5 text-[13px] font-medium rounded-full transition-all duration-300 {currentListIndex ===
+									pIndex
+										? 'bg-(--primary) text-white shadow-md shadow-(--primary)/25'
+										: 'bg-(--primary)/10 text-60 hover:text-90 hover:bg-(--primary)/20'}"
 									on:click={() => switchPlaylist(pIndex)}
 								>
 									{pConfig.name}
@@ -951,15 +950,16 @@
 						</div>
 					{/if}
 				</div>
+
 				<div
-					class="custom-scrollbar playlist-content overflow-y-auto flex-1 max-h-80"
+					class="custom-scrollbar playlist-content overflow-y-auto flex-1 p-2"
 				>
 					{#each playlist as song, index}
 						<div
-							class="playlist-item flex items-center gap-3 p-3 hover:bg-(--btn-plain-bg-hover) cursor-pointer transition-colors"
-							class:bg-[var(--btn-plain-bg)]={index ===
-								currentIndex}
-							class:text-[var(--primary)]={index === currentIndex}
+							class="playlist-item flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all duration-200 {index ===
+							currentIndex
+								? 'bg-(--primary)/[0.08]'
+								: 'hover:bg-(--btn-plain-bg-hover)'}"
 							on:click={() => handlePlaylistClick(index)}
 							on:keydown={(e) => {
 								if (e.key === "Enter" || e.key === " ") {
@@ -972,26 +972,28 @@
 							aria-label="播放 {song.title} - {song.artist}"
 						>
 							<div
-								class="w-6 h-6 flex items-center justify-center shrink-0"
+								class="w-5 flex items-center justify-center shrink-0"
 							>
 								{#if index === currentIndex && isPlaying}
 									<Icon
 										icon="material-symbols:graphic-eq"
-										class="text-(--primary) animate-pulse"
+										class="text-(--primary) text-xl animate-pulse"
 									/>
 								{:else if index === currentIndex}
 									<Icon
-										icon="material-symbols:pause"
-										class="text-(--primary)"
+										icon="material-symbols:graphic-eq"
+										class="text-(--primary) text-xl opacity-50"
 									/>
 								{:else}
-									<span class="text-sm text-(--content-meta)"
+									<span
+										class="text-[15px] font-medium text-40"
 										>{index + 1}</span
 									>
 								{/if}
 							</div>
+
 							<div
-								class="w-10 h-10 rounded-lg overflow-hidden bg-(--btn-regular-bg) shrink-0"
+								class="w-[2.75rem] h-[2.75rem] rounded-lg overflow-hidden shrink-0 shadow-sm border border-black/5 dark:border-white/5 bg-(--btn-regular-bg)"
 							>
 								<img
 									src={getAssetPath(song.cover)}
@@ -1000,19 +1002,23 @@
 									class="w-full h-full object-cover"
 								/>
 							</div>
-							<div class="flex-1 min-w-0">
+
+							<div
+								class="flex-1 min-w-0 flex flex-col justify-center gap-[2px]"
+							>
 								<div
-									class="font-medium truncate"
-									class:text-[var(--primary)]={index ===
-										currentIndex}
-									class:text-90={index !== currentIndex}
+									class="text-[15px] font-medium truncate transition-colors {index ===
+									currentIndex
+										? 'text-(--primary)'
+										: 'text-90'}"
 								>
 									{song.title}
 								</div>
 								<div
-									class="text-sm text-(--content-meta) truncate"
-									class:text-[var(--primary)]={index ===
-										currentIndex}
+									class="text-[13px] truncate transition-colors {index ===
+									currentIndex
+										? 'text-(--primary)/80'
+										: 'text-50'}"
 								>
 									{song.artist}
 								</div>
