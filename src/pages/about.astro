@@ -5,6 +5,7 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import CenterTitle from "../components/CenterTitle.astro";
+import Twikoo from "@components/comment/Twikoo.astro";
 const aboutPost = await getEntry("spec", "about");
 
 if (!aboutPost) {
@@ -23,7 +24,7 @@ const watermark = I18nKey.about;
 		import("../scripts/right-sidebar-layout.js");
 	</script>
 	<div
-		class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32"
+		class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32 mb-4"
 	>
 		<div
 			class="card-base z-10 px-9 py-6 relative w-full"
@@ -41,5 +42,8 @@ const watermark = I18nKey.about;
 				<Content />
 			</Markdown>
 		</div>
+	</div>
+	<div class="card-base p-6 mb-4">
+		<Twikoo path="/friends" />
 	</div>
 </MainGridLayout>

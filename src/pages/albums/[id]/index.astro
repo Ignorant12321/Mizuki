@@ -158,22 +158,20 @@ if (!album) {
 			>
 				{
 					album.photos.map((photo: Photo, _index: number) => (
-						<figure class="photo-item group relative overflow-hidden rounded-lg">
-							<a
-								href="javascript:void(0)"
-								data-src={photo.src}
-								data-fancybox={`gallery-${_index}`}
-								class="block"
-							>
-								<img
-									src={photo.src}
-									alt={photo.alt}
-									class="photo-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
-									loading="lazy"
-									onload="this.removeAttribute('loading')"
-								/>
-							</a>
-						</figure>
+						<a
+							href="javascript:void(0)"
+							data-src={photo.src}
+							data-fancybox={`gallery-${_index}`}
+							class="block"
+						>
+							<img
+								src={photo.src}
+								alt={photo.alt}
+								class="photo-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+								loading="lazy"
+								onload="this.removeAttribute('loading')"
+							/>
+						</a>
 					))
 				}
 			</div>

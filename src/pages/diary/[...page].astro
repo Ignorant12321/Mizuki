@@ -1,0 +1,530 @@
+---
+import type { Page } from "astro";
+import type { DiaryItem } from "../../data/diary";
+import { siteConfig } from "../../config";
+import { getDiaryList, getDiaryStats } from "../../data/diary";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
+
+// 1. 导出 getStaticPaths
+export async function getStaticPaths({ paginate }: any) {
+	const PAGE_SIZE = 3; // 每页 3 条
+
+	if (!siteConfig.featurePages.diary) {
+		return [];
+	}
+
+	const allMoments = await getDiaryList();
+	return paginate(allMoments, { pageSize: PAGE_SIZE });
+}
+
+// 2. 声明 Props 接口，彻底解决 ts(2339) 找不到 data 和 lastPage 的红线报错
+interface Props {
+	page: Page<DiaryItem>;
+}
+
+// 接收分页数据
+const { page } = Astro.props;
+const moments = page.data;
+const diaryStats = await getDiaryStats();
+
+// 格式化日期
+function formatDateSimple(dateString: string): string {
+	const date = new Date(dateString);
+	const y = date.getFullYear();
+	const m = String(date.getMonth() + 1).padStart(2, "0");
+	const d = String(date.getDate()).padStart(2, "0");
+	return `${y}.${m}.${d}`;
+}
+
+// 确保路径以斜杠结尾，解决 trailingSlash 警告
+function ensureTrailingSlash(url: string | undefined) {
+	if (!url) return "";
+	return url.endsWith("/") ? url : `${url}/`;
+}
+---
+
+<MainGridLayout title={i18n(I18nKey.diary)} description="即刻短文">
+	<script>
+		import("../../scripts/right-sidebar-layout.js");
+	</script>
+	<div
+		class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32"
+	>
+		<div
+			class="card-base z-10 px-4 py-4 md:px-6 md:py-5 relative w-full bg-(--page-bg)"
+		>
+			<div class="relative max-w-3xl w-full mx-auto px-2 md:px-0">
+				{/* === 头部区域 === */}
+				<div class="moments-header mb-8 mx-auto w-full">
+					<div
+						class="header-content text-center md:text-left relative z-10"
+					>
+						<div>
+							<h1
+								class="text-2xl md:text-3xl font-bold text-white mb-2"
+							>
+								{i18n(I18nKey.diary)}
+							</h1>
+							<p class="text-sm md:text-base text-white/80">
+								{i18n(I18nKey.diarySubtitle)}
+							</p>
+						</div>
+						<div
+							class="mt-4 md:mt-0 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2"
+						>
+							<div
+								class="inline-flex flex-col items-center bg-white/10 rounded-lg px-4 py-2 backdrop-blur-sm"
+							>
+								<span
+									class="text-xl md:text-2xl font-bold text-white"
+								>
+									{diaryStats.total}
+								</span>
+								<span class="text-xs text-white/70">
+									{i18n(I18nKey.diaryCount)}
+								</span>
+							</div>
+						</div>
+					</div>
+					<div
+						class="absolute inset-0 bg-linear-to-br from-(--primary) to-(--primary-dark) opacity-90 mix-blend-multiply"
+					>
+					</div>
+					<div
+						class="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+					>
+					</div>
+				</div>
+
+				{/* === 日记列表 === */}
+				<div class="moments-timeline relative z-10">
+					<div
+						class="absolute left-4 md:left-[2px] top-4 bottom-4 w-0.5 bg-(--primary) opacity-30 hidden md:block"
+					>
+					</div>
+					<div class="timeline-list space-y-8" id="post-container">
+						{
+							moments.map((moment, index) => {
+								const imageCount = moment.images?.length || 0;
+
+								let gridClass =
+									"diary-images mt-4 gap-2 md:gap-3 grid w-full";
+								if (imageCount === 1) {
+									gridClass += " grid-cols-1";
+								} else {
+									gridClass += " grid-cols-6";
+								}
+								const dateStr = formatDateSimple(moment.date);
+
+								return (
+									<div class="moment-item relative pl-0 md:pl-8 group">
+										<div class="absolute left-0 top-5 w-2 h-2 rounded-full bg-(--primary) ring-4 ring-(--page-bg) hidden md:block" />
+
+										<div class="card-base-daily rounded-(--radius-large) bg-(--card-bg) border-2 border-(--line-divider) hover:border-(--primary) transition-[border-color,box-shadow] duration-300 hover:shadow-xl overflow-hidden cursor-default">
+											<div class="moment-header flex items-center justify-between px-5 pt-5 pb-3 md:px-7 md:pt-6">
+												<div class="flex items-baseline gap-2">
+													<h1
+														id={`diary-${dateStr}-${index}`}
+														class="text-lg md:text-xl font-bold text-(--text-main) font-mono tracking-tight"
+													>
+														{dateStr}
+													</h1>
+												</div>
+												<div
+													id={`diary-${dateStr}`}
+													class="flex flex-wrap items-center justify-end gap-3 text-xs md:text-sm text-(--text-muted)"
+												>
+													{moment.location && (
+														<div
+															class="flex items-center gap-1 shrink-0"
+															title={
+																moment.location
+															}
+														>
+															<p class="text-(--primary) opacity-80">
+																🗺
+															</p>
+															<span class="truncate max-w-[100px] md:max-w-[150px]">
+																{
+																	moment.location
+																}
+															</span>
+														</div>
+													)}
+													{moment.mood && (
+														<div class="flex items-center gap-1 shrink-0">
+															<p class="opacity-80">
+																❤️
+															</p>
+															<span>
+																{moment.mood}
+															</span>
+														</div>
+													)}
+												</div>
+											</div>
+
+											<div class="moment-content px-5 md:px-7 pb-4">
+												<p class="text-base md:text-[1.05rem] text-(--text-main) leading-relaxed whitespace-pre-wrap">
+													{moment.content}
+												</p>
+
+												{imageCount > 0 && (
+													<div class={gridClass}>
+														{moment.images!.map(
+															(
+																image: string,
+																idx: number,
+															) => {
+																const isSingle =
+																	imageCount ===
+																	1;
+																let spanClass =
+																	"col-span-1";
+																let aspectClass =
+																	isSingle
+																		? ""
+																		: "aspect-square";
+
+																if (!isSingle) {
+																	const totalRows =
+																		Math.ceil(
+																			imageCount /
+																				3,
+																		);
+																	const currentRow =
+																		Math.floor(
+																			idx /
+																				3,
+																		);
+																	const isLastRow =
+																		currentRow ===
+																		totalRows -
+																			1;
+																	const remainder =
+																		imageCount %
+																			3 ===
+																		0
+																			? 3
+																			: imageCount %
+																				3;
+
+																	if (
+																		isLastRow
+																	) {
+																		if (
+																			remainder ===
+																			1
+																		) {
+																			spanClass =
+																				"col-span-6";
+																			aspectClass =
+																				"aspect-21/9 md:aspect-3/1";
+																		} else if (
+																			remainder ===
+																			2
+																		) {
+																			spanClass =
+																				"col-span-3";
+																			aspectClass =
+																				"aspect-4/3";
+																		} else {
+																			spanClass =
+																				"col-span-2";
+																		}
+																	} else {
+																		spanClass =
+																			"col-span-2";
+																	}
+																}
+
+																const imgWrapperClass = `image-item relative rounded-lg overflow-hidden bg-(--card-bg-alt) w-full shadow-sm ${spanClass} ${aspectClass} ${isSingle ? "max-h-[400px]" : ""}`;
+																return (
+																	<div
+																		class={
+																			imgWrapperClass
+																		}
+																	>
+																		<a
+																			href="javascript:void(0)"
+																			data-src={
+																				image
+																			}
+																			data-fancybox={`diary-${index}-${idx}`}
+																			class="block w-full h-full"
+																		>
+																			<img
+																				src={
+																					image
+																				}
+																				alt="diary moment"
+																				class={`w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer`}
+																				loading="lazy"
+																				onload="this.removeAttribute('loading')"
+																			/>
+																		</a>
+																	</div>
+																);
+															},
+														)}
+													</div>
+												)}
+											</div>
+
+											{moment.tags &&
+												moment.tags.length > 0 && (
+													<div class="moment-footer px-5 py-3 md:px-7 bg-(--card-bg-alt)/50 border-t border-(--line-divider)/50 flex flex-wrap items-center justify-between gap-y-2 text-xs md:text-sm text-(--text-muted)">
+														<div class="flex flex-wrap items-center gap-x-3 gap-y-1 ml-auto pl-4">
+															{moment.tags.map(
+																(
+																	tag: string,
+																) => (
+																	<span class="btn-regular h-6 text-xs px-2 rounded-lg text-(--text-main)">
+																		<span class="opacity-50 mr-0.5">
+																			#
+																		</span>
+																		{tag}
+																	</span>
+																),
+															)}
+														</div>
+													</div>
+												)}
+										</div>
+									</div>
+								);
+							})
+						}
+					</div>
+				</div>
+
+				{/* === 3. 分页及跳转组件 === */}
+				{
+					page.lastPage > 1 && (
+						<div class="mt-14 mb-4 flex flex-col md:flex-row items-center justify-between gap-6 px-5 py-4 rounded-2xl bg-(--card-bg) border border-(--line-divider) shadow-sm">
+							{/* 翻页按钮组 */}
+							<div class="flex items-center gap-2">
+								<a
+									href="/diary/"
+									class="btn-regular px-3 py-1.5 rounded-lg text-sm"
+									aria-label="首页"
+								>
+									首页
+								</a>
+
+								{page.url.prev ? (
+									<a
+										href={ensureTrailingSlash(
+											page.url.prev,
+										)}
+										class="btn-regular px-3 py-1.5 rounded-lg text-sm"
+									>
+										上一页
+									</a>
+								) : (
+									<span class="px-3 py-1.5 rounded-lg text-sm opacity-40 cursor-not-allowed bg-(--btn-regular-bg) text-(--btn-content)">
+										上一页
+									</span>
+								)}
+
+								<div class="flex items-center px-2 py-1.5 font-mono text-sm opacity-80 text-(--deep-text)">
+									<span class="font-bold text-(--primary)">
+										{page.currentPage}
+									</span>
+									<span class="mx-1.5">/</span>
+									<span>{page.lastPage}</span>
+								</div>
+
+								{page.url.next ? (
+									<a
+										href={ensureTrailingSlash(
+											page.url.next,
+										)}
+										class="btn-regular px-3 py-1.5 rounded-lg text-sm"
+									>
+										下一页
+									</a>
+								) : (
+									<span class="px-3 py-1.5 rounded-lg text-sm opacity-40 cursor-not-allowed bg-(--btn-regular-bg) text-(--btn-content)">
+										下一页
+									</span>
+								)}
+
+								<a
+									href={
+										page.lastPage === 1
+											? "/diary/"
+											: `/diary/${page.lastPage}/`
+									}
+									class="btn-regular px-3 py-1.5 rounded-lg text-sm"
+									aria-label="尾页"
+								>
+									尾页
+								</a>
+							</div>
+
+							{/* 跳转输入组 */}
+							<div class="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end border-t border-(--line-divider) md:border-none pt-4 md:pt-0">
+								<span class="text-sm font-medium text-(--text-main)">
+									跳转至
+								</span>
+								{/* 加入 data-max 属性供脚本安全读取 */}
+								<input
+									type="number"
+									id="jump-page-input"
+									min="1"
+									max={page.lastPage}
+									data-max={page.lastPage}
+									class="w-16 px-2 py-1.5 text-center text-sm font-bold bg-transparent border-2 border-(--line-divider) rounded-lg outline-none focus:border-(--primary) text-(--primary) transition"
+									placeholder={page.currentPage.toString()}
+								/>
+								<span class="text-sm font-medium text-(--text-main)">
+									页
+								</span>
+								<button
+									id="jump-page-btn"
+									class="btn-regular px-4 py-1.5 rounded-lg text-sm font-bold"
+								>
+									GO
+								</button>
+							</div>
+						</div>
+					)
+				}
+
+				{
+					/* 使用原生脚本，完美兼容 SPA 路由且修复了读取不到 max 的 bug */
+				}
+				<script>
+					// 定义全局接口防止 TS 在 script 标签中报错 window.swup
+					declare global {
+						interface Window {
+							swup?: { navigate: (url: string) => void };
+						}
+					}
+
+					function initPagination() {
+						const btn = document.getElementById("jump-page-btn");
+						const input = document.getElementById(
+							"jump-page-input",
+						) as HTMLInputElement;
+
+						if (btn && input) {
+							// 每次加载克隆节点，防止 Swup 重复绑定事件
+							const newBtn = btn.cloneNode(true);
+							btn.replaceWith(newBtn);
+							const newInput = input.cloneNode(true);
+							input.replaceWith(newInput);
+
+							const performJump = () => {
+								const inputEl = document.getElementById(
+									"jump-page-input",
+								) as HTMLInputElement;
+								// 实时获取 data-max，确保永远不会出现比较异常
+								const maxPage = parseInt(
+									inputEl.getAttribute("data-max") || "1",
+									10,
+								);
+								const p = parseInt(inputEl.value, 10);
+
+								if (!isNaN(p) && p >= 1 && p <= maxPage) {
+									// 严格遵守 trailingSlash 加上末尾的斜杠
+									const targetUrl =
+										p === 1 ? "/diary/" : `/diary/${p}/`;
+
+									// 如果主题启用了 swup，使用 swup 的无刷新跳转
+									if (window.swup) {
+										window.swup.navigate(targetUrl);
+									} else {
+										// 降级为原生跳转
+										window.location.href = targetUrl;
+									}
+								} else {
+									inputEl.value = "";
+									inputEl.focus();
+								}
+							};
+
+							newBtn.addEventListener("click", performJump);
+							newInput.addEventListener("keydown", (e: Event) => {
+								if ((e as KeyboardEvent).key === "Enter") {
+									performJump();
+								}
+							});
+						}
+					}
+
+					// 兼容三种情况的页面生命周期
+					document.addEventListener(
+						"DOMContentLoaded",
+						initPagination,
+					);
+					document.addEventListener(
+						"astro:page-load",
+						initPagination,
+					);
+					if (typeof window !== "undefined") {
+						document.addEventListener(
+							"swup:pageView",
+							initPagination,
+						);
+						document.addEventListener(
+							"swup:contentReplaced",
+							initPagination,
+						);
+					}
+				</script>
+			</div>
+
+			<div
+				class="moments-tips text-center mt-12 mb-8 text-(--text-muted) text-xs md:text-sm opacity-80"
+			>
+				—— {i18n(I18nKey.diaryTips)} ——
+			</div>
+		</div>
+	</div>
+</MainGridLayout>
+
+<style>
+	.card-base-daily {
+		box-shadow:
+			0 2px 8px -2px rgba(0, 0, 0, 0.05),
+			0 0 1px rgba(0, 0, 0, 0.1);
+	}
+
+	.moments-header {
+		padding: 2rem;
+		border-radius: 16px;
+		position: relative;
+		overflow: hidden;
+		background-color: var(--primary);
+	}
+
+	/* 隐藏原生的数字输入框箭头 */
+	input[type="number"]::-webkit-inner-spin-button,
+	input[type="number"]::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+	input[type="number"] {
+		-moz-appearance: textfield;
+	}
+
+	@media (max-width: 768px) {
+		.moments-header {
+			padding: 1.5rem;
+		}
+		.moment-footer {
+			align-items: flex-start;
+		}
+		.moment-footer > div.ml-auto {
+			margin-right: 0;
+			padding-right: 0;
+			margin-top: 0.5rem;
+			width: 100%;
+			justify-content: flex-end;
+		}
+	}
+</style>
