@@ -4,7 +4,7 @@ import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-
+import CenterTitle from "../components/CenterTitle.astro";
 const aboutPost = await getEntry("spec", "about");
 
 if (!aboutPost) {
@@ -13,6 +13,8 @@ if (!aboutPost) {
 
 const { Content } = await render(aboutPost);
 const title = i18n(I18nKey.about);
+const subtitle = I18nKey.about;
+const watermark = I18nKey.about;
 ---
 
 <MainGridLayout title={title}>
@@ -28,16 +30,12 @@ const title = i18n(I18nKey.about);
 			id="post-container"
 		>
 			<!-- 页面标题 -->
-			<div class="flex flex-col items-start justify-center mb-8">
-				<h1
-					class="text-4xl font-bold text-90 mb-2 relative
-                          before:w-1 before:h-8 before:rounded-md before:bg-(--primary)
-                          before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
-				>
-					{title}
-				</h1>
-			</div>
-
+			<CenterTitle
+				title={title}
+				subtitle={subtitle}
+				watermark={false}
+				bgImage="https://www.loliapi.com/acg?t=about"
+			/>
 			<!-- 从MD文件读取的内容 -->
 			<Markdown class="mt-2">
 				<Content />

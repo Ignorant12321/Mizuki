@@ -1,5 +1,6 @@
 ---
 import { commentConfig } from "@/config";
+import CenterTitle from "@/components/CenterTitle.astro";
 
 interface Props {
 	path: string;
@@ -12,76 +13,7 @@ const config = {
 };
 ---
 
-<div
-	class="relative w-full mb-8 pt-6 pb-2 overflow-hidden flex flex-col items-center justify-center"
->
-	<div
-		class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[4rem] md:text-[6.5rem] font-black text-black/3 dark:text-white/3 uppercase tracking-[0.2em] select-none pointer-events-none z-0 whitespace-nowrap"
-	>
-		ECHOES
-	</div>
-
-	<div class="flex flex-col items-center justify-center w-full relative z-10">
-		<svg
-			class="w-4 h-4 md:w-5 md:h-5 text-(--primary) opacity-40 mb-3"
-			viewBox="0 0 24 24"
-			fill="currentColor"
-		>
-			<path
-				d="M12 2L12.7 9.3L20 10L12.7 10.7L12 18L11.3 10.7L4 10L11.3 9.3L12 2Z"
-			></path>
-		</svg>
-
-		<div class="flex items-center justify-center w-full group">
-			<div
-				class="flex-1 flex items-center justify-end opacity-50 group-hover:opacity-80 transition-opacity duration-500 max-w-[120px] md:max-w-[200px]"
-			>
-				<div
-					class="h-px w-full bg-linear-to-l from-(--primary) to-transparent"
-				>
-				</div>
-				<div
-					class="w-1 h-1 rounded-full bg-(--primary) ml-2 md:ml-3 shadow-[0_0_8px_var(--primary)] shrink-0"
-				>
-				</div>
-			</div>
-
-			<div
-				class="flex flex-col items-center px-3 md:px-6 relative cursor-default shrink-0"
-			>
-				<h2
-					class="text-xl md:text-3xl font-bold tracking-widest text-(--primary) drop-shadow-sm whitespace-nowrap m-0"
-				>
-					繁星回音
-				</h2>
-				<span
-					class="text-[9px] md:text-[11px] font-mono tracking-[0.2em] md:tracking-[0.3em] opacity-60 mt-1 uppercase text-90 whitespace-nowrap"
-				>
-					STARRY ECHOES
-				</span>
-			</div>
-
-			<div
-				class="flex-1 flex items-center justify-start opacity-50 group-hover:opacity-80 transition-opacity duration-500 max-w-[120px] md:max-w-[200px]"
-			>
-				<div
-					class="w-1 h-1 rounded-full bg-(--primary) mr-2 md:mr-3 shadow-[0_0_8px_var(--primary)] shrink-0"
-				>
-				</div>
-				<div
-					class="h-px w-full bg-linear-to-r from-(--primary) to-transparent"
-				>
-				</div>
-			</div>
-		</div>
-
-		<!-- <p
-			class="text-xs md:text-sm text-50 mt-4 md:mt-5 opacity-70 font-light tracking-wider text-center px-4 m-0"
-		>
-			留下你的足迹，让星空倾听...
-		</p> -->
-	</div>
-</div>
+<CenterTitle title="繁星回音" subtitle="STARRY ECHOES" watermark="ECHOES" />
 
 <div id="tcomment"></div>
 

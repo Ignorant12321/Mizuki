@@ -1,5 +1,6 @@
 ---
 import ImageWrapper from "../components/misc/ImageWrapper.astro";
+import CenterTitle from "@/components/CenterTitle.astro";
 import { siteConfig } from "../config";
 import localAnimeList from "../data/anime";
 import I18nKey from "../i18n/i18nKey";
@@ -221,18 +222,12 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 	>
 		<div class="card-base anime-card-base z-10 px-9 py-6 relative w-full">
 			<div class="relative w-full mb-8">
-				<div class="mb-6">
-					<h1
-						class="text-4xl font-bold text-90 mb-2 relative
-                    before:w-1 before:h-8 before:rounded-md before:bg-(--primary)
-                    before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
-					>
-						{i18n(I18nKey.animeTitle)}
-					</h1>
-					<p class="text-75">
-						{i18n(I18nKey.animeSubtitle)}
-					</p>
-				</div>
+				<CenterTitle
+					title={i18n(I18nKey.animeTitle)}
+					subtitle={i18n(I18nKey.animeSubtitle)}
+					watermark={false}
+					bgImage="https://www.loliapi.com/acg?t=anime"
+				/>
 
 				<div class="mb-6">
 					<div class="anime-filter-container flex flex-wrap gap-2">

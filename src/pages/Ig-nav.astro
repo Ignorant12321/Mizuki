@@ -3,8 +3,10 @@ import { getEntry, render } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
 import { getShuffledIgNavsList } from "../data/Ig-nav";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import CenterTitle from "@/components/CenterTitle.astro";
 
 const title = "津渡";
+const watermark = "NAVIGATION";
 const description = "Ignorant的一站式导航服务页";
 const placeholder = "搜索网站...";
 
@@ -38,20 +40,12 @@ const allTags = Array.from(new Set(igNavsList.flatMap((item) => item.tags)));
 		class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32"
 	>
 		<div class="card-base z-10 px-5 py-6 relative w-full sm:px-9">
-			<div class="flex flex-col items-start justify-center mb-8">
-				<h1
-					class="text-3xl sm:text-4xl font-bold text-black/90 dark:text-white/90 mb-2 relative
-						  before:w-1 before:h-8 before:rounded-md before:bg-(--primary)
-						  before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
-				>
-					{title}
-				</h1>
-				<p
-					class="text-base sm:text-lg text-black/60 dark:text-white/60"
-				>
-					{description}
-				</p>
-			</div>
+			<CenterTitle
+				title={title}
+				subtitle={description}
+				watermark={false}
+				bgImage="https://www.loliapi.com/acg?t=Ig-nav"
+			/>
 
 			<div class="mb-6 space-y-3">
 				<div class="w-full">

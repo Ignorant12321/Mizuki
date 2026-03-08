@@ -2,8 +2,10 @@
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import CenterTitle from "@/components/CenterTitle.astro";
 const title = i18n(I18nKey.navNews);
 const description = "倾听世界之声……";
+const watermark = "newspaper";
 ---
 
 <MainGridLayout title={title} description={description}>
@@ -16,18 +18,12 @@ const description = "倾听世界之声……";
 	>
 		<div class="card-base z-10 px-9 py-6 relative w-full">
 			<!-- 页面标题 -->
-			<div class="flex flex-col items-start justify-center mb-8">
-				<h1
-					class="text-4xl font-bold text-black/90 dark:text-white/90 mb-2 relative
-                          before:w-1 before:h-8 before:rounded-md before:bg-(--primary)
-                          before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
-				>
-					{title}
-				</h1>
-				<p class="text-neutral-600 dark:text-neutral-400">
-					{description}
-				</p>
-			</div>
+			<CenterTitle
+				title={title}
+				subtitle={description}
+				watermark={false}
+				bgImage="https://www.loliapi.com/acg?t=news"
+			/>
 			<div class="iframe-wrapper">
 				<iframe
 					src="https://www.innoreader.com/stream/user/1003499415/tag/%E8%A7%82%E6%BE%9C%E3%80%8C%20Listen%20to%20the%20Tides%20of%20Time%20%E3%80%8D/view/html?t=%E3%80%8C%20Listen%20to%20the%20Tides%20of%20Time%20%E3%80%8D&lw=36&cs=m&lh=36&n=10&sb=y"

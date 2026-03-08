@@ -18,7 +18,7 @@ export const igNavsData: IgNavItem[] = [
 		imgurl: "/assets/icon/StreamlineEmojisDeliveryTruck.svg",
 		desc: "开箱即用的文件快传系统",
 		siteurl: "https://filecodebox.ignorant.top",
-		tags: ["Ignorant", "器录"],
+		tags: ["私筑", "器录"],
 	},
 	{
 		id: 2,
@@ -26,7 +26,7 @@ export const igNavsData: IgNavItem[] = [
 		imgurl: "/assets/icon/StreamlineUltimateColorPictureSun.svg",
 		desc: "支持多文件上传的图床",
 		siteurl: "https://easyimage.ignorant.top",
-		tags: ["Ignorant", "器录"],
+		tags: ["私筑", "器录"],
 	},
 	{
 		id: 5,
@@ -34,7 +34,7 @@ export const igNavsData: IgNavItem[] = [
 		imgurl: "/assets/icon/StreamlineCyberColorHarddisk.svg",
 		desc: "开源社区驱动的文件列表程序",
 		siteurl: "https://openlist.ignorant.top",
-		tags: ["Ignorant", "器录"],
+		tags: ["私筑", "器录"],
 	},
 	{
 		id: 4,
@@ -42,7 +42,7 @@ export const igNavsData: IgNavItem[] = [
 		imgurl: "/assets/icon/StreamlineFlexColorMonitorError.svg",
 		desc: "轻量级开源监控工具",
 		siteurl: "https://uptimeflare.218501.xyz/",
-		tags: ["Ignorant", "观星"],
+		tags: ["私筑", "观星"],
 	},
 	{
 		id: 5,
@@ -50,7 +50,7 @@ export const igNavsData: IgNavItem[] = [
 		imgurl: "/assets/icon/FlatColorIconsStatistics.svg",
 		desc: "网站浏览行为分析工具",
 		siteurl: "https://cloud.umami.is/analytics/us/share/fl6gANbC7Y79IHZt",
-		tags: ["Ignorant", "观星"],
+		tags: ["私筑", "观星"],
 	},
 	{
 		id: 6,
@@ -58,7 +58,7 @@ export const igNavsData: IgNavItem[] = [
 		imgurl: "/assets/icon/StreamlineUltimateColorToolBox.svg",
 		desc: "一款开源的IT工具箱",
 		siteurl: "https://it-tools.tech/",
-		tags: ["外链"],
+		tags: ["博引", "器录"],
 	},
 	{
 		id: 7,
@@ -66,7 +66,7 @@ export const igNavsData: IgNavItem[] = [
 		imgurl: "/assets/icon/Navidrome.svg",
 		desc: "个人音乐库管理与流媒体服务",
 		siteurl: "https://music.ignorant.top/",
-		tags: ["Ignorant", "弦音"],
+		tags: ["私筑", "弦音"],
 	},
 	{
 		id: 8,
@@ -74,7 +74,7 @@ export const igNavsData: IgNavItem[] = [
 		imgurl: "/assets/icon/VscodeIconsFileTypePython.svg",
 		desc: "零基础入门Python3的中文教程",
 		siteurl: "https://www.runoob.com/python3/python3-tutorial.html",
-		tags: ["外链", "教程"],
+		tags: ["博引", "授艺"],
 	},
 ];
 
