@@ -7,7 +7,7 @@
 	"location": "网络",
 	"tags": ["动漫", "随机", "API"],
 	"layout": "masonry",
-	"columns": 3,
+	"columns": 2,
 	"cover": "https://www.loliapi.com/acg?t=1",
 	"photos": [
 		{
