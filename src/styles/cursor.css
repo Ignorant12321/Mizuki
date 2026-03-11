@@ -1,6 +1,7 @@
 /* 鼠标样式 */
 html,
 #twikoo,
+.centerTitle *,
 .fancybox__slide {
   cursor: url(/assets/cursor/default.cur), auto;
 }
@@ -22,6 +23,7 @@ p,
 input[type="text"],
 input[type="password"],
 input[type="email"],
+/* .centerTitle *:active, */
 textarea {
   cursor: url("/assets/cursor/input.cur"), auto !important;
 }
