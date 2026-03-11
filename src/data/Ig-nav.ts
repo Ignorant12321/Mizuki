@@ -76,6 +76,14 @@ export const igNavsData: IgNavItem[] = [
 		siteurl: "https://www.runoob.com/python3/python3-tutorial.html",
 		tags: ["博引", "授艺"],
 	},
+	{
+		id: 9,
+		title: "file-transfer-go",
+		imgurl: "/assets/icon/fileTransferGo.ico",
+		desc: "文件实时传输+屏幕共享一体化平台",
+		siteurl: "https://transfer.52python.cn/",
+		tags: ["博引", "器录"],
+	},
 ];
 
 // 获取所有友情链接数据
