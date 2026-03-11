@@ -258,6 +258,16 @@ Make the emoji component display correctly when there are too many emoji packs
   padding-top: 0.5rem !important; /* 线与下方文字的距离 */
 }
 
+/* =========================================
+   评论区评论排序
+   ========================================= */
 .tk-sort-select {
-  color: var(--primary);
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+.tk-sort-select:focus,
+.tk-sort-select:focus-visible {
+  border-color: var(--primary) !important;
+  outline-color: var(--primary) !important;
+  box-shadow: 0 0 0 1px var(--primary) !important;
 }
