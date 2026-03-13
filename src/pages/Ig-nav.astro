@@ -1,7 +1,7 @@
 ---
 import { getEntry, render } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
-import { getShuffledIgNavsList } from "../data/Ig-nav";
+import { getShuffledIgNavsList, tagPriority } from "../data/Ig-nav";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import CenterTitle from "@/components/CenterTitle.astro";
 
@@ -24,8 +24,18 @@ if (!igNavsPost) {
 }
 
 const { Content } = await render(igNavsPost);
+const priority =
+	typeof tagPriority !== "undefined" && tagPriority.length > 0
+		? tagPriority
+		: [];
 const igNavsList = getShuffledIgNavsList();
-const allTags = Array.from(new Set(igNavsList.flatMap((item) => item.tags)));
+const allTags = Array.from(
+	new Set(igNavsList.flatMap((item) => item.tags)),
+).sort((a, b) => {
+	const aIndex = priority.indexOf(a);
+	const bIndex = priority.indexOf(b);
+	return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+});
 ---
 
 <MainGridLayout title={title} description={description}>

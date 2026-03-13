@@ -9,6 +9,8 @@ export interface IgNavItem {
 	siteurl: string;
 	tags: string[];
 }
+// tag标签排序
+export const tagPriority: string[] = ["私筑", "博引"];
 
 // 导航链接数据
 export const igNavsData: IgNavItem[] = [
@@ -79,7 +81,7 @@ export const igNavsData: IgNavItem[] = [
 	{
 		id: 9,
 		title: "file-transfer-go",
-		imgurl: "/assets/icon/fileTransferGo.ico",
+		imgurl: "/assets/icon/fileTransferGo.svg",
 		desc: "文件实时传输+屏幕共享一体化平台",
 		siteurl: "https://transfer.52python.cn/",
 		tags: ["博引", "器录"],
