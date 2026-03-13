@@ -8,6 +8,7 @@ import { i18n } from "../../i18n/translation";
 import MainGridLayout from "../../layouts/MainGridLayout.astro";
 import CenterTitle from "@components/CenterTitle.astro";
 
+const BASE_PATH = "/diary"; // 或者从 siteConfig 引入
 // 1. 导出 getStaticPaths
 export async function getStaticPaths({ paginate }: any) {
 	const PAGE_SIZE = 3; // 每页 3 条
@@ -221,7 +222,8 @@ function ensureTrailingSlash(url: string | undefined) {
 																			data-src={
 																				image
 																			}
-																			data-fancybox={`diary-${index}-${idx}`}
+																			data-type="image"
+																			data-fancybox={`gallery-diary-${index}`}
 																			class="block w-full h-full"
 																		>
 																			<img
@@ -276,7 +278,7 @@ function ensureTrailingSlash(url: string | undefined) {
 							{/* 翻页按钮组 */}
 							<div class="flex items-center gap-2">
 								<a
-									href="/diary/"
+									href={`${BASE_PATH}/`}
 									class="btn-regular px-3 py-1.5 rounded-lg text-sm"
 									aria-label="首页"
 								>
@@ -324,8 +326,8 @@ function ensureTrailingSlash(url: string | undefined) {
 								<a
 									href={
 										page.lastPage === 1
-											? "/diary/"
-											: `/diary/${page.lastPage}/`
+											? `${BASE_PATH}/`
+											: `${BASE_PATH}/${page.lastPage}/`
 									}
 									class="btn-regular px-3 py-1.5 rounded-lg text-sm"
 									aria-label="尾页"
@@ -370,7 +372,7 @@ function ensureTrailingSlash(url: string | undefined) {
 					// 定义全局接口防止 TS 在 script 标签中报错 window.swup
 					declare global {
 						interface Window {
-							swup?: { navigate: (url: string) => void };
+							swup: any;
 						}
 					}
 

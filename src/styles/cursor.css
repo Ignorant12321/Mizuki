@@ -2,6 +2,7 @@
 html,
 #twikoo,
 .centerTitle *,
+.f-counter,
 .fancybox__slide {
   cursor: url(/assets/cursor/default.cur), auto;
 }
