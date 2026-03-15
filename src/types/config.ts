@@ -222,6 +222,13 @@ export type NavBarConfig = {
 
 export type ProfileConfig = {
 	avatar?: string;
+	avatarFrame?: {
+		enable: boolean;
+		image: string;
+		scale?: number;
+		offsetX?: number;
+		offsetY?: number;
+	};
 	name: string;
 	bio?: string;
 	links: {

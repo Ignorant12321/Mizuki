@@ -370,6 +370,13 @@ export const navBarConfig: NavBarConfig = {
 
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avatar.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
+	avatarFrame: {
+		enable: true,
+		image: "assets/images/avatar_frame_profile.webp",
+		scale: 1.2,
+		offsetX: 0,
+		offsetY: 0,
+	},
 	name: "北に向かう",
 	bio: "孩儿立志出乡关，学不成名誓不还",
 	typewriter: {
@@ -678,9 +685,9 @@ export const clickEffectConfig: ClickEffectConfig = {
 
 // Live2D Widget 配置
 export const live2dConfig: Live2DConfig = {
-	enable: true,
-	mobile: true,
-	drag: true,
+	enable: false,
+	mobile: false,
+	drag: false,
 	modelId: 1,
 	logLevel: "warn",
 	live2dPath:
@@ -727,3 +734,4 @@ export const widgetConfigs = {
 } as const;
 
 // umamiConfig相关配置已移动至astro.config.mjs中,统计脚本请自行在Layout.astro文件的<head>中插入
+

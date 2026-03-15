@@ -6,6 +6,11 @@ import ImageWrapper from "../misc/ImageWrapper.astro";
 import TypewriterText from "../TypewriterText.astro";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
+
+const avatarFrame = profileConfig.avatarFrame;
+const avatarFrameStyle = avatarFrame?.enable
+	? `transform: translate(${avatarFrame.offsetX ?? 0}px, ${avatarFrame.offsetY ?? 0}px) scale(${avatarFrame.scale ?? 1});`
+	: "";
 ---
 
 <div class="card-base p-3">
@@ -16,19 +21,37 @@ import { i18n } from "../../i18n/translation";
        max-w-48 lg:max-w-none overflow-hidden rounded-xl active:scale-95"
 	>
 		<div
-			class="absolute transition pointer-events-none group-hover:bg-black/30 group-active:bg-black/50
-        w-full h-full z-50 flex items-center justify-center"
-		>
+			class="absolute inset-0 z-5 pointer-events-none transition group-hover:bg-black/30 group-active:bg-black/50"
+		/>
+		<div class="relative mx-auto lg:w-full h-full lg:mt-0">
+			<ImageWrapper
+				src={profileConfig.avatar || ""}
+				alt="Profile Image of the Author"
+				class="mx-auto lg:w-full h-full lg:mt-0"
+				showOverlay={false}
+			/>
+			{
+				avatarFrame?.enable && (
+					<div
+						class="absolute inset-0 z-10 pointer-events-none"
+						style={avatarFrameStyle}
+					>
+						<ImageWrapper
+							src={avatarFrame.image}
+							alt="Profile Avatar Frame"
+							class="w-full h-full"
+							showOverlay={false}
+						/>
+					</div>
+				)
+			}
+		</div>
+		<div class="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
 			<Icon
 				name="fa7-regular:address-card"
 				class="transition opacity-0 scale-90 group-hover:scale-100 group-hover:opacity-100 text-white text-5xl"
 			/>
 		</div>
-		<ImageWrapper
-			src={profileConfig.avatar || ""}
-			alt="Profile Image of the Author"
-			class="mx-auto lg:w-full h-full lg:mt-0"
-		/>
 	</a>
 	<div class="px-2">
 		<div
