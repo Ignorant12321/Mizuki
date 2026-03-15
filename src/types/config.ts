@@ -469,7 +469,8 @@ export type FullscreenWallpaperConfig = {
  * 鼠标点击效果配置
  */
 export type ClickEffectConfig = {
-	enable: boolean; // 是否启用鼠标点击效果
+	enable: boolean; // 是否在桌面端启用鼠标点击效果
+	mobile?: boolean; // 是否在移动端启用鼠标点击效果
 	blacklist?: string[]; // 排除点击特效的 CSS 选择器黑名单
 };
 

@@ -372,10 +372,11 @@ export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avatar.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
 	avatarFrame: {
 		enable: true,
-		image: "assets/images/avatar_frame_profile.webp",
-		scale: 1.2,
+		// image: "assets/images/avatar_frame_profile.webp",
+		image: "assets/images/avatar_frame_profile_01.webp",
+		scale: 1.25,
 		offsetX: 0,
-		offsetY: 0,
+		offsetY: 1,
 	},
 	name: "北に向かう",
 	bio: "孩儿立志出乡关，学不成名誓不还",
@@ -686,13 +687,14 @@ export const sakuraConfig: SakuraConfig = {
 
 // 鼠标点击效果
 export const clickEffectConfig: ClickEffectConfig = {
-	enable: true, // 是否启用点击效果
+	enable: true, // 是否在桌面端启用点击效果
+	mobile: false, // 是否在移动端启用点击效果
 	blacklist: ["#waifu"], // 黑名单，点击这些元素不会触发效果
 };
 
 // Live2D Widget 配置
 export const live2dConfig: Live2DConfig = {
-	enable: false,
+	enable: true,
 	mobile: false,
 	drag: false,
 	modelId: 1,

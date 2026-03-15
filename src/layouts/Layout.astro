@@ -393,7 +393,9 @@ if (siteConfig.font) {
 			)
 		}
 		<!-- 点击特效样式 -->
-		{clickEffectConfig.enable && <ClickEffect />}
+		{(clickEffectConfig.enable || clickEffectConfig.mobile) && (
+			<ClickEffect />
+		)}
 
 		<!-- 外部链接确认组件 -->
 		{
