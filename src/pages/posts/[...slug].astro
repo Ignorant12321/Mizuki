@@ -155,6 +155,30 @@ if (profileConfig.avatar) {
 	}
 }
 
+// Process avatar frame image for SharePoster
+let posterAvatarFrameUrl = shareConfig.avatarFrame?.image;
+if (shareConfig.avatarFrame?.image) {
+	const isLocal = !(
+		shareConfig.avatarFrame.image.startsWith("/") ||
+		shareConfig.avatarFrame.image.startsWith("http") ||
+		shareConfig.avatarFrame.image.startsWith("https") ||
+		shareConfig.avatarFrame.image.startsWith("data:")
+	);
+	if (isLocal) {
+		const files = import.meta.glob<ImageMetadata>("../../**", {
+			import: "default",
+		});
+		let normalizedPath = path
+			.normalize(path.join("../../", shareConfig.avatarFrame.image))
+			.replace(/\\/g, "/");
+		const file = files[normalizedPath];
+		if (file) {
+			const img = await file();
+			posterAvatarFrameUrl = img.src;
+		}
+	}
+}
+
 // 判断是否为加密文章
 let isEncrypted = entry.data.encrypted && entry.data.password;
 
@@ -351,6 +375,10 @@ const jsonLd = {
                                 url={Astro.url.toString()}
                                 siteTitle={siteConfig.title}
                                 avatar={posterAvatarUrl}
+                                avatarFrame={{
+                                    ...shareConfig.avatarFrame,
+                                    image: posterAvatarFrameUrl || "",
+                                }}
                             />
                         </div>
                     </div>

@@ -13,6 +13,14 @@ export let coverImage: string | null = null;
 export let url: string;
 export let siteTitle: string;
 export let avatar: string | null = null;
+type AvatarFrameConfig = {
+	enable: boolean;
+	image: string;
+	scale?: number;
+	offsetX?: number;
+	offsetY?: number;
+};
+export let avatarFrame: AvatarFrameConfig | null = null;
 
 // Constants
 const SCALE = 2;
@@ -135,10 +143,17 @@ async function generatePoster() {
 			color: { dark: "#000000", light: "#ffffff" },
 		});
 
-		const [qrImg, coverImg, avatarImg] = await Promise.all([
+		const shouldLoadAvatarFrame = Boolean(
+			avatar && avatarFrame?.enable && avatarFrame.image,
+		);
+
+		const [qrImg, coverImg, avatarImg, avatarFrameImg] = await Promise.all([
 			loadImage(qrCodeUrl),
 			coverImage ? loadImage(coverImage) : Promise.resolve(null),
 			avatar ? loadImage(avatar) : Promise.resolve(null),
+			shouldLoadAvatarFrame
+				? loadImage(avatarFrame?.image || "")
+				: Promise.resolve(null),
 		]);
 
 		const canvas = document.createElement("canvas");
@@ -318,6 +333,16 @@ async function generatePoster() {
 			ctx.strokeStyle = "#ffffff";
 			ctx.lineWidth = 2 * SCALE;
 			ctx.stroke();
+
+			if (avatarFrameImg && avatarFrame?.enable) {
+				const frameScale = avatarFrame.scale ?? 1;
+				const frameSize = avatarSize * frameScale;
+				const frameOffsetX = (avatarFrame.offsetX ?? 0) * SCALE;
+				const frameOffsetY = (avatarFrame.offsetY ?? 0) * SCALE;
+				const frameX = avatarX + (avatarSize - frameSize) / 2 + frameOffsetX;
+				const frameY = footerY + (avatarSize - frameSize) / 2 + frameOffsetY;
+				ctx.drawImage(avatarFrameImg, frameX, frameY, frameSize, frameSize);
+			}
 		}
 
 		// Author text

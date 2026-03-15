@@ -492,6 +492,13 @@ export type Live2DConfig = {
  */
 export type ShareConfig = {
 	enable: boolean; // 是否启用分享功能
+	avatarFrame?: {
+		enable: boolean;
+		image: string;
+		scale?: number;
+		offsetX?: number;
+		offsetY?: number;
+	};
 };
 
 /**

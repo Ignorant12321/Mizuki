@@ -462,6 +462,13 @@ export const commentConfig: CommentConfig = {
 
 export const shareConfig: ShareConfig = {
 	enable: true, // 启用分享功能
+	avatarFrame: {
+		enable: true,
+		image: "assets/images/avatar_frame_share.webp",
+		scale: 1.5,
+		offsetX: 0,
+		offsetY: 5,
+	},
 };
 
 export const announcementConfig: AnnouncementConfig = {
