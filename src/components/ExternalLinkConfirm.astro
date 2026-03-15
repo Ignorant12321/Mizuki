@@ -336,6 +336,19 @@ const bgStyle = background ? `url('${background}')` : "none";
 
 <script>
 	(() => {
+		type ExternalLinkConfirmState = {
+			currentLink: HTMLAnchorElement | null;
+			closeTimer?: number;
+			cleanup?: () => void;
+		};
+
+		type ExternalLinkConfirmWindow = Window & {
+			__externalLinkConfirmState?: ExternalLinkConfirmState;
+		};
+
+		const globalWindow = window as ExternalLinkConfirmWindow;
+		globalWindow.__externalLinkConfirmState?.cleanup?.();
+
 		const dialog = document.getElementById(
 			"external-link-dialog",
 		) as HTMLDialogElement;
@@ -345,7 +358,9 @@ const bgStyle = background ? `url('${background}')` : "none";
 		const btnCopy = document.getElementById("external-link-copy");
 
 		if (!dialog) return;
-		// --- 1. 读取域名白名单 ---
+		const controller = new AbortController();
+		const { signal } = controller;
+		// --- 1. 读取域名白名单---
 		let whitelistSite: string[] = [];
 		try {
 			const data = dialog.dataset.whitelistSite;
@@ -354,7 +369,7 @@ const bgStyle = background ? `url('${background}')` : "none";
 			console.error("Whitelist parse error", e);
 		}
 
-		// --- 2. 读取页面白名单 ---
+		// --- 2. 读取页面白名单---
 		let whitelistPage: string[] = [];
 		try {
 			const pageData = dialog.dataset.whitelistPage;
@@ -363,8 +378,11 @@ const bgStyle = background ? `url('${background}')` : "none";
 			console.error("Whitelist page parse error", e);
 		}
 
-		let currentLink: HTMLAnchorElement | null = null;
-		let closeTimer: number | undefined;
+		const state =
+			globalWindow.__externalLinkConfirmState ||
+			(globalWindow.__externalLinkConfirmState = {
+				currentLink: null,
+			});
 
 		// 检查是否需要拦截
 		const shouldIntercept = (url: URL): boolean => {
@@ -393,68 +411,103 @@ const bgStyle = background ? `url('${background}')` : "none";
 				urlDisplay.textContent = href;
 				urlDisplay.title = href;
 			}
-			dialog.showModal();
+			if (!dialog.open) {
+				dialog.showModal();
+			}
 			requestAnimationFrame(() => dialog.classList.add("dialog-show"));
 		};
 
 		const closeDialog = () => {
 			dialog.classList.remove("dialog-show");
-			clearTimeout(closeTimer);
-			closeTimer = window.setTimeout(() => dialog.close(), 250);
+			clearTimeout(state.closeTimer);
+			state.closeTimer = window.setTimeout(() => {
+				if (dialog.open) dialog.close();
+			}, 250);
 		};
 
-		document.addEventListener("click", (e) => {
-			const target = e.target as HTMLElement;
-			const link = target.closest("a");
+		document.addEventListener(
+			"click",
+			(e) => {
+				const target = e.target;
+				if (!(target instanceof Element)) return;
+				const link = target.closest("a");
 
-			if (!link || !link.href) return;
+				if (!link || !link.href) return;
 
-			try {
-				const url = new URL(link.href);
-				if (shouldIntercept(url)) {
-					e.preventDefault();
-					currentLink = link;
-					openDialog(link.href);
+				try {
+					const url = new URL(link.href);
+					if (shouldIntercept(url)) {
+						e.preventDefault();
+						state.currentLink = link;
+						openDialog(link.href);
+					}
+				} catch (err) {
+					// 忽略无效 URL
 				}
-			} catch (err) {
-				// 忽略无效 URL
-			}
-		});
+			},
+			{ signal },
+		);
 
 		// 弹窗交互绑定
-		dialog.addEventListener("click", (e) => {
-			if (e.target === dialog) closeDialog();
-		});
+		dialog.addEventListener(
+			"click",
+			(e) => {
+				if (e.target === dialog) closeDialog();
+			},
+			{ signal },
+		);
 
-		btnCancel?.addEventListener("click", closeDialog);
+		dialog.addEventListener(
+			"close",
+			() => {
+				state.currentLink = null;
+			},
+			{ signal },
+		);
 
-		btnConfirm?.addEventListener("click", () => {
-			if (!currentLink) return;
-			const href = currentLink.href;
-			const target = currentLink.target;
-			currentLink = null; // 防止重复点击
-			closeDialog();
-			setTimeout(() => {
-				if (target === "_blank") {
-					window.open(href, "_blank", "noopener,noreferrer");
-				} else {
-					window.location.href = href;
-				}
-			}, 250);
-		});
+		btnCancel?.addEventListener("click", closeDialog, { signal });
+
+		btnConfirm?.addEventListener(
+			"click",
+			() => {
+				const currentLink = state.currentLink;
+				if (!currentLink) return;
+				const href = currentLink.href;
+				const target = currentLink.target;
+				state.currentLink = null; // 防止重复点击
+				closeDialog();
+				setTimeout(() => {
+					if (target === "_blank") {
+						window.open(href, "_blank", "noopener,noreferrer");
+					} else {
+						window.location.href = href;
+					}
+				}, 250);
+			},
+			{ signal },
+		);
 
 		// 复制功能
-		btnCopy?.addEventListener("click", async () => {
-			const text = urlDisplay?.textContent;
-			if (!text) return;
+		btnCopy?.addEventListener(
+			"click",
+			async () => {
+				const text = urlDisplay?.textContent;
+				if (!text) return;
 
-			try {
-				await navigator.clipboard.writeText(text);
-				btnCopy.classList.add("copied");
-				setTimeout(() => btnCopy.classList.remove("copied"), 1500);
-			} catch (err) {
-				console.error("Copy failed", err);
-			}
-		});
+				try {
+					await navigator.clipboard.writeText(text);
+					btnCopy.classList.add("copied");
+					setTimeout(() => btnCopy.classList.remove("copied"), 1500);
+				} catch (err) {
+					console.error("Copy failed", err);
+				}
+			},
+			{ signal },
+		);
+
+		state.cleanup = () => {
+			controller.abort();
+			clearTimeout(state.closeTimer);
+		};
 	})();
 </script>
