@@ -695,7 +695,7 @@ export const clickEffectConfig: ClickEffectConfig = {
 // Live2D Widget 配置
 export const live2dConfig: Live2DConfig = {
 	enable: true,
-	mobile: false,
+	mobile: true,
 	drag: false,
 	modelId: 1,
 	logLevel: "warn",

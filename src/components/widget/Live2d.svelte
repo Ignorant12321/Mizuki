@@ -5,6 +5,8 @@
 	// 全局状态引用
 	let live2dInitialized = false;
 	let waifuContainer;
+	let cleanupMobileToolToggle = () => {};
+	let cleanupTouchEndHandler = () => {};
 
 	// 解决图片资源跨域问题 (非常重要，否则 Canvas 渲染会报错)
 	function fixCrossOrigin() {
@@ -19,6 +21,44 @@
 	}
 
 	// 等待 DOM 和外部脚本加载完成后再初始化 Live2D
+	function setupMobileToolToggle() {
+		if (typeof window === "undefined") return () => {};
+
+		const isTouchLikeDevice = window.matchMedia(
+			"(hover: none), (pointer: coarse)",
+		).matches;
+		if (!isTouchLikeDevice) return () => {};
+
+		const waifuEl = document.getElementById("waifu");
+		if (!waifuEl) return () => {};
+
+		const toggleTools = (event) => {
+			const target = event.target;
+			if (!(target instanceof Element)) return;
+			if (target.closest("#waifu-tool")) return;
+
+			if (target.closest("#waifu")) {
+				waifuEl.classList.toggle("waifu-tool-visible");
+			}
+		};
+
+		const hideToolsOnOutsideClick = (event) => {
+			const target = event.target;
+			if (!(target instanceof Node)) return;
+			if (!waifuEl.contains(target)) {
+				waifuEl.classList.remove("waifu-tool-visible");
+			}
+		};
+
+		waifuEl.addEventListener("click", toggleTools);
+		document.addEventListener("click", hideToolsOnOutsideClick, true);
+
+		return () => {
+			waifuEl.removeEventListener("click", toggleTools);
+			document.removeEventListener("click", hideToolsOnOutsideClick, true);
+		};
+	}
+
 	function initLive2d() {
 		if (
 			typeof window !== "undefined" &&
@@ -41,6 +81,8 @@
 					});
 					live2dInitialized = true;
 					console.log("Live2D initialized successfully (Svelte)");
+					cleanupMobileToolToggle();
+					cleanupMobileToolToggle = setupMobileToolToggle();
 
 					// 添加返回主页按钮
 					if (live2dConfig.tools.includes("home")) {
@@ -154,34 +196,35 @@
 		}
 		// 触摸屏点击事件
 		if (typeof window !== "undefined") {
-			window.addEventListener(
-				"touchend",
-				(e) => {
-					const target = e.target;
-					// 判断触摸的是不是看板娘的 canvas 元素
-					if (target && target.id === "live2d") {
-						// 提取手指触摸的最后坐标
-						const touch = e.changedTouches[0];
-						const clientX = touch ? touch.clientX : 0;
-						const clientY = touch ? touch.clientY : 0;
+			const handleTouchEnd = (e) => {
+				const target = e.target;
+				if (target && target.id === "live2d") {
+					const touch = e.changedTouches[0];
+					const clientX = touch ? touch.clientX : 0;
+					const clientY = touch ? touch.clientY : 0;
 
-						// 稍微延迟，避开底层引擎的拦截处理
-						setTimeout(() => {
-							// 人工制造一个 click 事件，并附带上触摸坐标
-							const clickEvent = new MouseEvent("click", {
-								bubbles: true, // 允许冒泡被外层监听到
-								cancelable: true,
-								view: window,
-								clientX: clientX, // 传入真实的 X 坐标
-								clientY: clientY, // 传入真实的 Y 坐标
-							});
-							// 派发点击事件
-							target.dispatchEvent(clickEvent);
-						}, 50);
-					}
-				},
-				{ capture: true, passive: true },
-			);
+					setTimeout(() => {
+						const clickEvent = new MouseEvent("click", {
+							bubbles: true,
+							cancelable: true,
+							view: window,
+							clientX: clientX,
+							clientY: clientY,
+						});
+						target.dispatchEvent(clickEvent);
+					}, 50);
+				}
+			};
+
+			window.addEventListener("touchend", handleTouchEnd, {
+				capture: true,
+				passive: true,
+			});
+			cleanupTouchEndHandler = () => {
+				window.removeEventListener("touchend", handleTouchEnd, {
+					capture: true,
+				});
+			};
 		}
 	});
 
@@ -191,6 +234,8 @@
 		console.log(
 			"Live2D Svelte component destroyed (keeping instance alive)",
 		);
+		cleanupMobileToolToggle();
+		cleanupTouchEndHandler();
 	});
 </script>
 
@@ -210,7 +255,12 @@
 			margin-left: -30px !important;
 		}
 		:global(#waifu-tool) {
+			opacity: 0 !important;
+			pointer-events: none;
+		}
+		:global(#waifu.waifu-tool-visible #waifu-tool) {
 			opacity: 1 !important;
+			pointer-events: auto;
 		}
 	}
 
