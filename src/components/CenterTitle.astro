@@ -54,13 +54,20 @@ const watermarkText = typeof watermark === "string" ? watermark : subtitle;
 	<div class="flex flex-col items-center justify-center w-full relative z-10">
 		<slot name="icon">
 			<svg
-				class="w-4 h-4 md:w-5 md:h-5 text-(--primary) opacity-40 mb-3"
+				class="w-6 h-6 md:w-8 md:h-8 text-(--primary) opacity-60 mb-2 drop-shadow-sm"
 				viewBox="0 0 24 24"
-				fill="currentColor"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
 			>
 				<path
-					d="M12 2L12.7 9.3L20 10L12.7 10.7L12 18L11.3 10.7L4 10L11.3 9.3L12 2Z"
-				></path>
+					d="M12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.52285 12 2 12C7.52285 12 12 7.52285 12 2Z"
+					fill="currentColor"
+					opacity="0.3"></path>
+				<path
+					d="M12 4C12 8.41828 15.5817 12 20 12C15.5817 12 12 15.5817 12 20C12 15.5817 8.41828 12 4 12C8.41828 12 12 8.41828 12 4Z"
+					fill="currentColor"></path>
+				<circle cx="12" cy="12" r="1.5" fill="var(--card-bg, #ffffff)"
+				></circle>
 			</svg>
 		</slot>
 
@@ -68,14 +75,54 @@ const watermarkText = typeof watermark === "string" ? watermark : subtitle;
 			<div
 				class="flex-1 flex items-center justify-end opacity-50 group-hover:opacity-80 transition-opacity duration-500 max-w-[120px] md:max-w-[200px]"
 			>
-				<div
-					class="h-px w-full bg-linear-to-l from-(--primary) to-transparent"
+				<svg
+					class="w-full h-3 text-(--primary)"
+					viewBox="0 0 150 12"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					preserveAspectRatio="xMaxYCenter meet"
 				>
-				</div>
-				<div
-					class="w-1 h-1 rounded-full bg-(--primary) ml-2 md:ml-3 shadow-[0_0_8px_var(--primary)] shrink-0"
-				>
-				</div>
+					<defs>
+						<linearGradient
+							id="gradLeft"
+							x1="150"
+							y1="6"
+							x2="0"
+							y2="6"
+							gradientUnits="userSpaceOnUse"
+						>
+							<stop
+								offset="0%"
+								stop-color="currentColor"
+								stop-opacity="0.7"></stop>
+							<stop
+								offset="100%"
+								stop-color="currentColor"
+								stop-opacity="0"></stop>
+						</linearGradient>
+					</defs>
+					<line
+						x1="0"
+						y1="6"
+						x2="128"
+						y2="6"
+						stroke="url(#gradLeft)"
+						stroke-width="1.5"
+						stroke-linecap="round"></line>
+					<path
+						d="M135 4L136.5 6L135 8L133.5 6L135 4Z"
+						fill="currentColor"
+						opacity="0.8"></path>
+					<circle cx="145" cy="6" r="2.5" fill="currentColor"
+					></circle>
+					<circle
+						cx="145"
+						cy="6"
+						r="4.5"
+						stroke="currentColor"
+						stroke-width="0.5"
+						opacity="0.5"></circle>
+				</svg>
 			</div>
 
 			<div
@@ -96,14 +143,53 @@ const watermarkText = typeof watermark === "string" ? watermark : subtitle;
 			<div
 				class="flex-1 flex items-center justify-start opacity-50 group-hover:opacity-80 transition-opacity duration-500 max-w-[120px] md:max-w-[200px]"
 			>
-				<div
-					class="w-1 h-1 rounded-full bg-(--primary) mr-2 md:mr-3 shadow-[0_0_8px_var(--primary)] shrink-0"
+				<svg
+					class="w-full h-3 text-(--primary)"
+					viewBox="0 0 150 12"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					preserveAspectRatio="xMinYCenter meet"
 				>
-				</div>
-				<div
-					class="h-px w-full bg-linear-to-r from-(--primary) to-transparent"
-				>
-				</div>
+					<defs>
+						<linearGradient
+							id="gradRight"
+							x1="0"
+							y1="6"
+							x2="150"
+							y2="6"
+							gradientUnits="userSpaceOnUse"
+						>
+							<stop
+								offset="0%"
+								stop-color="currentColor"
+								stop-opacity="0.7"></stop>
+							<stop
+								offset="100%"
+								stop-color="currentColor"
+								stop-opacity="0"></stop>
+						</linearGradient>
+					</defs>
+					<circle cx="5" cy="6" r="2.5" fill="currentColor"></circle>
+					<circle
+						cx="5"
+						cy="6"
+						r="4.5"
+						stroke="currentColor"
+						stroke-width="0.5"
+						opacity="0.5"></circle>
+					<path
+						d="M15 4L16.5 6L15 8L13.5 6L15 4Z"
+						fill="currentColor"
+						opacity="0.8"></path>
+					<line
+						x1="22"
+						y1="6"
+						x2="150"
+						y2="6"
+						stroke="url(#gradRight)"
+						stroke-width="1.5"
+						stroke-linecap="round"></line>
+				</svg>
 			</div>
 		</div>
 
