@@ -90,7 +90,9 @@ function ensureTrailingSlash(url: string | undefined) {
 
 								return (
 									<div class="moment-item relative pl-0 md:pl-8 group">
-										<div class="absolute left-0 top-5 w-2 h-2 rounded-full bg-(--primary) ring-4 ring-(--page-bg) hidden md:block" />
+										<div
+											class="absolute left-0 top-5 w-2 h-2 rounded-full bg-(--primary) ring-4 ring-(--page-bg) hidden md:block transition-all duration-300 ease-out group-hover:scale-150 group-hover:ring-6 group-hover:ring-(--primary)/20 group-hover:shadow-[0_0_0_8px_color-mix(in_oklab,var(--primary)_20%,transparent)]"
+										/>
 
 										<div class="card-base-daily rounded-(--radius-large) bg-(--card-bg) border-2 border-(--line-divider) hover:border-(--primary) transition-[border-color,box-shadow] duration-300 hover:shadow-xl overflow-hidden cursor-default">
 											<div class="moment-header flex items-center justify-between px-5 pt-5 pb-3 md:px-7 md:pt-6">
