@@ -7,18 +7,18 @@ const backToBottomLabel = i18n(I18nKey.backToBottom);
 ---
 
 <div class="back-to-bottom-wrapper block">
-	<div
+	<button
 		id="back-to-bottom-btn"
-		class="back-to-bottom-btn flex items-center rounded-2xl overflow-hidden transition"
+		class="back-to-bottom-btn"
 		onclick="backToBottom()"
+		aria-label={backToBottomLabel}
+		title={backToBottomLabel}
 	>
-		<button aria-label={backToBottomLabel} title={backToBottomLabel} class="btn-card h-15 w-15">
-			<Icon
-				name="material-symbols:keyboard-arrow-down-rounded"
-				class="mx-auto"
-			/>
-		</button>
-	</div>
+		<Icon
+			name="material-symbols:keyboard-arrow-down-rounded"
+			class="back-to-bottom-icon"
+		/>
+	</button>
 </div>
 
 <style lang="stylus">
@@ -32,10 +32,12 @@ const backToBottomLabel = i18n(I18nKey.backToBottom);
     z-index: 45
 
   .back-to-bottom-btn
+    width: 3.75rem
+    height: 3.75rem
+    display: flex
+    align-items: center
+    justify-content: center
     color: var(--primary)
-    font-size: 2.25rem
-    font-weight: bold
-    border: none
     position: fixed
     bottom: 5rem
     opacity: 1
@@ -43,11 +45,16 @@ const backToBottomLabel = i18n(I18nKey.backToBottom);
     cursor: pointer
     transform: translateX(5rem)
     pointer-events: auto
-    transition: box-shadow 1s ease-in-out
-    box-shadow: 0 0 12px color-mix(var(--primary) 60%, transparent)
+    transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1)
+    border: 1px solid color-mix(var(--primary) 18%, var(--line-color))
+    border-radius: 1rem
+    background: linear-gradient(160deg, color-mix(var(--primary) 12%, var(--card-bg)) 0%, var(--card-bg) 80%)
+    backdrop-filter: blur(8px)
+    box-shadow: 0 0 0 1px color-mix(var(--primary) 25%, transparent), 0 8px 24px color-mix(var(--primary) 22%, transparent)
 
-    i
-      font-size: 1.75rem
+    &:hover
+      transform: translateX(5rem) translateY(-1px)
+      box-shadow: 0 0 0 1px color-mix(var(--primary) 35%, transparent), 0 12px 30px color-mix(var(--primary) 30%, transparent)
 
     &.hide
       transform: translateX(5rem) scale(0.9) 
@@ -56,7 +63,11 @@ const backToBottomLabel = i18n(I18nKey.backToBottom);
       box-shadow: none
 
     &:active
-      transform: translateX(5rem) scale(0.9) 
+      transform: translateX(5rem) scale(0.94)
+      background: color-mix(var(--primary) 14%, var(--btn-card-bg-active))
+
+  .back-to-bottom-icon
+    font-size: 2rem
 
 </style>
 

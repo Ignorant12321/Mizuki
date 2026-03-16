@@ -8,18 +8,18 @@ const backToTopLabel = i18n(I18nKey.backToTop);
 
 <!-- There can't be a filter on parent element, or it will break `fixed` -->
 <div class="back-to-top-wrapper block">
-	<div
+	<button
 		id="back-to-top-btn"
-		class="back-to-top-btn hide flex items-center rounded-2xl overflow-hidden transition"
+		class="back-to-top-btn hide"
 		onclick="backToTop()"
+		aria-label={backToTopLabel}
+		title={backToTopLabel}
 	>
-		<button aria-label={backToTopLabel} title={backToTopLabel} class="btn-card h-15 w-15">
-			<Icon
-				name="material-symbols:keyboard-arrow-up-rounded"
-				class="mx-auto"
-			/>
-		</button>
-	</div>
+		<Icon
+			name="material-symbols:keyboard-arrow-up-rounded"
+			class="back-to-top-icon"
+		/>
+	</button>
 </div>
 
 <style lang="stylus">
@@ -33,10 +33,12 @@ const backToTopLabel = i18n(I18nKey.backToTop);
     z-index: 45
 
   .back-to-top-btn
+    width: 3.75rem
+    height: 3.75rem
+    display: flex
+    align-items: center
+    justify-content: center
     color: var(--primary)
-    font-size: 2.25rem
-    font-weight: bold
-    border: none
     position: fixed
     bottom: 15rem
     opacity: 1
@@ -44,11 +46,16 @@ const backToTopLabel = i18n(I18nKey.backToTop);
     cursor: pointer
     transform: translateX(5rem)
     pointer-events: auto
-    transition: box-shadow 1s ease-in-out
-    box-shadow: 0 0 12px color-mix(var(--primary) 60%, transparent)
+    transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1)
+    border: 1px solid color-mix(var(--primary) 18%, var(--line-color))
+    border-radius: 1rem
+    background: linear-gradient(160deg, color-mix(var(--primary) 12%, var(--card-bg)) 0%, var(--card-bg) 80%)
+    backdrop-filter: blur(8px)
+    box-shadow: 0 0 0 1px color-mix(var(--primary) 25%, transparent), 0 8px 24px color-mix(var(--primary) 22%, transparent)
 
-    i
-      font-size: 1.75rem
+    &:hover
+      transform: translateX(5rem) translateY(-1px)
+      box-shadow: 0 0 0 1px color-mix(var(--primary) 35%, transparent), 0 12px 30px color-mix(var(--primary) 30%, transparent)
 
     &.hide
       transform: translateX(5rem) scale(0.9)
@@ -57,7 +64,11 @@ const backToTopLabel = i18n(I18nKey.backToTop);
       box-shadow: none
 
     &:active
-      transform: translateX(5rem) scale(0.9)
+      transform: translateX(5rem) scale(0.94)
+      background: color-mix(var(--primary) 14%, var(--btn-card-bg-active))
+
+  .back-to-top-icon
+    font-size: 2rem
 
   // 手机端隐藏返回顶部按钮
   // @media (max-width: 768px)

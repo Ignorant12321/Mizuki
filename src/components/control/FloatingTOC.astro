@@ -82,14 +82,14 @@ const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
 		justify-content: center;
 		color: var(--primary);
 		position: relative;
-		background:
-			linear-gradient(
-				160deg,
-				color-mix(in oklab, var(--primary) 12%, var(--card-bg)) 0%,
-				var(--card-bg) 80%
-			);
+		background: linear-gradient(
+			160deg,
+			color-mix(in oklab, var(--primary) 12%, var(--card-bg)) 0%,
+			var(--card-bg) 80%
+		);
 		transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-		border: 1px solid color-mix(in oklab, var(--primary) 18%, var(--line-color));
+		border: 1px solid
+			color-mix(in oklab, var(--primary) 18%, var(--line-color));
 		backdrop-filter: blur(8px);
 		box-shadow:
 			0 0 0 1px color-mix(in oklab, var(--primary) 25%, transparent),
@@ -97,7 +97,11 @@ const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
 	}
 
 	.floating-toc-btn.active {
-		background: color-mix(in oklab, var(--primary) 14%, var(--btn-card-bg-active));
+		background: color-mix(
+			in oklab,
+			var(--primary) 14%,
+			var(--btn-card-bg-active)
+		);
 		transform: scale(0.94);
 	}
 
@@ -137,13 +141,13 @@ const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
 		left: 0;
 		width: 18rem;
 		max-height: 60vh;
-		background:
-			linear-gradient(
-				180deg,
-				color-mix(in oklab, var(--primary) 6%, var(--card-bg)) 0%,
-				var(--card-bg) 35%
-			);
-		border: 1px solid color-mix(in oklab, var(--primary) 20%, var(--line-color));
+		background: linear-gradient(
+			180deg,
+			color-mix(in oklab, var(--primary) 6%, var(--card-bg)) 0%,
+			var(--card-bg) 35%
+		);
+		border: 1px solid
+			color-mix(in oklab, var(--primary) 20%, var(--line-color));
 		border-radius: 1.05rem;
 		box-shadow:
 			0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent),
@@ -175,7 +179,8 @@ const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
 		font-weight: 700;
 		text-shadow: 0 1px 0 color-mix(in oklab, white 12%, transparent);
 		color: var(--primary);
-		border-bottom: 1px solid color-mix(in oklab, var(--primary) 18%, var(--line-color));
+		border-bottom: 1px solid
+			color-mix(in oklab, var(--primary) 18%, var(--line-color));
 		background: color-mix(in oklab, var(--primary) 8%, var(--card-bg));
 		letter-spacing: 0.02em;
 		gap: 0;
@@ -260,18 +265,27 @@ const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
 	}
 
 	:global(.floating-toc-item:hover) {
-		background: color-mix(in oklab, var(--primary) 10%, var(--btn-regular-bg));
+		background: color-mix(
+			in oklab,
+			var(--primary) 10%,
+			var(--btn-regular-bg)
+		);
 		color: var(--primary);
 		transform: translateX(3px);
 		border-color: color-mix(in oklab, var(--primary) 20%, transparent);
 	}
 
 	:global(.floating-toc-item.active) {
-		background: color-mix(in oklab, var(--primary) 16%, var(--btn-card-bg-active));
+		background: color-mix(
+			in oklab,
+			var(--primary) 16%,
+			var(--btn-card-bg-active)
+		);
 		color: var(--primary);
 		font-weight: 600;
 		border-color: color-mix(in oklab, var(--primary) 34%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 20%, transparent);
+		box-shadow: inset 0 0 0 1px
+			color-mix(in oklab, var(--primary) 20%, transparent);
 	}
 
 	:global(.floating-toc-item.active)::before {
@@ -292,7 +306,11 @@ const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
 		justify-content: center;
 		width: 1.25rem;
 		height: 1.25rem;
-		background: color-mix(in oklab, var(--primary) 16%, var(--btn-regular-bg));
+		background: color-mix(
+			in oklab,
+			var(--primary) 16%,
+			var(--btn-regular-bg)
+		);
 		color: var(--primary);
 		border-radius: 0.25rem;
 		font-size: 0.75rem;
@@ -526,7 +544,7 @@ const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
 		private generateTOC() {
 			const emptyStateHTML = `
 				<div class="floating-toc-item" style="justify-content: center;text-align: center; pointer-events: none; opacity: 0.5;">
-					<span class="floating-toc-text">鏆傛棤鐩綍</span>
+					<span class="floating-toc-text">暂无目录</span>
 				</div>
 			`;
 
@@ -753,12 +771,15 @@ const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
 	if (!(window as any)[FLOATING_TOC_BOOTSTRAPPED_KEY]) {
 		(window as any)[FLOATING_TOC_BOOTSTRAPPED_KEY] = true;
 		if (document.readyState === "loading") {
-			document.addEventListener("DOMContentLoaded", bootstrapFloatingTOC, {
-				once: true,
-			});
+			document.addEventListener(
+				"DOMContentLoaded",
+				bootstrapFloatingTOC,
+				{
+					once: true,
+				},
+			);
 		} else {
 			bootstrapFloatingTOC();
 		}
 	}
 </script>
-
