@@ -6,11 +6,13 @@
 	let live2dInitialized = false;
 	let live2dRetryCount = 0;
 	let initRetryTimer = null;
+	let toolAutoHideTimer = null;
 	let isComponentMounted = false;
 	let waifuContainer;
 	let cleanupMobileToolToggle = () => {};
 	let cleanupTouchEndHandler = () => {};
 	const MAX_INIT_RETRIES = 20;
+	const TOOL_AUTO_HIDE_DELAY = 3500;
 	const live2dPosition = siteConfig.floatingWidgets?.live2d ?? {
 		desktop: { right: "1.5rem", bottom: "0" },
 		mobile: { right: "1.5rem", bottom: "0" },
@@ -103,42 +105,91 @@
 		}, delay);
 	}
 
-	// 等待 DOM 和外部脚本加载完成后再初始化 Live2D
-	function setupMobileToolToggle() {
-		if (typeof window === "undefined") return () => {};
-
-		const isTouchLikeDevice = window.matchMedia(
-			"(hover: none), (pointer: coarse)",
-		).matches;
-		if (!isTouchLikeDevice) return () => {};
-
+	function getLive2dElements() {
 		const waifuEl = document.getElementById("waifu");
-		if (!waifuEl) return () => {};
+		return {
+			waifuEl,
+			waifuToolEl: waifuEl?.querySelector("#waifu-tool") ?? null,
+			live2dEl: waifuEl?.querySelector("#live2d") ?? null,
+		};
+	}
 
-		const toggleTools = (event) => {
+	// 等待 DOM 和外部脚本加载完成后再初始化 Live2D
+	function setupToolAutoHide() {
+		if (typeof window === "undefined") return () => {};
+		const { waifuEl, waifuToolEl, live2dEl } = getLive2dElements();
+		waifuContainer = waifuEl;
+		if (!waifuEl || !waifuToolEl || !live2dEl) return () => {};
+
+		const clearHideTimer = () => {
+			if (toolAutoHideTimer) {
+				clearTimeout(toolAutoHideTimer);
+				toolAutoHideTimer = null;
+			}
+		};
+
+		const hideTools = (waifuEl) => {
+			if (!waifuEl) return;
+			waifuEl.classList.remove("waifu-tool-visible");
+			clearHideTimer();
+		};
+
+		const scheduleHide = (waifuEl) => {
+			if (!waifuEl) return;
+			clearHideTimer();
+			toolAutoHideTimer = setTimeout(() => {
+				hideTools(waifuEl);
+			}, TOOL_AUTO_HIDE_DELAY);
+		};
+
+		const showTools = (waifuEl) => {
+			if (!waifuEl) return;
+			waifuEl.classList.add("waifu-tool-visible");
+			scheduleHide(waifuEl);
+		};
+
+		// 默认隐藏
+		waifuEl.classList.remove("waifu-tool-visible");
+
+		// 使用 document 捕获阶段监听，避免被 Live2D 内部脚本阻断冒泡事件
+		const onPointerDownCapture = (event) => {
 			const target = event.target;
 			if (!(target instanceof Element)) return;
-			if (target.closest("#waifu-tool")) return;
+			const clickedWaifu = target.closest("#waifu");
+			const inThisWaifu = clickedWaifu === waifuEl;
+			const inTool = waifuToolEl.contains(target);
+			const inLive2d = live2dEl.contains(target);
 
-			if (target.closest("#waifu")) {
-				waifuEl.classList.toggle("waifu-tool-visible");
+			if (inThisWaifu && inTool) {
+				// 点击工具栏：保持显示并续时
+				scheduleHide(waifuEl);
+				return;
+			}
+
+			if (inThisWaifu && inLive2d) {
+				// 点击 Live2D 画布：显示工具栏
+				showTools(waifuEl);
+				return;
+			}
+
+			if (!inThisWaifu) {
+				// 点击外部：立即隐藏
+				hideTools(waifuEl);
 			}
 		};
-
-		const hideToolsOnOutsideClick = (event) => {
-			const target = event.target;
-			if (!(target instanceof Node)) return;
-			if (!waifuEl.contains(target)) {
-				waifuEl.classList.remove("waifu-tool-visible");
-			}
-		};
-
-		waifuEl.addEventListener("click", toggleTools);
-		document.addEventListener("click", hideToolsOnOutsideClick, true);
+		document.addEventListener(
+			"pointerdown",
+			onPointerDownCapture,
+			true,
+		);
 
 		return () => {
-			waifuEl.removeEventListener("click", toggleTools);
-			document.removeEventListener("click", hideToolsOnOutsideClick, true);
+			document.removeEventListener(
+				"pointerdown",
+				onPointerDownCapture,
+				true,
+			);
+			clearHideTimer();
 		};
 	}
 
@@ -148,8 +199,8 @@
 			typeof initWidget !== "undefined"
 		) {
 			try {
-				// 确保 DOM 元素存在且未被初始化过
-				if (waifuContainer && !live2dInitialized) {
+				const existingWaifu = document.getElementById("waifu");
+				if (!existingWaifu && !live2dInitialized) {
 					initWidget({
 						waifuPath: live2dConfig.waifuTipsPath,
 						cdnPath:
@@ -162,57 +213,48 @@
 						logLevel: live2dConfig.logLevel,
 						drag: live2dConfig.drag,
 					});
+				}
+
+				setTimeout(() => {
+					const { waifuEl, waifuToolEl } = getLive2dElements();
+					if (!waifuEl || !waifuToolEl) {
+						console.warn("Live2D DOM elements not found, retrying...");
+						scheduleInitRetry("missing library-generated #waifu");
+						return;
+					}
+
+					waifuContainer = waifuEl;
 					live2dInitialized = true;
 					live2dRetryCount = 0;
 					console.log("Live2D initialized successfully (Svelte)");
 					cleanupMobileToolToggle();
-					cleanupMobileToolToggle = setupMobileToolToggle();
+					cleanupMobileToolToggle = setupToolAutoHide();
 
-					// 添加返回主页按钮
-					if (live2dConfig.tools.includes("home")) {
-						setTimeout(() => {
-							const toolMenu =
-								document.getElementById("waifu-tool");
+					if (
+						live2dConfig.tools.includes("home") &&
+						!document.getElementById("waifu-tool-home")
+					) {
+						const homeBtn = document.createElement("span");
+						homeBtn.id = "waifu-tool-home";
+						homeBtn.innerHTML =
+							'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" fill="currentColor"><path d="M575.8 255.5c0 18-15 32.1-32 32.1h-32l.7 160.2c0 2.7-.2 5.4-.5 8.1V472c0 22.1-17.9 40-40 40H456c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1H416 392c-22.1 0-40-17.9-40-40V448 384c0-17.7-14.3-32-32-32H256c-17.7 0-32 14.3-32 32v64 24c0 22.1-17.9 40-40 40H160 128.1c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2H104c-22.1 0-40-17.9-40-40V360c0-.9 0-1.9 .1-2.8V287.6H32c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"/></svg>';
+						homeBtn.onclick = () => {
 							if (
-								toolMenu &&
-								!document.getElementById("waifu-tool-home")
+								typeof window !== "undefined" &&
+								window.swup
 							) {
-								const homeBtn = document.createElement("span");
-								homeBtn.id = "waifu-tool-home";
-
-								// 注入房屋形状的 SVG 图标
-								homeBtn.innerHTML =
-									'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" fill="currentColor"><path d="M575.8 255.5c0 18-15 32.1-32 32.1h-32l.7 160.2c0 2.7-.2 5.4-.5 8.1V472c0 22.1-17.9 40-40 40H456c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1H416 392c-22.1 0-40-17.9-40-40V448 384c0-17.7-14.3-32-32-32H256c-17.7 0-32 14.3-32 32v64 24c0 22.1-17.9 40-40 40H160 128.1c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2H104c-22.1 0-40-17.9-40-40V360c0-.9 0-1.9 .1-2.8V287.6H32c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"/></svg>';
-
-								// 点击跳转到主页 (适配无刷新路由)
-								homeBtn.onclick = () => {
-									// 优先检测是否启用了 Swup 无刷新路由
-									if (
-										typeof window !== "undefined" &&
-										window.swup
-									) {
-										window.swup.navigate("/");
-									}
-									// 兜底方案：模拟真实点击 a 标签，让各种前端路由（如 Astro View Transitions）自动拦截并接管
-									else {
-										const tempLink =
-											document.createElement("a");
-										tempLink.href = "/";
-										document.body.appendChild(tempLink);
-										tempLink.click();
-										document.body.removeChild(tempLink);
-									}
-								};
-
-								// 将按钮插入到工具栏最上面
-								toolMenu.prepend(homeBtn);
+								window.swup.navigate("/");
+							} else {
+								const tempLink = document.createElement("a");
+								tempLink.href = "/";
+								document.body.appendChild(tempLink);
+								tempLink.click();
+								document.body.removeChild(tempLink);
 							}
-						}, 500); // 延时 500ms 确保原版内部工具已经挂载完毕
+						};
+						waifuToolEl.prepend(homeBtn);
 					}
-				} else if (!waifuContainer) {
-					console.warn("Live2D DOM elements not found, retrying...");
-					scheduleInitRetry("missing #waifu container");
-				}
+				}, 250);
 			} catch (e) {
 				console.error("Live2D initialization error:", e);
 				scheduleInitRetry("initWidget runtime error");
@@ -270,17 +312,6 @@
 		fixCrossOrigin();
 		loadLive2dAssets();
 
-		// 拦截滚轮事件，防止在看板娘上滚动时页面卡顿
-		const canvas = document.getElementById("live2d");
-		if (canvas) {
-			canvas.addEventListener(
-				"wheel",
-				(e) => {
-					e.stopImmediatePropagation();
-				},
-				{ passive: true, capture: true },
-			);
-		}
 		// 触摸屏点击事件
 		if (typeof window !== "undefined") {
 			const handleTouchEnd = (e) => {
@@ -321,6 +352,10 @@
 			clearTimeout(initRetryTimer);
 			initRetryTimer = null;
 		}
+		if (toolAutoHideTimer) {
+			clearTimeout(toolAutoHideTimer);
+			toolAutoHideTimer = null;
+		}
 		// Svelte 组件销毁时不需要清理实例
 		// 效仿原版 Pio：在 Astro 的 View Transitions 页面切换时保持看板娘状态存活
 		console.log(
@@ -331,14 +366,6 @@
 	});
 </script>
 
-{#if live2dConfig.enable}
-	<div id="waifu" bind:this={waifuContainer}>
-		<div id="waifu-tips"></div>
-		<canvas id="live2d" width="800" height="800"></canvas>
-		<div id="waifu-tool"></div>
-	</div>
-{/if}
-
 <style global>
 	/* 使用 global 确保 Svelte 样式能够穿透到 JS 动态生成的元素上 */
 
@@ -346,18 +373,28 @@
 		:global(#waifu-toggle.waifu-toggle-active) {
 			margin-left: -30px !important;
 		}
-		:global(#waifu-tool) {
-			opacity: 0 !important;
-			pointer-events: none;
-		}
-		:global(#waifu.waifu-tool-visible #waifu-tool) {
-			opacity: 1 !important;
-			pointer-events: auto;
-		}
 	}
 
-	:global(#waifu, #waifu-tool, #waifu-toggle) {
+	:global(#waifu, #waifu-toggle) {
 		z-index: 40 !important;
+	}
+	:global(#waifu-tool) {
+		z-index: 60 !important;
+		opacity: 0 !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
+		transition: opacity 0.2s ease !important;
+	}
+	:global(#waifu:hover #waifu-tool) {
+		/* 禁用库默认 hover 显示，避免“可见但不可点”的假状态 */
+		opacity: 0 !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
+	}
+	:global(#waifu.waifu-tool-visible #waifu-tool) {
+		opacity: 1 !important;
+		visibility: visible !important;
+		pointer-events: auto !important;
 	}
 
 	:global(#waifu) {
