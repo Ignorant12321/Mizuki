@@ -100,6 +100,11 @@ export const siteConfig: SiteConfig = {
 		allowSwitch: false,
 	},
 
+	// 首页分页配置
+	homePage: {
+		postPageSize: 1,
+	},
+
 	// 标签样式配置
 	tagStyle: {
 		// 是否使用新样式（悬停高亮样式）还是旧样式（外框常亮样式）
