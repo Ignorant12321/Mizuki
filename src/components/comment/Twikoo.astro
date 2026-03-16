@@ -23,71 +23,148 @@ const config = {
 	src="https://s4.zstatic.net/npm/twikoo@1.7.3/dist/twikoo.min.js"></script>
 <!-- <script is:inline src="/assets/js/twikoo.min.js"></script> -->
 <script is:inline define:vars={{ config }}>
-	// 获取当前页面路径
-	function getCurrentPath() {
-		const pathname = window.location.pathname;
-		return pathname.endsWith("/") && pathname.length > 1
-			? pathname.slice(0, -1)
-			: pathname;
-	}
+	(() => {
+		const STATE_KEY = "twikooPageState";
+		if (!window[STATE_KEY]) {
+			window[STATE_KEY] = {
+				retryCount: 0,
+				maxRetries: 8,
+				retryTimer: null,
+				reinitTimer: null,
+				lifecycleListeners: [],
+			};
+		}
+		const state = window[STATE_KEY];
 
-	// 动态创建配置对象
-	function createTwikooConfig() {
-		return {
-			...config,
-			path: getCurrentPath(),
-			el: "#tcomment",
-		};
-	}
+		function normalizePath(path) {
+			if (!path) return "/";
+			const withLeadingSlash = path.startsWith("/") ? path : "/" + path;
+			if (withLeadingSlash.length > 1 && withLeadingSlash.endsWith("/")) {
+				return withLeadingSlash.slice(0, -1);
+			}
+			return withLeadingSlash;
+		}
 
-	// 初始化 Twikoo
-	function initTwikoo() {
-		if (typeof twikoo !== "undefined") {
+		function getCurrentPath() {
+			return normalizePath(window.location.pathname);
+		}
+
+		function getCommentPath() {
+			return getCurrentPath();
+		}
+
+		function clearTimers() {
+			if (state.retryTimer) {
+				clearTimeout(state.retryTimer);
+				state.retryTimer = null;
+			}
+			if (state.reinitTimer) {
+				clearTimeout(state.reinitTimer);
+				state.reinitTimer = null;
+			}
+		}
+
+		function showLoadError(message) {
 			const commentEl = document.getElementById("tcomment");
-			if (commentEl) {
-				commentEl.innerHTML = "";
-				const dynamicConfig = createTwikooConfig();
-				console.log("[Twikoo] 初始化配置:", dynamicConfig);
+			if (!commentEl) return;
+			commentEl.innerHTML =
+				'<div class="text-sm text-black/60 dark:text-white/60 py-4">' +
+				message +
+				"</div>";
+		}
 
-				twikoo
-					.init(dynamicConfig)
-					.then(() => {
-						console.log("[Twikoo] 初始化完成");
-					})
-					.catch((error) => {
-						console.error("[Twikoo] 初始化失败:", error);
-					});
+		function createTwikooConfig() {
+			return {
+				...config,
+				path: getCommentPath(),
+				el: "#tcomment",
+			};
+		}
+
+		function initTwikoo() {
+			const commentEl = document.getElementById("tcomment");
+			if (!commentEl) return;
+
+			if (typeof twikoo === "undefined") {
+				if (state.retryCount >= state.maxRetries) {
+					showLoadError("评论加载失败，请刷新页面后重试。");
+					return;
+				}
+				state.retryCount += 1;
+				state.retryTimer = setTimeout(initTwikoo, 500);
+				return;
 			}
+
+			state.retryCount = 0;
+			commentEl.innerHTML = "";
+			twikoo.init(createTwikooConfig()).catch((error) => {
+				console.error("[Twikoo] 初始化失败:", error);
+				showLoadError("评论初始化失败，请稍后重试。");
+			});
+		}
+
+		function scheduleInit(delay) {
+			if (state.reinitTimer) {
+				clearTimeout(state.reinitTimer);
+			}
+			state.reinitTimer = setTimeout(() => {
+				state.reinitTimer = null;
+				initTwikoo();
+			}, delay);
+		}
+
+		function cleanupLifecycleListeners() {
+			if (!state.lifecycleListeners || state.lifecycleListeners.length === 0) {
+				return;
+			}
+			for (let i = 0; i < state.lifecycleListeners.length; i++) {
+				const listener = state.lifecycleListeners[i];
+				const target = listener[0];
+				const eventName = listener[1];
+				const handler = listener[2];
+				if (target && target.removeEventListener) {
+					target.removeEventListener(eventName, handler);
+				}
+			}
+			state.lifecycleListeners = [];
+		}
+
+		function addListener(target, eventName, handler, options) {
+			target.addEventListener(eventName, handler, options);
+			state.lifecycleListeners.push([target, eventName, handler]);
+		}
+
+		function setupLifecycleListeners() {
+			cleanupLifecycleListeners();
+
+			const reloadEvents = [
+				"swup:contentReplaced",
+				"astro:page-load",
+				"astro:after-swap",
+				"mizuki:page:loaded",
+			];
+
+			for (let i = 0; i < reloadEvents.length; i++) {
+				const eventName = reloadEvents[i];
+				const handler = () => {
+					if (document.getElementById("tcomment")) {
+						scheduleInit(200);
+					}
+				};
+				addListener(document, eventName, handler);
+			}
+		}
+
+		clearTimers();
+		setupLifecycleListeners();
+
+		if (document.readyState === "loading") {
+			const domReadyHandler = () => scheduleInit(0);
+			addListener(document, "DOMContentLoaded", domReadyHandler, {
+				once: true,
+			});
 		} else {
-			// 如果 Twikoo 未加载，稍后重试
-			setTimeout(initTwikoo, 500);
+			scheduleInit(0);
 		}
-	}
-
-	// 页面加载时初始化
-	document.addEventListener("DOMContentLoaded", initTwikoo);
-
-	// Swup 页面切换后重新初始化
-	if (window.swup && window.swup.hooks) {
-		window.swup.hooks.on("content:replace", function () {
-			setTimeout(initTwikoo, 200);
-		});
-	} else {
-		document.addEventListener("swup:enable", function () {
-			if (window.swup && window.swup.hooks) {
-				window.swup.hooks.on("content:replace", function () {
-					setTimeout(initTwikoo, 200);
-				});
-			}
-		});
-	}
-
-	// 自定义事件监听
-	document.addEventListener("mizuki:page:loaded", function () {
-		const commentEl = document.getElementById("tcomment");
-		if (commentEl) {
-			console.log("[Twikoo] 通过自定义事件重新初始化");
-			initTwikoo();
-		}
-	});
+	})();
 </script>
