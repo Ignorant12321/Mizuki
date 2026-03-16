@@ -5,10 +5,38 @@ import Fontmin from "fontmin";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const configPath = path.join(__dirname, "../src/config.ts");
+const compressFontsDataPath = path.join(
+	__dirname,
+	"../src/data/compress-fonts-data.ts",
+);
+
+function splitExtraText(rawText) {
+	if (!rawText) return [];
+	return rawText
+		.split(",")
+		.map((item) => item.trim())
+		.filter(Boolean);
+}
+
+function getDefaultExtraTextFromData() {
+	if (!fs.existsSync(compressFontsDataPath)) {
+		return "";
+	}
+
+	try {
+		const content = fs.readFileSync(compressFontsDataPath, "utf-8");
+		const match = content.match(
+			/compressFontsExtraText\s*=\s*(["'`])([\s\S]*?)\1/m,
+		);
+		return match ? match[2].trim() : "";
+	} catch {
+		return "";
+	}
+}
 
 // 读取配置文件获取语言设置和字体配置
 async function getConfig() {
-	const configPath = path.join(__dirname, "../src/config.ts");
 	const configContent = fs.readFileSync(configPath, "utf-8");
 
 	// 提取语言设置
@@ -19,11 +47,22 @@ async function getConfig() {
 	const fontConfigMatch = configContent.match(/font:\s*\{([\s\S]*?)\n\t\},/);
 	if (!fontConfigMatch) {
 		console.log("⚠ Font config not found, using default settings");
-		return { lang, fonts: [] };
+		return {
+			lang,
+			fonts: [],
+			extraTextTerms: splitExtraText(getDefaultExtraTextFromData()),
+		};
 	}
 
 	const fontConfigStr = fontConfigMatch[1];
 	const fonts = [];
+	const extraTextMatch = fontConfigStr.match(
+		/extraText:\s*(["'`])([\s\S]*?)\1/m,
+	);
+	const extraTextFromConfig = extraTextMatch ? extraTextMatch[2].trim() : "";
+	const fallbackExtraText = getDefaultExtraTextFromData();
+	const resolvedExtraText = extraTextFromConfig || fallbackExtraText;
+	const extraTextTerms = splitExtraText(resolvedExtraText);
 
 	// 解析每个字体类别（asciiFont, cjkFont）
 	const fontTypes = ["asciiFont", "cjkFont"];
@@ -68,7 +107,7 @@ async function getConfig() {
 		}
 	}
 
-	return { lang, fonts };
+	return { lang, fonts, extraTextTerms };
 }
 
 // 递归读取目录下所有文件
@@ -921,7 +960,7 @@ async function fetchGitHubRepoText() {
 
 // 收集所有使用的文字（用于 CJK 字体）
 async function collectText() {
-	const { lang } = await getConfig();
+	const { lang, extraTextTerms } = await getConfig();
 
 	const textSet = new Set();
 
@@ -1202,10 +1241,8 @@ async function collectText() {
 		);
 	}
 
-	// 漏网之鱼（如散落在各处未纳入统计的UI文本等）
-	const otherWords = ["示例", "歌曲", "艺术家"];
-
-	for (const term of otherWords) {
+	// 从配置或默认 data 文件中添加补充文本（支持英文逗号分隔）
+	for (const term of extraTextTerms) {
 		for (const char of term) {
 			textSet.add(char);
 		}

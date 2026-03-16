@@ -134,6 +134,7 @@ export type SiteConfig = {
 
 	// 添加字体配置
 	font: {
+		extraText?: string; // 额外字体文本，多个词请使用英文逗号分隔
 		asciiFont: {
 			fontFamily: string;
 			fontWeight: string | number;

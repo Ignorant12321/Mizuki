@@ -273,6 +273,8 @@ export const siteConfig: SiteConfig = {
 	font: {
 		// 注意：自定义字体需要在 src/styles/main.css 中引入字体文件
 		// 注意：字体子集优化功能目前仅支持 TTF 格式字体,开启后需要在生产环境才能看到效果,在Dev环境下显示的是浏览器默认字体!
+		// 额外字体文本，多个词请使用英文逗号分隔；留空则读取 src/data/compress-fonts-data.ts
+		extraText: "",
 		asciiFont: {
 			// 英文字体 - 优先级最高
 			// 指定为英文字体则无论字体包含多大范围，都只会保留 ASCII 字符子集
