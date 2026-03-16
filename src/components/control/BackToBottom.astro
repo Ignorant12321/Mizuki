@@ -1,5 +1,9 @@
 ---
 import { Icon } from "astro-icon/components";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+
+const backToBottomLabel = i18n(I18nKey.backToBottom);
 ---
 
 <div class="back-to-bottom-wrapper block">
@@ -8,7 +12,7 @@ import { Icon } from "astro-icon/components";
 		class="back-to-bottom-btn flex items-center rounded-2xl overflow-hidden transition"
 		onclick="backToBottom()"
 	>
-		<button aria-label="Back to Bottom" class="btn-card h-15 w-15">
+		<button aria-label={backToBottomLabel} title={backToBottomLabel} class="btn-card h-15 w-15">
 			<Icon
 				name="material-symbols:keyboard-arrow-down-rounded"
 				class="mx-auto"

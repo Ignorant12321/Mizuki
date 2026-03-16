@@ -21,6 +21,9 @@ export const ja: Translation = {
 	[Key.postList]: "投稿の一覧",
 	[Key.tableOfContents]: "目次",
 	[Key.tocEmpty]: "目次はありません",
+	[Key.backToTop]: "ページ上部へ",
+	[Key.backToBottom]: "ページ下部へ",
+	[Key.tocBackToTop]: "ページ上部へ",
 
 	// お知らせ
 	[Key.announcement]: "お知らせ",

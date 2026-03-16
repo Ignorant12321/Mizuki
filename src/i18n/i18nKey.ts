@@ -18,6 +18,9 @@ enum I18nKey {
 	postList = "postList",
 	tableOfContents = "tableOfContents",
 	tocEmpty = "tocEmpty",
+	backToTop = "backToTop",
+	backToBottom = "backToBottom",
+	tocBackToTop = "tocBackToTop",
 
 	// 公告栏
 	announcement = "announcement",

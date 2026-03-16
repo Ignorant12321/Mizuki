@@ -21,6 +21,9 @@ export const zh_TW: Translation = {
 	[Key.postList]: "文章列表",
 	[Key.tableOfContents]: "目錄",
 	[Key.tocEmpty]: "當前頁面沒有目錄",
+	[Key.backToTop]: "回到頂部",
+	[Key.backToBottom]: "回到底部",
+	[Key.tocBackToTop]: "回到頂部",
 
 	// 公告欄
 	[Key.announcement]: "公告",
