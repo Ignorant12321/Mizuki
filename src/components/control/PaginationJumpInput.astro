@@ -1,0 +1,143 @@
+﻿---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+	gapId: string;
+	basePath: string;
+	maxPage: number;
+	currentPage: number;
+}
+
+const { gapId, basePath, maxPage, currentPage } = Astro.props;
+---
+
+<div
+	class="hidden absolute inset-0 z-10"
+	data-pagination-jump
+	data-gap-id={gapId}
+	data-base-path={basePath}
+	data-max-page={maxPage}
+	data-current-page={currentPage}
+>
+	<div class="h-11 min-w-24 rounded-lg bg-(--card-bg) border border-(--line-color) flex items-center px-2 gap-1">
+		<input
+			type="number"
+			min="1"
+			max={maxPage}
+			inputmode="numeric"
+			class="pagination-jump-input h-8 w-12 bg-transparent text-center font-bold text-sm outline-none"
+			placeholder={currentPage.toString()}
+			aria-label="输入页码后回车跳转"
+		/>
+		<button
+			type="button"
+			class="pagination-jump-confirm h-8 w-8 rounded-md btn-card flex items-center justify-center"
+			aria-label="确认跳转"
+		>
+			<Icon name="material-symbols:arrow-right-alt-rounded" class="text-base" />
+		</button>
+	</div>
+</div>
+
+<script>
+	import { navigateToPage } from "../../utils/navigation-utils";
+
+	const PAGINATION_JUMP_BOOTSTRAP_KEY = "__mizukiPaginationJumpBootstrapped";
+
+	function normalizeBasePath(path: string) {
+		let p = (path || "/").trim();
+		if (!p.startsWith("/")) p = `/${p}`;
+		p = p.replace(/\/+$/, "");
+		return p === "" ? "/" : p;
+	}
+
+	function buildPageUrl(basePath: string, pageNum: number) {
+		const normalized = normalizeBasePath(basePath);
+		if (pageNum <= 1) return normalized === "/" ? "/" : `${normalized}/`;
+		return normalized === "/" ? `/${pageNum}/` : `${normalized}/${pageNum}/`;
+	}
+
+	function closeJump(container: HTMLElement) {
+		container.dispatchEvent(
+			new CustomEvent("pagination:jump:close", {
+				bubbles: true,
+				detail: { gapId: container.dataset.gapId },
+			}),
+		);
+	}
+
+	function submitJump(container: HTMLElement) {
+		const input = container.querySelector(
+			".pagination-jump-input",
+		) as HTMLInputElement | null;
+		if (!input) return false;
+
+		const maxPage = parseInt(container.dataset.maxPage || "1", 10);
+		const basePath = container.dataset.basePath || "/";
+		const pageNum = parseInt(input.value.trim(), 10);
+
+		if (!Number.isInteger(pageNum) || pageNum < 1 || pageNum > maxPage) {
+			input.value = "";
+			input.focus();
+			return false;
+		}
+
+		navigateToPage(buildPageUrl(basePath, pageNum));
+		return true;
+	}
+
+	function onClick(event: Event) {
+		const target = event.target as HTMLElement;
+		const confirmBtn = target.closest(".pagination-jump-confirm");
+		if (!confirmBtn) return;
+
+		const container = confirmBtn.closest(
+			"[data-pagination-jump]",
+		) as HTMLElement | null;
+		if (!container) return;
+
+		if (submitJump(container)) {
+			closeJump(container);
+		}
+	}
+
+	function onKeyDown(event: KeyboardEvent) {
+		const target = event.target as HTMLElement;
+		if (!target.classList.contains("pagination-jump-input")) return;
+		const container = target.closest(
+			"[data-pagination-jump]",
+		) as HTMLElement | null;
+		if (!container) return;
+
+		if (event.key === "Enter") {
+			event.preventDefault();
+			if (submitJump(container)) {
+				closeJump(container);
+			}
+			return;
+		}
+
+		if (event.key === "Escape") {
+			event.preventDefault();
+			closeJump(container);
+		}
+	}
+
+	if (!(window as any)[PAGINATION_JUMP_BOOTSTRAP_KEY]) {
+		(window as any)[PAGINATION_JUMP_BOOTSTRAP_KEY] = true;
+		document.addEventListener("click", onClick);
+		document.addEventListener("keydown", onKeyDown);
+	}
+</script>
+
+<style>
+	.pagination-jump-input::-webkit-inner-spin-button,
+	.pagination-jump-input::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	.pagination-jump-input {
+		-moz-appearance: textfield;
+	}
+</style>

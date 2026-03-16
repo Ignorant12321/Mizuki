@@ -1,84 +1,327 @@
 ---
 import type { Page } from "astro";
 import { Icon } from "astro-icon/components";
+import { siteConfig } from "../../config";
+import PaginationJumpInput from "./PaginationJumpInput.astro";
 import { url } from "../../utils/url-utils";
 
 interface Props {
 	page: Page;
+	basePath?: string;
 	class?: string;
 	style?: string;
 }
 
+type PageToken =
+	| { type: "page"; value: number }
+	| { type: "gap"; id: string };
+
 const { page, style } = Astro.props;
-
-const HIDDEN = -1;
-
 const className = Astro.props.class;
+const basePath = Astro.props.basePath ?? "/";
 
-const ADJ_DIST = 2;
-const VISIBLE = ADJ_DIST * 2 + 1;
-
-// for test
-let count = 1;
-let l = page.currentPage;
-let r = page.currentPage;
-while (0 < l - 1 && r + 1 <= page.lastPage && count + 2 <= VISIBLE) {
-	count += 2;
-	l--;
-	r++;
-}
-while (0 < l - 1 && count < VISIBLE) {
-	count++;
-	l--;
-}
-while (r + 1 <= page.lastPage && count < VISIBLE) {
-	count++;
-	r++;
-}
-
-let pages: number[] = [];
-if (l > 1) pages.push(1);
-if (l === 3) pages.push(2);
-if (l > 3) pages.push(HIDDEN);
-for (let i = l; i <= r; i++) pages.push(i);
-if (r < page.lastPage - 2) pages.push(HIDDEN);
-if (r === page.lastPage - 2) pages.push(page.lastPage - 1);
-if (r < page.lastPage) pages.push(page.lastPage);
-
-const getPageUrl = (p: number) => {
-	if (p === 1) return "/";
-	return `/${p}/`;
+const normalizeBasePath = (path: string) => {
+	let p = (path || "/").trim();
+	if (!p.startsWith("/")) p = `/${p}`;
+	p = p.replace(/\/+$/, "");
+	return p === "" ? "/" : p;
 };
+
+const normalizedBasePath = normalizeBasePath(basePath);
+const rootId = `pagination-${normalizedBasePath.replace(/[^\w-]/g, "-")}-${page.currentPage}-${page.lastPage}`;
+
+const getPagePath = (pageNum: number) => {
+	if (pageNum <= 1)
+		return normalizedBasePath === "/" ? "/" : `${normalizedBasePath}/`;
+	return normalizedBasePath === "/"
+		? `/${pageNum}/`
+		: `${normalizedBasePath}/${pageNum}/`;
+};
+
+const normalizeVisible = (value: number | undefined, fallback: number) => {
+	const raw = Number.isFinite(value as number) ? Number(value) : fallback;
+	const safe = Math.max(3, Math.floor(raw));
+	return safe % 2 === 0 ? safe + 1 : safe;
+};
+
+const mobileVisible = normalizeVisible(
+	siteConfig.pagination?.mobileVisiblePages,
+	5,
+);
+const desktopVisible = normalizeVisible(
+	siteConfig.pagination?.desktopVisiblePages,
+	7,
+);
+
+const buildTokens = (visible: number, prefix: string): PageToken[] => {
+	const adjDist = Math.floor((visible - 1) / 2);
+	let count = 1;
+	let left = page.currentPage;
+	let right = page.currentPage;
+	while (0 < left - 1 && right + 1 <= page.lastPage && count + 2 <= visible) {
+		count += 2;
+		left--;
+		right++;
+	}
+	while (0 < left - 1 && count < visible) {
+		count++;
+		left--;
+	}
+	while (right + 1 <= page.lastPage && count < visible) {
+		count++;
+		right++;
+	}
+
+	const rawTokens: Array<number | "gap"> = [];
+	if (left > 1) rawTokens.push(1);
+	if (left === 3 && adjDist >= 1) rawTokens.push(2);
+	if (left > 3) rawTokens.push("gap");
+	for (let i = left; i <= right; i++) rawTokens.push(i);
+	if (right < page.lastPage - 2) rawTokens.push("gap");
+	if (right === page.lastPage - 2 && adjDist >= 1)
+		rawTokens.push(page.lastPage - 1);
+	if (right < page.lastPage) rawTokens.push(page.lastPage);
+
+	let gapCount = 0;
+	return rawTokens.map((token) => {
+		if (token === "gap") {
+			gapCount += 1;
+			return { type: "gap", id: `${prefix}-gap-${gapCount}` };
+		}
+		return { type: "page", value: token };
+	});
+};
+
+const mobileTokens = buildTokens(mobileVisible, "m");
+const desktopTokens = buildTokens(desktopVisible, "d");
+
+const prevUrl =
+	page.currentPage > 1 ? url(getPagePath(page.currentPage - 1)) : undefined;
+const nextUrl =
+	page.currentPage < page.lastPage
+		? url(getPagePath(page.currentPage + 1))
+		: undefined;
 ---
 
-<div class:list={[className, "flex flex-row gap-3 justify-center"]} style={style}>
-    <a href={page.url.prev || ""} aria-label={page.url.prev ? "Previous Page" : null}
-       class:list={["btn-card overflow-hidden rounded-lg text-(--primary) w-11 h-11",
-           {"disabled": page.url.prev == undefined}
-       ]}
-    >
-        <Icon name="material-symbols:chevron-left-rounded" class="text-[1.75rem]"></Icon>
-    </a>
-    <div class="bg-(--card-bg) flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
-        {pages.map((p) => {
-            if (p == HIDDEN)
-                return <Icon name="material-symbols:more-horiz" class="mx-1"/>;
-            if (p == page.currentPage)
-                return <div class="h-11 w-11 rounded-lg bg-(--primary) flex items-center justify-center
-                    font-bold text-white dark:text-black/70"
-                >
-                    {p}
-                </div>
-            return <a href={url(getPageUrl(p))} aria-label={`Page ${p}`}
-                class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.85]"
-            >{p}</a>
-        })}
-    </div>
-    <a href={page.url.next || ""} aria-label={page.url.next ? "Next Page" : null}
-       class:list={["btn-card overflow-hidden rounded-lg text-(--primary) w-11 h-11",
-           {"disabled": page.url.next == undefined}
-       ]}
-    >
-        <Icon name="material-symbols:chevron-right-rounded" class="text-[1.75rem]"></Icon>
-    </a>
+<div
+	id={rootId}
+	class:list={[className, "flex flex-row gap-3 justify-center items-center"]}
+	style={style}
+	data-pagination-root
+>
+	<a
+		href={prevUrl || ""}
+		aria-label={prevUrl ? "上一页" : null}
+		class:list={[
+			"btn-card overflow-hidden rounded-lg text-(--primary) w-11 h-11 hidden sm:flex items-center justify-center",
+			{ disabled: !prevUrl },
+		]}
+	>
+		<Icon
+			name="material-symbols:chevron-left-rounded"
+			class="text-[1.75rem]"
+		/>
+	</a>
+
+	<div class="sm:hidden bg-(--card-bg) flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
+		{
+			mobileTokens.map((token) => {
+				if (token.type === "gap") {
+					return (
+						<div class="relative h-11 w-11 mx-0.5" data-gap-slot={token.id}>
+							<button
+								type="button"
+								class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.9] flex items-center justify-center"
+								data-gap-toggle={token.id}
+								aria-label="输入页码跳转"
+							>
+								<Icon name="material-symbols:more-horiz" class="text-xl" />
+							</button>
+							<PaginationJumpInput
+								gapId={token.id}
+								basePath={normalizedBasePath}
+								maxPage={page.lastPage}
+								currentPage={page.currentPage}
+							/>
+						</div>
+					);
+				}
+
+				if (token.value === page.currentPage) {
+					return (
+						<div class="h-11 w-11 rounded-lg bg-(--primary) flex items-center justify-center font-bold text-white dark:text-black/70 mx-0.5">
+							{token.value}
+						</div>
+					);
+				}
+
+				return (
+					<a
+						href={url(getPagePath(token.value))}
+						aria-label={`第 ${token.value} 页`}
+						class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.9] flex items-center justify-center mx-0.5"
+					>
+						{token.value}
+					</a>
+				);
+			})
+		}
+	</div>
+
+	<div class="hidden sm:flex bg-(--card-bg) flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
+		{
+			desktopTokens.map((token) => {
+				if (token.type === "gap") {
+					return (
+						<div class="relative h-11 w-11 mx-0.5" data-gap-slot={token.id}>
+							<button
+								type="button"
+								class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.9] flex items-center justify-center"
+								data-gap-toggle={token.id}
+								aria-label="输入页码跳转"
+							>
+								<Icon name="material-symbols:more-horiz" class="text-xl" />
+							</button>
+							<PaginationJumpInput
+								gapId={token.id}
+								basePath={normalizedBasePath}
+								maxPage={page.lastPage}
+								currentPage={page.currentPage}
+							/>
+						</div>
+					);
+				}
+
+				if (token.value === page.currentPage) {
+					return (
+						<div class="h-11 w-11 rounded-lg bg-(--primary) flex items-center justify-center font-bold text-white dark:text-black/70 mx-0.5">
+							{token.value}
+						</div>
+					);
+				}
+
+				return (
+					<a
+						href={url(getPagePath(token.value))}
+						aria-label={`第 ${token.value} 页`}
+						class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.9] flex items-center justify-center mx-0.5"
+					>
+						{token.value}
+					</a>
+				);
+			})
+		}
+	</div>
+
+	<a
+		href={nextUrl || ""}
+		aria-label={nextUrl ? "下一页" : null}
+		class:list={[
+			"btn-card overflow-hidden rounded-lg text-(--primary) w-11 h-11 hidden sm:flex items-center justify-center",
+			{ disabled: !nextUrl },
+		]}
+	>
+		<Icon
+			name="material-symbols:chevron-right-rounded"
+			class="text-[1.75rem]"
+		/>
+	</a>
 </div>
+
+<script>
+	const PAGINATION_BOOTSTRAP_KEY = "__mizukiPaginationBootstrapped";
+
+	function initPaginationRoot(root: HTMLElement) {
+		if (root.dataset.paginationInitialized === "true") return;
+		root.dataset.paginationInitialized = "true";
+
+		const closeAll = () => {
+			const slots = root.querySelectorAll("[data-gap-slot]");
+			slots.forEach((slot) => {
+				const jump = slot.querySelector(
+					"[data-pagination-jump]",
+				) as HTMLElement | null;
+				const toggle = slot.querySelector(
+					"[data-gap-toggle]",
+				) as HTMLElement | null;
+				jump?.classList.add("hidden");
+				toggle?.classList.remove("hidden");
+			});
+		};
+
+		const openGap = (gapId: string) => {
+			closeAll();
+			const slot = root.querySelector(
+				`[data-gap-slot="${gapId}"]`,
+			) as HTMLElement | null;
+			if (!slot) return;
+
+			const jump = slot.querySelector(
+				"[data-pagination-jump]",
+			) as HTMLElement | null;
+			const toggle = slot.querySelector(
+				"[data-gap-toggle]",
+			) as HTMLElement | null;
+			const input = slot.querySelector(
+				".pagination-jump-input",
+			) as HTMLInputElement | null;
+
+			jump?.classList.remove("hidden");
+			toggle?.classList.add("hidden");
+			if (input) {
+				input.focus();
+				input.select();
+			}
+		};
+
+		root.addEventListener("click", (event) => {
+			const target = event.target as HTMLElement;
+			const gapToggle = target.closest(
+				"[data-gap-toggle]",
+			) as HTMLElement | null;
+			if (!gapToggle) return;
+			const gapId = gapToggle.dataset.gapToggle;
+			if (gapId) openGap(gapId);
+		});
+
+		root.addEventListener("focusout", (event) => {
+			const target = event.target as HTMLElement;
+			const jumpContainer = target.closest(
+				"[data-pagination-jump]",
+			) as HTMLElement | null;
+			if (!jumpContainer) return;
+			setTimeout(() => {
+				const active = document.activeElement;
+				if (!jumpContainer.contains(active)) {
+					closeAll();
+				}
+			}, 0);
+		});
+
+		root.addEventListener("pagination:jump:close", () => {
+			closeAll();
+		});
+	}
+
+	function initAllPaginations() {
+		document
+			.querySelectorAll<HTMLElement>("[data-pagination-root]")
+			.forEach((root) => {
+				initPaginationRoot(root);
+			});
+	}
+
+	if (!(window as any)[PAGINATION_BOOTSTRAP_KEY]) {
+		(window as any)[PAGINATION_BOOTSTRAP_KEY] = true;
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", initAllPaginations, {
+				once: true,
+			});
+		} else {
+			initAllPaginations();
+		}
+		document.addEventListener("swup:page:view", initAllPaginations);
+	} else {
+		initAllPaginations();
+	}
+</script>

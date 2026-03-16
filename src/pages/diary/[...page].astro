@@ -8,11 +8,10 @@ import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import MainGridLayout from "../../layouts/MainGridLayout.astro";
 import CenterTitle from "@components/CenterTitle.astro";
-
-const BASE_PATH = "/diary"; // 或者从 siteConfig 引入
+import Pagination from "../../components/control/Pagination.astro";
 // 1. 导出 getStaticPaths
 export async function getStaticPaths({ paginate }: any) {
-	const PAGE_SIZE = 3; // 每页 3 条
+	const PAGE_SIZE = siteConfig.pagination?.diaryPageSize ?? 3;
 
 	if (!siteConfig.featurePages.diary) {
 		return [];
@@ -39,12 +38,6 @@ function formatDateSimple(dateString: string): string {
 	const m = String(date.getMonth() + 1).padStart(2, "0");
 	const d = String(date.getDate()).padStart(2, "0");
 	return `${y}.${m}.${d}`;
-}
-
-// 确保路径以斜杠结尾，解决 trailingSlash 警告
-function ensureTrailingSlash(url: string | undefined) {
-	if (!url) return "";
-	return url.endsWith("/") ? url : `${url}/`;
 }
 ---
 
@@ -272,182 +265,15 @@ function ensureTrailingSlash(url: string | undefined) {
 					</div>
 				</div>
 
-				{/* === 3. 分页及跳转组件 === */}
 				{
 					page.lastPage > 1 && (
-						<div class="mt-14 mb-4 flex flex-col md:flex-row items-center justify-between gap-6 px-5 py-4 rounded-2xl bg-(--card-bg) border border-(--line-divider) shadow-sm">
-							{/* 翻页按钮组 */}
-							<div class="flex items-center gap-2">
-								<a
-									href={`${BASE_PATH}/`}
-									class="btn-regular px-3 py-1.5 rounded-lg text-sm"
-									aria-label="首页"
-								>
-									首页
-								</a>
-
-								{page.url.prev ? (
-									<a
-										href={ensureTrailingSlash(
-											page.url.prev,
-										)}
-										class="btn-regular px-3 py-1.5 rounded-lg text-sm"
-									>
-										上一页
-									</a>
-								) : (
-									<span class="px-3 py-1.5 rounded-lg text-sm opacity-40 cursor-not-allowed bg-(--btn-regular-bg) text-(--btn-content)">
-										上一页
-									</span>
-								)}
-
-								<div class="flex items-center px-2 py-1.5 font-mono text-sm opacity-80 text-(--deep-text)">
-									<span class="font-bold text-(--primary)">
-										{page.currentPage}
-									</span>
-									<span class="mx-1.5">/</span>
-									<span>{page.lastPage}</span>
-								</div>
-
-								{page.url.next ? (
-									<a
-										href={ensureTrailingSlash(
-											page.url.next,
-										)}
-										class="btn-regular px-3 py-1.5 rounded-lg text-sm"
-									>
-										下一页
-									</a>
-								) : (
-									<span class="px-3 py-1.5 rounded-lg text-sm opacity-40 cursor-not-allowed bg-(--btn-regular-bg) text-(--btn-content)">
-										下一页
-									</span>
-								)}
-
-								<a
-									href={
-										page.lastPage === 1
-											? `${BASE_PATH}/`
-											: `${BASE_PATH}/${page.lastPage}/`
-									}
-									class="btn-regular px-3 py-1.5 rounded-lg text-sm"
-									aria-label="尾页"
-								>
-									尾页
-								</a>
-							</div>
-
-							{/* 跳转输入组 */}
-							<div class="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end border-t border-(--line-divider) md:border-none pt-4 md:pt-0">
-								<span class="text-sm font-medium text-(--text-main)">
-									跳转至
-								</span>
-								{/* 加入 data-max 属性供脚本安全读取 */}
-								<input
-									type="number"
-									id="jump-page-input"
-									min="1"
-									max={page.lastPage}
-									data-max={page.lastPage}
-									class="w-16 px-2 py-1.5 text-center text-sm font-bold bg-transparent border-2 border-(--line-divider) rounded-lg outline-none focus:border-(--primary) text-(--primary) transition"
-									placeholder={page.currentPage.toString()}
-								/>
-								<span class="text-sm font-medium text-(--text-main)">
-									页
-								</span>
-								<button
-									id="jump-page-btn"
-									class="btn-regular px-4 py-1.5 rounded-lg text-sm font-bold"
-								>
-									GO
-								</button>
-							</div>
-						</div>
+						<Pagination
+							page={page}
+							basePath="/diary"
+							class="mt-14 mb-4"
+						/>
 					)
 				}
-
-				{
-					/* 使用原生脚本，完美兼容 SPA 路由且修复了读取不到 max 的 bug */
-				}
-				<script>
-					// 定义全局接口防止 TS 在 script 标签中报错 window.swup
-					declare global {
-						interface Window {
-							swup: any;
-						}
-					}
-
-					function initPagination() {
-						const btn = document.getElementById("jump-page-btn");
-						const input = document.getElementById(
-							"jump-page-input",
-						) as HTMLInputElement;
-
-						if (btn && input) {
-							// 每次加载克隆节点，防止 Swup 重复绑定事件
-							const newBtn = btn.cloneNode(true);
-							btn.replaceWith(newBtn);
-							const newInput = input.cloneNode(true);
-							input.replaceWith(newInput);
-
-							const performJump = () => {
-								const inputEl = document.getElementById(
-									"jump-page-input",
-								) as HTMLInputElement;
-								// 实时获取 data-max，确保永远不会出现比较异常
-								const maxPage = parseInt(
-									inputEl.getAttribute("data-max") || "1",
-									10,
-								);
-								const p = parseInt(inputEl.value, 10);
-
-								if (!isNaN(p) && p >= 1 && p <= maxPage) {
-									// 严格遵守 trailingSlash 加上末尾的斜杠
-									const targetUrl =
-										p === 1 ? "/diary/" : `/diary/${p}/`;
-
-									// 如果主题启用了 swup，使用 swup 的无刷新跳转
-									if (window.swup) {
-										window.swup.navigate(targetUrl);
-									} else {
-										// 降级为原生跳转
-										window.location.href = targetUrl;
-									}
-								} else {
-									inputEl.value = "";
-									inputEl.focus();
-								}
-							};
-
-							newBtn.addEventListener("click", performJump);
-							newInput.addEventListener("keydown", (e: Event) => {
-								if ((e as KeyboardEvent).key === "Enter") {
-									performJump();
-								}
-							});
-						}
-					}
-
-					// 兼容三种情况的页面生命周期
-					document.addEventListener(
-						"DOMContentLoaded",
-						initPagination,
-					);
-					document.addEventListener(
-						"astro:page-load",
-						initPagination,
-					);
-					if (typeof window !== "undefined") {
-						document.addEventListener(
-							"swup:pageView",
-							initPagination,
-						);
-						document.addEventListener(
-							"swup:contentReplaced",
-							initPagination,
-						);
-					}
-				</script>
 			</div>
 
 			<div
@@ -472,16 +298,6 @@ function ensureTrailingSlash(url: string | undefined) {
 		position: relative;
 		overflow: hidden;
 		background-color: var(--primary);
-	}
-
-	/* 隐藏原生的数字输入框箭头 */
-	input[type="number"]::-webkit-inner-spin-button,
-	input[type="number"]::-webkit-outer-spin-button {
-		-webkit-appearance: none;
-		margin: 0;
-	}
-	input[type="number"] {
-		-moz-appearance: textfield;
 	}
 
 	@media (max-width: 768px) {

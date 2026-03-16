@@ -105,6 +105,14 @@ export const siteConfig: SiteConfig = {
 		postPageSize: 1,
 	},
 
+	// 通用分页配置（首页/日记 + 不同端显示数量）
+	pagination: {
+		homePageSize: 5,
+		diaryPageSize: 3,
+		mobileVisiblePages: 3,
+		desktopVisiblePages: 5,
+	},
+
 	// 标签样式配置
 	tagStyle: {
 		// 是否使用新样式（悬停高亮样式）还是旧样式（外框常亮样式）
@@ -490,7 +498,7 @@ export const announcementConfig: AnnouncementConfig = {
 		},
 	},
 	closable: true,
-	itemsPerPage: 2,
+	itemsPerPage: 1,
 	content: [], // 留空则读取 src/data/announcement.json
 };
 

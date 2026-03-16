@@ -79,6 +79,13 @@ export type SiteConfig = {
 		postPageSize?: number; // number of posts per page on homepage
 	};
 
+	pagination?: {
+		homePageSize?: number; // 首页每页文章数
+		diaryPageSize?: number; // 日记每页条目数
+		mobileVisiblePages?: number; // 移动端分页栏显示页码数量（含当前页附近）
+		desktopVisiblePages?: number; // 桌面端分页栏显示页码数量（含当前页附近）
+	};
+
 	// 顶栏标题配置
 	navbarTitle?: {
 		mode?: "text-icon" | "logo"; // 显示模式："text-icon" 显示图标+文本，"logo" 仅显示Logo
