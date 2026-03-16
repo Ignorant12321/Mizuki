@@ -16,6 +16,7 @@ import type {
 	SidebarLayoutConfig,
 	SiteConfig,
 	ExternalLinkConfirmConfig,
+	FloatingWidgetsConfig,
 } from "./types/config";
 import { LinkPreset } from "./types/config";
 
@@ -24,6 +25,39 @@ import { LinkPreset } from "./types/config";
 // 定义站点语言
 const SITE_LANG = "zh_CN"; // 语言代码，例如：'en', 'zh_CN', 'ja' 等。
 const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UTC+8
+
+const floatingWidgetsConfig: FloatingWidgetsConfig = {
+	backToTop: {
+		desktop: { left: "-4rem", bottom: "15rem" },
+		mobile: { left: "-4rem", bottom: "15rem" },
+	},
+	backToBottom: {
+		desktop: { left: "-4rem", bottom: "5rem" },
+		mobile: { left: "-4rem", bottom: "5rem" },
+	},
+	floatingTOC: {
+		desktop: { left: "-4rem", bottom: "10rem" },
+		mobile: { left: "1rem", bottom: "10rem" },
+	},
+	musicPlayer: {
+		desktop: { left: "1.25rem", bottom: "1rem" },
+		mobile: { left: "1.3rem", bottom: "0.5rem" },
+		mobileExpanded: { left: "0.5rem" },
+		mobilePlaylist: { left: "0.5rem", bottom: "5rem" },
+	},
+	live2d: {
+		desktop: { right: "1.5rem", bottom: "0" },
+		mobile: { right: "1.5rem", bottom: "0" },
+		toggle: {
+			right: "0",
+			hiddenOffsetRight: "-100px",
+			activeOffsetRight: "-45px",
+			hoverOffsetRight: "-35px",
+			mobileActiveOffsetRight: "-30px",
+		},
+	},
+};
+
 export const siteConfig: SiteConfig = {
 	title: "Ignorant's Blog",
 	subtitle: "Ignorant 的个人博客",
@@ -223,6 +257,7 @@ export const siteConfig: SiteConfig = {
 		depth: 2, // 目录深度，1-6，1 表示只显示 h1 标题，2 表示显示 h1 和 h2 标题，依此类推
 		useJapaneseBadge: true, // 使用日语假名标记（あいうえお...）代替数字，开启后会将 1、2、3... 改为 あ、い、う...
 	},
+	floatingWidgets: floatingWidgetsConfig,
 	showCoverInContent: true, // 在文章内容页显示文章封面
 	generateOgImages: false, // 启用生成OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
 	favicon: [
@@ -701,14 +736,14 @@ export const sakuraConfig: SakuraConfig = {
 // 鼠标点击效果
 export const clickEffectConfig: ClickEffectConfig = {
 	enable: true, // 是否在桌面端启用点击效果
-	mobile: false, // 是否在移动端启用点击效果
+	mobile: true, // 是否在移动端启用点击效果
 	blacklist: ["#waifu"], // 黑名单，点击这些元素不会触发效果
 };
 
 // Live2D Widget 配置
 export const live2dConfig: Live2DConfig = {
-	enable: false,
-	mobile: false,
+	enable: true,
+	mobile: true,
 	drag: false,
 	modelId: 1,
 	logLevel: "warn",

@@ -7,12 +7,17 @@ const tocDepth = siteConfig.toc.depth;
 const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 const tocLabel = i18n(I18nKey.tableOfContents);
 const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
+const floatingTOCPosition = siteConfig.floatingWidgets?.floatingTOC ?? {
+	desktop: { left: "-4rem", bottom: "10rem" },
+	mobile: { left: "1rem", bottom: "10rem" },
+};
 ---
 
 <div
 	class="floating-toc-wrapper"
 	data-depth={tocDepth}
 	data-japanese-badge={useJapaneseBadge}
+	style={`--floating-toc-left-desktop:${floatingTOCPosition.desktop.left};--floating-toc-bottom-desktop:${floatingTOCPosition.desktop.bottom};--floating-toc-left-mobile:${floatingTOCPosition.mobile.left};--floating-toc-bottom-mobile:${floatingTOCPosition.mobile.bottom};`}
 >
 	<button
 		id="floating-toc-btn"
@@ -58,8 +63,8 @@ const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
 <style>
 	.floating-toc-wrapper {
 		position: fixed;
-		left: -4rem;
-		bottom: 10rem;
+		left: var(--floating-toc-left-desktop);
+		bottom: var(--floating-toc-bottom-desktop);
 		z-index: 45;
 		pointer-events: auto;
 		transform: translateX(5rem);
@@ -232,8 +237,8 @@ const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
 	@media (max-width: 768px) {
 		.floating-toc-wrapper {
 			transform: none;
-			left: 1rem;
-			bottom: 10rem;
+			left: var(--floating-toc-left-mobile);
+			bottom: var(--floating-toc-bottom-mobile);
 			/* opacity: 0.6; */
 		}
 

@@ -2,13 +2,19 @@
 	import Icon from "@iconify/svelte";
 	import { onDestroy, onMount } from "svelte";
 	import { slide } from "svelte/transition";
-	import { musicPlayerConfig } from "../../config";
+	import { musicPlayerConfig, siteConfig } from "../../config";
 	import Key from "../../i18n/i18nKey";
 	import { i18n } from "../../i18n/translation";
 
 	// 基础配置获取
 	let globalMode = musicPlayerConfig.mode ?? "meting";
 	let globalMetingApi = musicPlayerConfig.meting_api;
+	const musicPlayerPosition = siteConfig.floatingWidgets?.musicPlayer ?? {
+		desktop: { left: "1.25rem", bottom: "1rem" },
+		mobile: { left: "1.3rem", bottom: "0.5rem" },
+		mobileExpanded: { left: "0.5rem" },
+		mobilePlaylist: { left: "0.5rem", bottom: "5rem" },
+	};
 
 	// 【核心逻辑】：向下兼容，如果没有配置 playlists 数组，自动用原版的根配置兜底
 	let playlistsConfig =
@@ -553,9 +559,10 @@
 	{/if}
 
 	<div
-		class="music-player fixed bottom-4 left-5 z-50 transition-all duration-300 ease-in-out"
+		class="music-player fixed z-50 transition-all duration-300 ease-in-out"
 		class:expanded={isExpanded}
 		class:hidden-mode={isHidden}
+		style={`--music-player-left-desktop:${musicPlayerPosition.desktop.left};--music-player-bottom-desktop:${musicPlayerPosition.desktop.bottom};--music-player-left-mobile:${musicPlayerPosition.mobile.left};--music-player-bottom-mobile:${musicPlayerPosition.mobile.bottom};--music-player-expanded-left-mobile:${musicPlayerPosition.mobileExpanded.left};--music-player-playlist-left-mobile:${musicPlayerPosition.mobilePlaylist.left};--music-player-playlist-bottom-mobile:${musicPlayerPosition.mobilePlaylist.bottom};`}
 	>
 		<div
 			class="orb-player w-12 h-12 rounded-full cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
@@ -1280,6 +1287,8 @@
 		.music-player {
 			max-width: 20rem;
 			user-select: none;
+			left: var(--music-player-left-desktop);
+			bottom: var(--music-player-bottom-desktop);
 		}
 		.mini-player {
 			width: 17.5rem;
@@ -1313,8 +1322,8 @@
 		@media (max-width: 768px) {
 			.music-player {
 				max-width: 280px !important;
-				left: 1.3rem !important;
-				bottom: 0.5rem !important;
+				left: var(--music-player-left-mobile) !important;
+				bottom: var(--music-player-bottom-mobile) !important;
 			}
 			.mini-player {
 				width: 280px;
@@ -1322,11 +1331,12 @@
 			.music-player.expanded {
 				width: calc(100vw - 16px);
 				max-width: none;
-				left: 0.5rem !important;
+				left: var(--music-player-expanded-left-mobile) !important;
 			}
 			.playlist-panel {
 				width: calc(100vw - 16px) !important;
-				left: 0.5rem !important;
+				left: var(--music-player-playlist-left-mobile) !important;
+				bottom: var(--music-player-playlist-bottom-mobile) !important;
 				max-width: none;
 			}
 			.controls {

@@ -1,9 +1,14 @@
 ---
 import { Icon } from "astro-icon/components";
+import { siteConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 
 const backToBottomLabel = i18n(I18nKey.backToBottom);
+const backToBottomPosition = siteConfig.floatingWidgets?.backToBottom ?? {
+	desktop: { left: "-4rem", bottom: "5rem" },
+	mobile: { left: "-4rem", bottom: "5rem" },
+};
 ---
 
 <div class="back-to-bottom-wrapper block">
@@ -13,6 +18,7 @@ const backToBottomLabel = i18n(I18nKey.backToBottom);
 		onclick="backToBottom()"
 		aria-label={backToBottomLabel}
 		title={backToBottomLabel}
+		style={`--back-to-bottom-left-desktop:${backToBottomPosition.desktop.left};--back-to-bottom-bottom-desktop:${backToBottomPosition.desktop.bottom};--back-to-bottom-left-mobile:${backToBottomPosition.mobile.left};--back-to-bottom-bottom-mobile:${backToBottomPosition.mobile.bottom};`}
 	>
 		<Icon
 			name="material-symbols:keyboard-arrow-down-rounded"
@@ -39,9 +45,9 @@ const backToBottomLabel = i18n(I18nKey.backToBottom);
     justify-content: center
     color: var(--primary)
     position: fixed
-    bottom: 5rem
+    bottom: var(--back-to-bottom-bottom-desktop)
     opacity: 1
-    left: -4rem
+    left: var(--back-to-bottom-left-desktop)
     cursor: pointer
     transform: translateX(5rem)
     pointer-events: auto
@@ -68,6 +74,11 @@ const backToBottomLabel = i18n(I18nKey.backToBottom);
 
   .back-to-bottom-icon
     font-size: 2rem
+
+  @media (max-width: 768px)
+    .back-to-bottom-btn
+      left: var(--back-to-bottom-left-mobile)
+      bottom: var(--back-to-bottom-bottom-mobile)
 
 </style>
 

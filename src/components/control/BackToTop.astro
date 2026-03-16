@@ -1,9 +1,14 @@
 ---
 import { Icon } from "astro-icon/components";
+import { siteConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 
 const backToTopLabel = i18n(I18nKey.backToTop);
+const backToTopPosition = siteConfig.floatingWidgets?.backToTop ?? {
+	desktop: { left: "-4rem", bottom: "15rem" },
+	mobile: { left: "-4rem", bottom: "15rem" },
+};
 ---
 
 <!-- There can't be a filter on parent element, or it will break `fixed` -->
@@ -14,6 +19,7 @@ const backToTopLabel = i18n(I18nKey.backToTop);
 		onclick="backToTop()"
 		aria-label={backToTopLabel}
 		title={backToTopLabel}
+		style={`--back-to-top-left-desktop:${backToTopPosition.desktop.left};--back-to-top-bottom-desktop:${backToTopPosition.desktop.bottom};--back-to-top-left-mobile:${backToTopPosition.mobile.left};--back-to-top-bottom-mobile:${backToTopPosition.mobile.bottom};`}
 	>
 		<Icon
 			name="material-symbols:keyboard-arrow-up-rounded"
@@ -40,9 +46,9 @@ const backToTopLabel = i18n(I18nKey.backToTop);
     justify-content: center
     color: var(--primary)
     position: fixed
-    bottom: 15rem
+    bottom: var(--back-to-top-bottom-desktop)
     opacity: 1
-    left: -4rem
+    left: var(--back-to-top-left-desktop)
     cursor: pointer
     transform: translateX(5rem)
     pointer-events: auto
@@ -71,9 +77,10 @@ const backToTopLabel = i18n(I18nKey.backToTop);
     font-size: 2rem
 
   // 手机端隐藏返回顶部按钮
-  // @media (max-width: 768px)
-  //   .back-to-top-wrapper
-  //     display: none
+  @media (max-width: 768px)
+    .back-to-top-btn
+      left: var(--back-to-top-left-mobile)
+      bottom: var(--back-to-top-bottom-mobile)
 
 </style>
 

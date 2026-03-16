@@ -6,6 +6,38 @@ import type {
 	WALLPAPER_NONE,
 } from "../constants/constants";
 
+export type FloatingWidgetsConfig = {
+	backToTop: {
+		desktop: { left: string; bottom: string };
+		mobile: { left: string; bottom: string };
+	};
+	backToBottom: {
+		desktop: { left: string; bottom: string };
+		mobile: { left: string; bottom: string };
+	};
+	floatingTOC: {
+		desktop: { left: string; bottom: string };
+		mobile: { left: string; bottom: string };
+	};
+	musicPlayer: {
+		desktop: { left: string; bottom: string };
+		mobile: { left: string; bottom: string };
+		mobileExpanded: { left: string };
+		mobilePlaylist: { left: string; bottom: string };
+	};
+	live2d: {
+		desktop: { right: string; bottom: string };
+		mobile: { right: string; bottom: string };
+		toggle: {
+			right: string;
+			hiddenOffsetRight: string;
+			activeOffsetRight: string;
+			hoverOffsetRight: string;
+			mobileActiveOffsetRight: string;
+		};
+	};
+};
+
 export type SiteConfig = {
 	title: string;
 	subtitle: string;
@@ -194,6 +226,7 @@ export type SiteConfig = {
 		depth: 1 | 2 | 3;
 		useJapaneseBadge?: boolean; // 使用日语假名标记（あいうえお...）代替数字
 	};
+	floatingWidgets?: FloatingWidgetsConfig; // 全局悬浮组件位置配置（桌面端/移动端）
 	showCoverInContent: boolean; // 控制文章封面在文章内容页显示的开关
 	generateOgImages: boolean;
 	favicon: Favicon[];

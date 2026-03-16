@@ -1,6 +1,6 @@
 <script>
 	import { onDestroy, onMount } from "svelte";
-	import { live2dConfig } from "@/config";
+	import { live2dConfig, siteConfig } from "@/config";
 
 	// 全局状态引用
 	let live2dInitialized = false;
@@ -11,6 +11,55 @@
 	let cleanupMobileToolToggle = () => {};
 	let cleanupTouchEndHandler = () => {};
 	const MAX_INIT_RETRIES = 20;
+	const live2dPosition = siteConfig.floatingWidgets?.live2d ?? {
+		desktop: { right: "1.5rem", bottom: "0" },
+		mobile: { right: "1.5rem", bottom: "0" },
+		toggle: {
+			right: "0",
+			hiddenOffsetRight: "-100px",
+			activeOffsetRight: "-45px",
+			hoverOffsetRight: "-35px",
+			mobileActiveOffsetRight: "-30px",
+		},
+	};
+
+	function applyPositionVars() {
+		if (typeof document === "undefined") return;
+		const root = document.documentElement;
+		root.style.setProperty(
+			"--live2d-right-desktop",
+			live2dPosition.desktop.right,
+		);
+		root.style.setProperty(
+			"--live2d-bottom-desktop",
+			live2dPosition.desktop.bottom,
+		);
+		root.style.setProperty(
+			"--live2d-right-mobile",
+			live2dPosition.mobile.right,
+		);
+		root.style.setProperty(
+			"--live2d-bottom-mobile",
+			live2dPosition.mobile.bottom,
+		);
+		root.style.setProperty("--live2d-toggle-right", live2dPosition.toggle.right);
+		root.style.setProperty(
+			"--live2d-toggle-hidden-offset-right",
+			live2dPosition.toggle.hiddenOffsetRight,
+		);
+		root.style.setProperty(
+			"--live2d-toggle-active-offset-right",
+			live2dPosition.toggle.activeOffsetRight,
+		);
+		root.style.setProperty(
+			"--live2d-toggle-hover-offset-right",
+			live2dPosition.toggle.hoverOffsetRight,
+		);
+		root.style.setProperty(
+			"--live2d-toggle-mobile-active-offset-right",
+			live2dPosition.toggle.mobileActiveOffsetRight,
+		);
+	}
 
 	// 解决图片资源跨域问题 (非常重要，否则 Canvas 渲染会报错)
 	function fixCrossOrigin() {
@@ -209,6 +258,7 @@
 
 	onMount(() => {
 		isComponentMounted = true;
+		applyPositionVars();
 		if (!live2dConfig.enable) return;
 		if (!live2dConfig.mobile) {
 			// 移动端/小屏幕隐藏逻辑 (<768px)
@@ -312,30 +362,35 @@
 
 	:global(#waifu) {
 		left: auto !important;
-		right: 1.5rem !important; /* 强制靠右对齐 */
+		right: var(--live2d-right-desktop, 1.5rem) !important;
+		bottom: var(--live2d-bottom-desktop, 0) !important;
 	}
 
 	/* 将 waifu-toggle 固定到右侧 */
 	:global(#waifu-toggle) {
 		left: auto !important;
-		right: 0 !important;
+		right: var(--live2d-toggle-right, 0) !important;
 		transform: rotateY(180deg);
-		margin-right: -100px;
+		margin-right: var(--live2d-toggle-hidden-offset-right, -100px);
 		transition: margin-right 1s;
 	}
 
 	/* 从右侧滑入/滑出的过渡效果 */
 	:global(#waifu-toggle.waifu-toggle-active) {
-		margin-right: -45px !important;
+		margin-right: var(--live2d-toggle-active-offset-right, -45px) !important;
 	}
 	:global(#waifu-toggle:hover) {
-		margin-right: -35px !important;
+		margin-right: var(--live2d-toggle-hover-offset-right, -35px) !important;
 	}
 
 	/* 移动端也保持右侧行为 */
 	@media (max-width: 768px), (hover: none) {
+		:global(#waifu) {
+			right: var(--live2d-right-mobile, 1.5rem) !important;
+			bottom: var(--live2d-bottom-mobile, 0) !important;
+		}
 		:global(#waifu-toggle.waifu-toggle-active) {
-			margin-right: -30px !important;
+			margin-right: var(--live2d-toggle-mobile-active-offset-right, -30px) !important;
 			margin-left: 0 !important;
 		}
 	}
