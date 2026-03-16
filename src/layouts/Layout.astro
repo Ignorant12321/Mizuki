@@ -582,53 +582,69 @@ function disableAnimation() {
 */
 
 	const bannerEnabled = !!document.getElementById("banner-wrapper");
+	const PANEL_MANAGER_BOUND_KEY = "__mizukiPanelManagerBound";
+	const SWUP_SETUP_BOUND_KEY = "__mizukiLayoutSwupSetupBound";
+	const SWUP_ENABLE_SETUP_BOUND_KEY = "__mizukiLayoutSwupEnableBound";
 
 	// 导入面板管理器
 	async function initializePanelManager() {
+		if ((window as any)[PANEL_MANAGER_BOUND_KEY]) return;
+		(window as any)[PANEL_MANAGER_BOUND_KEY] = true;
+
 		try {
 			// @ts-ignore
 			const { panelManager } = await import("../utils/panel-manager.js");
 
-			function setClickOutsideToClose(panel: string, ignores: string[]) {
-				document.addEventListener("click", async (event) => {
-					// @ts-ignore
-					// let _panelDom = document.getElementById(panel);
-					let tDom = event.target;
-					if (!(tDom instanceof Node)) return; // Ensure the event target is an HTML Node
-					for (let ig of ignores) {
-						let ie = document.getElementById(ig);
-						if (ie == tDom || ie?.contains(tDom)) {
-							return;
+			const closeRules = [
+				{
+					panel: "display-setting",
+					ignores: ["display-setting", "display-settings-switch"],
+				},
+				{
+					panel: "nav-menu-panel",
+					ignores: ["nav-menu-panel", "nav-menu-switch"],
+				},
+				{
+					panel: "search-panel",
+					ignores: ["search-panel", "search-bar", "search-switch"],
+				},
+				{
+					panel: "mobile-toc-panel",
+					ignores: ["mobile-toc-panel", "mobile-toc-switch"],
+				},
+				{
+					panel: "wallpaper-mode-panel",
+					ignores: ["wallpaper-mode-panel", "wallpaper-mode-switch"],
+				},
+			] as const;
+
+			document.addEventListener(
+				"click",
+				async (event) => {
+					const tDom = event.target;
+					if (!(tDom instanceof Node)) return;
+
+					for (const rule of closeRules) {
+						let shouldSkip = false;
+						for (const ig of rule.ignores) {
+							const ie = document.getElementById(ig);
+							if (ie == tDom || ie?.contains(tDom)) {
+								shouldSkip = true;
+								break;
+							}
+						}
+
+						if (!shouldSkip) {
+							await panelManager.closePanel(rule.panel as any);
 						}
 					}
-					await panelManager.closePanel(panel as any);
-				});
-			}
-
-			setClickOutsideToClose("display-setting", [
-				"display-setting",
-				"display-settings-switch",
-			]);
-			setClickOutsideToClose("nav-menu-panel", [
-				"nav-menu-panel",
-				"nav-menu-switch",
-			]);
-			setClickOutsideToClose("search-panel", [
-				"search-panel",
-				"search-bar",
-				"search-switch",
-			]);
-			setClickOutsideToClose("mobile-toc-panel", [
-				"mobile-toc-panel",
-				"mobile-toc-switch",
-			]);
-			setClickOutsideToClose("wallpaper-mode-panel", [
-				"wallpaper-mode-panel",
-				"wallpaper-mode-switch",
-			]);
+				},
+				{ passive: true },
+			);
 
 			return panelManager;
 		} catch (error) {
+			(window as any)[PANEL_MANAGER_BOUND_KEY] = false;
 			console.error("Failed to initialize panel manager:", error);
 			return null;
 		}
@@ -995,6 +1011,9 @@ function disableAnimation() {
 	}
 
 	const setup = () => {
+		if ((window as any)[SWUP_SETUP_BOUND_KEY]) return;
+		(window as any)[SWUP_SETUP_BOUND_KEY] = true;
+
 		// TODO: temp solution to change the height of the banner
 		/*
     window.swup.hooks.on('animation:out:start', () => {
@@ -1258,7 +1277,10 @@ function disableAnimation() {
 		checkKatex();
 		setup();
 	} else {
-		document.addEventListener("swup:enable", setup);
+		if (!(window as any)[SWUP_ENABLE_SETUP_BOUND_KEY]) {
+			document.addEventListener("swup:enable", setup, { once: true });
+			(window as any)[SWUP_ENABLE_SETUP_BOUND_KEY] = true;
+		}
 		// 监听 DOM 加载 (确保首屏也能加载优化组件)
 		if (document.readyState === "loading") {
 			document.addEventListener("DOMContentLoaded", () => {

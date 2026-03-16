@@ -257,34 +257,62 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		private isOpen = false;
 		private observer: MutationObserver | null = null;
 		private headings: HTMLElement[] = [];
+		private readonly onScroll: () => void;
+		private readonly onResize: () => void;
+		private readonly onBtnClick: (e: Event) => void;
+		private readonly onDocumentClick: (e: Event) => void;
+		private readonly onContentClick: (e: Event) => void;
+		private readonly onKeyDown: (e: KeyboardEvent) => void;
 
 		constructor() {
 			this.btn = document.getElementById("floating-toc-btn");
 			this.panel = document.getElementById("floating-toc-panel");
 			this.content = document.getElementById("floating-toc-content");
 			this.wrapper = document.querySelector(".floating-toc-wrapper");
+			this.onScroll = () => {
+				this.updateProgress();
+				this.updateActiveHeading();
+			};
+			this.onResize = () => {
+				this.updateActiveHeading();
+				this.updateProgress();
+			};
+			this.onBtnClick = (e) => {
+				e.stopPropagation();
+				this.toggle();
+			};
+			this.onDocumentClick = (e) => {
+				if (this.isOpen && !this.wrapper?.contains(e.target as Node)) {
+					this.close();
+				}
+			};
+			this.onContentClick = (e) => {
+				const link = (e.target as HTMLElement).closest("a");
+				if (link) {
+					e.preventDefault();
+					const id = link.getAttribute("href")?.slice(1);
+					if (id) {
+						const element = document.getElementById(id);
+						if (element) {
+							const top =
+								element.getBoundingClientRect().top +
+								window.scrollY -
+								80;
+							window.scrollTo({ top, behavior: "smooth" });
+						}
+					}
+				}
+			};
+			this.onKeyDown = (e) => {
+				if (e.key === "Escape" && this.isOpen) this.close();
+			};
 
 			this.init();
 		}
 
 		private init() {
-			window.addEventListener(
-				"scroll",
-				() => {
-					this.updateProgress();
-					this.updateActiveHeading();
-				},
-				{ passive: true },
-			);
-
-			window.addEventListener(
-				"resize",
-				() => {
-					this.updateActiveHeading();
-					this.updateProgress();
-				},
-				{ passive: true },
-			);
+			window.addEventListener("scroll", this.onScroll, { passive: true });
+			window.addEventListener("resize", this.onResize, { passive: true });
 
 			this.bindEvents();
 			this.generateTOC();
@@ -493,41 +521,10 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		}
 
 		private bindEvents() {
-			this.btn?.addEventListener("click", (e) => {
-				e.stopPropagation();
-				this.toggle();
-			});
-			document.addEventListener("click", (e) => {
-				if (this.isOpen && !this.wrapper?.contains(e.target as Node)) {
-					this.close();
-				}
-			});
-			this.content?.addEventListener("click", (e) => {
-				const link = (e.target as HTMLElement).closest("a");
-				if (link) {
-					e.preventDefault();
-					const id = link.getAttribute("href")?.slice(1);
-					if (id) {
-						const element = document.getElementById(id);
-						if (element) {
-							const top =
-								element.getBoundingClientRect().top +
-								window.scrollY -
-								80;
-							window.scrollTo({ top, behavior: "smooth" });
-							// this.close();
-						}
-					}
-				}
-			});
-			document.addEventListener("keydown", (e) => {
-				if (e.key === "Escape" && this.isOpen) this.close();
-			});
-			if ((window as any).swup) {
-				(window as any).swup.hooks.on("page:view", () => {
-					setTimeout(() => this.reinit(), 200);
-				});
-			}
+			this.btn?.addEventListener("click", this.onBtnClick);
+			document.addEventListener("click", this.onDocumentClick);
+			this.content?.addEventListener("click", this.onContentClick);
+			document.addEventListener("keydown", this.onKeyDown);
 		}
 
 		private toggle() {
@@ -548,17 +545,47 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			this.wrapper?.classList.remove("active");
 		}
 
-		private reinit() {
+		public destroy() {
 			if (this.observer) {
 				this.observer.disconnect();
+				this.observer = null;
 			}
+			window.removeEventListener("scroll", this.onScroll);
+			window.removeEventListener("resize", this.onResize);
+			this.btn?.removeEventListener("click", this.onBtnClick);
+			this.content?.removeEventListener("click", this.onContentClick);
+			document.removeEventListener("click", this.onDocumentClick);
+			document.removeEventListener("keydown", this.onKeyDown);
 			this.close();
-			this.generateTOC();
-			this.observeContent();
-			this.updateProgress();
 		}
 	}
 
-	document.addEventListener("DOMContentLoaded", () => new FloatingTOC());
-	document.addEventListener("swup:page:view", () => new FloatingTOC());
+	const FLOATING_TOC_INSTANCE_KEY = "__mizukiFloatingTOCInstance";
+	const FLOATING_TOC_BOOTSTRAPPED_KEY = "__mizukiFloatingTOCBootstrapped";
+
+	function mountFloatingTOC() {
+		const prev = (window as any)[FLOATING_TOC_INSTANCE_KEY] as
+			| FloatingTOC
+			| undefined;
+		if (prev) {
+			prev.destroy();
+		}
+		(window as any)[FLOATING_TOC_INSTANCE_KEY] = new FloatingTOC();
+	}
+
+	function bootstrapFloatingTOC() {
+		mountFloatingTOC();
+		document.addEventListener("swup:page:view", mountFloatingTOC);
+	}
+
+	if (!(window as any)[FLOATING_TOC_BOOTSTRAPPED_KEY]) {
+		(window as any)[FLOATING_TOC_BOOTSTRAPPED_KEY] = true;
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", bootstrapFloatingTOC, {
+				once: true,
+			});
+		} else {
+			bootstrapFloatingTOC();
+		}
+	}
 </script>
