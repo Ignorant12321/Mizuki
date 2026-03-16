@@ -179,6 +179,16 @@ if (shareConfig.avatarFrame?.image) {
 	}
 }
 
+const shareAvatarFrame = shareConfig.avatarFrame
+	? {
+			enable: shareConfig.avatarFrame.enable,
+			image: posterAvatarFrameUrl || "",
+			scale: shareConfig.avatarFrame.scale,
+			offsetX: shareConfig.avatarFrame.offsetX,
+			offsetY: shareConfig.avatarFrame.offsetY,
+		}
+	: null;
+
 // 判断是否为加密文章
 let isEncrypted = entry.data.encrypted && entry.data.password;
 
@@ -375,10 +385,7 @@ const jsonLd = {
                                 url={Astro.url.toString()}
                                 siteTitle={siteConfig.title}
                                 avatar={posterAvatarUrl}
-                                avatarFrame={{
-                                    ...shareConfig.avatarFrame,
-                                    image: posterAvatarFrameUrl || "",
-                                }}
+                                avatarFrame={shareAvatarFrame}
                             />
                         </div>
                     </div>

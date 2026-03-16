@@ -695,7 +695,7 @@ export const clickEffectConfig: ClickEffectConfig = {
 // Live2D Widget 配置
 export const live2dConfig: Live2DConfig = {
 	enable: true,
-	mobile: true,
+	mobile: false,
 	drag: false,
 	modelId: 1,
 	logLevel: "warn",
@@ -743,4 +743,3 @@ export const widgetConfigs = {
 } as const;
 
 // umamiConfig相关配置已移动至astro.config.mjs中,统计脚本请自行在Layout.astro文件的<head>中插入
-

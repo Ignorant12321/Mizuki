@@ -13,9 +13,11 @@
 	// 记录当前主题状态，避免不必要的重新渲染
 	let currentTheme = null;
 	let isRendering = false; // 防止并发渲染
+	let pendingRender = false;
 	let retryCount = 0;
 	const MAX_RETRIES = 3;
 	const RETRY_DELAY = 1000; // 1秒
+	const zoomCleanupMap = new WeakMap();
 
 	// 检查主题是否真的发生了变化
 	function hasThemeChanged() {
@@ -89,6 +91,15 @@
 	}
 
 	// 缩放平移
+	function destroyZoomControls(element) {
+		const cleanup = zoomCleanupMap.get(element);
+		if (typeof cleanup === "function") {
+			cleanup();
+			zoomCleanupMap.delete(element);
+		}
+		element.__zoomAttached = false;
+	}
+
 	function attachZoomControls(element, svgElement) {
 		if (element.__zoomAttached) return;
 		element.__zoomAttached = true;
@@ -118,7 +129,7 @@
 		`;
 		element.appendChild(controls);
 
-		controls.addEventListener("click", (ev) => {
+		const onControlsClick = (ev) => {
 			const action =
 				ev.target.getAttribute && ev.target.getAttribute("data-action");
 			if (!action) return;
@@ -139,7 +150,8 @@
 					applyTransform();
 					break;
 			}
-		});
+		};
+		controls.addEventListener("click", onControlsClick);
 
 		let isPanning = false;
 		let startX = 0;
@@ -149,7 +161,7 @@
 
 		wrapper.style.touchAction = "none";
 
-		wrapper.addEventListener("pointerdown", (ev) => {
+		const onPointerDown = (ev) => {
 			if (ev.button !== 0) return; // 仅左键
 			isPanning = true;
 			wrapper.setPointerCapture(ev.pointerId);
@@ -157,70 +169,87 @@
 			startY = ev.clientY;
 			startTx = tx;
 			startTy = ty;
-		});
+		};
+		wrapper.addEventListener("pointerdown", onPointerDown);
 
-		wrapper.addEventListener("pointermove", (ev) => {
+		const onPointerMove = (ev) => {
 			if (!isPanning) return;
 			const dx = ev.clientX - startX;
 			const dy = ev.clientY - startY;
 			tx = startTx + dx / scale; // 根据当前缩放调整灵敏度
 			ty = startTy + dy / scale;
 			applyTransform();
-		});
+		};
+		wrapper.addEventListener("pointermove", onPointerMove);
 
-		wrapper.addEventListener("pointerup", (ev) => {
+		const onPointerUp = (ev) => {
 			isPanning = false;
 			try {
 				wrapper.releasePointerCapture(ev.pointerId);
 			} catch (e) {}
-		});
+		};
+		wrapper.addEventListener("pointerup", onPointerUp);
 
-		wrapper.addEventListener("pointercancel", () => {
+		const onPointerCancel = () => {
 			isPanning = false;
-		});
+		};
+		wrapper.addEventListener("pointercancel", onPointerCancel);
 
 		// 鼠标滚轮缩放
-		element.addEventListener(
-			"wheel",
-			(ev) => {
-				ev.preventDefault();
-				const delta = -ev.deltaY;
-				const zoomFactor = delta > 0 ? 1.12 : 1 / 1.12;
-				const prevScale = scale;
-				scale = Math.min(
-					MAX_SCALE,
-					Math.max(MIN_SCALE, +(scale * zoomFactor).toFixed(3)),
-				);
+		const onWheel = (ev) => {
+			ev.preventDefault();
+			const delta = -ev.deltaY;
+			const zoomFactor = delta > 0 ? 1.12 : 1 / 1.12;
+			const prevScale = scale;
+			scale = Math.min(
+				MAX_SCALE,
+				Math.max(MIN_SCALE, +(scale * zoomFactor).toFixed(3)),
+			);
 
-				const rect = wrapper.getBoundingClientRect();
-				const cx = ev.clientX - rect.left;
-				const cy = ev.clientY - rect.top;
+			const rect = wrapper.getBoundingClientRect();
+			const cx = ev.clientX - rect.left;
+			const cy = ev.clientY - rect.top;
 
-				const worldX = cx / prevScale - tx;
-				const worldY = cy / prevScale - ty;
+			const worldX = cx / prevScale - tx;
+			const worldY = cy / prevScale - ty;
 
-				tx = cx / scale - worldX;
-				ty = cy / scale - worldY;
+			tx = cx / scale - worldX;
+			ty = cy / scale - worldY;
 
-				applyTransform();
-			},
-			{ passive: false },
-		);
+			applyTransform();
+		};
+		element.addEventListener("wheel", onWheel, { passive: false });
 
 		// 双击重置
-		wrapper.addEventListener("dblclick", () => {
+		const onDblClick = () => {
 			scale = 1;
 			tx = 0;
 			ty = 0;
 			applyTransform();
-		});
+		};
+		wrapper.addEventListener("dblclick", onDblClick);
 		applyTransform();
 		let resizeTimer = null;
-		window.addEventListener("resize", () => {
+		const onResize = () => {
 			clearTimeout(resizeTimer);
 			resizeTimer = setTimeout(() => {
 				applyTransform();
 			}, 200);
+		};
+		window.addEventListener("resize", onResize);
+
+		zoomCleanupMap.set(element, () => {
+			controls.removeEventListener("click", onControlsClick);
+			wrapper.removeEventListener("pointerdown", onPointerDown);
+			wrapper.removeEventListener("pointermove", onPointerMove);
+			wrapper.removeEventListener("pointerup", onPointerUp);
+			wrapper.removeEventListener("pointercancel", onPointerCancel);
+			element.removeEventListener("wheel", onWheel);
+			wrapper.removeEventListener("dblclick", onDblClick);
+			window.removeEventListener("resize", onResize);
+			if (resizeTimer) {
+				clearTimeout(resizeTimer);
+			}
 		});
 	}
 
@@ -277,6 +306,7 @@
 	async function renderMermaidDiagrams() {
 		// 防止并发渲染
 		if (isRendering) {
+			pendingRender = true;
 			return;
 		}
 
@@ -341,6 +371,7 @@
 							}
 
 							// 显示加载状态
+							destroyZoomControls(element);
 							element.innerHTML =
 								'<div class="mermaid-loading">Rendering diagram...</div>';
 
@@ -358,7 +389,6 @@
 							const svgElement = doc.documentElement;
 
 							element.innerHTML = "";
-							element.__zoomAttached = false;
 							element.appendChild(svgElement);
 
 							// 添加响应式支持
@@ -430,6 +460,10 @@
 			}
 		} finally {
 			isRendering = false;
+			if (pendingRender) {
+				pendingRender = false;
+				setTimeout(() => renderMermaidDiagrams(), 0);
+			}
 		}
 	}
 

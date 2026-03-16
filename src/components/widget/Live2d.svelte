@@ -4,20 +4,54 @@
 
 	// 全局状态引用
 	let live2dInitialized = false;
+	let live2dRetryCount = 0;
+	let initRetryTimer = null;
+	let isComponentMounted = false;
 	let waifuContainer;
 	let cleanupMobileToolToggle = () => {};
 	let cleanupTouchEndHandler = () => {};
+	const MAX_INIT_RETRIES = 20;
 
 	// 解决图片资源跨域问题 (非常重要，否则 Canvas 渲染会报错)
 	function fixCrossOrigin() {
 		if (typeof window !== "undefined") {
+			if (window.__live2dImagePatched) return;
 			const OriginalImage = window.Image;
-			window.Image = function (...args) {
+			const PatchedImage = function (...args) {
 				const img = new OriginalImage(...args);
 				img.crossOrigin = "anonymous";
 				return img;
 			};
+			PatchedImage.prototype = OriginalImage.prototype;
+			Object.setPrototypeOf(PatchedImage, OriginalImage);
+			window.Image = PatchedImage;
+			window.__live2dImagePatched = true;
 		}
+	}
+
+	function scheduleInitRetry(reason) {
+		if (!isComponentMounted || live2dInitialized) return;
+		if (live2dRetryCount >= MAX_INIT_RETRIES) {
+			console.error(
+				`Live2D initialization aborted after ${MAX_INIT_RETRIES} retries (${reason})`,
+			);
+			return;
+		}
+
+		live2dRetryCount += 1;
+		const delay = Math.min(
+			100 * Math.pow(1.35, live2dRetryCount),
+			2000,
+		);
+
+		if (initRetryTimer) {
+			clearTimeout(initRetryTimer);
+		}
+
+		initRetryTimer = setTimeout(() => {
+			initRetryTimer = null;
+			initLive2d();
+		}, delay);
 	}
 
 	// 等待 DOM 和外部脚本加载完成后再初始化 Live2D
@@ -80,6 +114,7 @@
 						drag: live2dConfig.drag,
 					});
 					live2dInitialized = true;
+					live2dRetryCount = 0;
 					console.log("Live2D initialized successfully (Svelte)");
 					cleanupMobileToolToggle();
 					cleanupMobileToolToggle = setupMobileToolToggle();
@@ -127,14 +162,15 @@
 					}
 				} else if (!waifuContainer) {
 					console.warn("Live2D DOM elements not found, retrying...");
-					setTimeout(initLive2d, 100);
+					scheduleInitRetry("missing #waifu container");
 				}
 			} catch (e) {
 				console.error("Live2D initialization error:", e);
+				scheduleInitRetry("initWidget runtime error");
 			}
 		} else {
 			// 如果 initWidget 还未定义，稍后再试
-			setTimeout(initLive2d, 100);
+			scheduleInitRetry("initWidget not ready");
 		}
 	}
 
@@ -172,6 +208,7 @@
 	}
 
 	onMount(() => {
+		isComponentMounted = true;
 		if (!live2dConfig.enable) return;
 		if (!live2dConfig.mobile) {
 			// 移动端/小屏幕隐藏逻辑 (<768px)
@@ -229,6 +266,11 @@
 	});
 
 	onDestroy(() => {
+		isComponentMounted = false;
+		if (initRetryTimer) {
+			clearTimeout(initRetryTimer);
+			initRetryTimer = null;
+		}
 		// Svelte 组件销毁时不需要清理实例
 		// 效仿原版 Pio：在 Astro 的 View Transitions 页面切换时保持看板娘状态存活
 		console.log(
