@@ -215,8 +215,10 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 		<Twikoo path="/friends" />
 	</div>
 </div>
-	<!-- 引用全局脚本 -->
-	<script is:inline src="/js/friends-page-handler.js"></script>
+	<!-- 引用页面脚本 -->
+	<script>
+		import("../scripts/friends-page-handler.js");
+	</script>
 </MainGridLayout>
 
 <style>

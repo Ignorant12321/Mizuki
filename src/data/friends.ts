@@ -18,7 +18,7 @@ export const friendsData: FriendItem[] = [
 		imgurl: "https://q2.qlogo.cn/headimg_dl?dst_uin=2726730791&spec=0",
 		desc: "Protect What You Love.",
 		siteurl: "https://2x.nz/",
-		tags: ["Blog", "Friend"],
+		tags: ["Blog"],
 	},
 	{
 		id: 2,
@@ -26,7 +26,7 @@ export const friendsData: FriendItem[] = [
 		imgurl: "https://blog.mysqil.com/_astro/avatar.BDCKBkzJ_UdsLk.webp",
 		desc: "世界は大きい、君は行かなければならない",
 		siteurl: "https://blog.mysqil.com/",
-		tags: ["Blog", "Friend"],
+		tags: ["Blog"],
 	},
 	{
 		id: 3,
@@ -42,7 +42,7 @@ export const friendsData: FriendItem[] = [
 		imgurl: "https://q1.qlogo.cn/g?b=qq&nk=7618557&s=640",
 		desc: "飞萤之火自无梦的长夜亮起，绽放在终竟的明天。",
 		siteurl: "https://blog.cuteleaf.cn",
-		tags: ["Blog", "Friend"],
+		tags: ["Blog"],
 	},
 ];
 
