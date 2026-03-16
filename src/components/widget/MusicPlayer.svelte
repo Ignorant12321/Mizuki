@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
 	import { onDestroy, onMount } from "svelte";
-	import { slide } from "svelte/transition";
 	import { musicPlayerConfig, siteConfig } from "../../config";
 	import Key from "../../i18n/i18nKey";
 	import { i18n } from "../../i18n/translation";
@@ -899,7 +898,8 @@
 		{#if showPlaylist}
 			<div
 				class="playlist-panel music-surface float-panel fixed bottom-20 left-5 w-[22rem] max-h-[32rem] overflow-hidden z-50 flex flex-col rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-(--card-bg) border border-(--line-divider)/50"
-				transition:slide={{ duration: 300, axis: "y" }}
+				in:slide={{ duration: 300, axis: "y" }}
+				out:slide={{ duration: 200, axis: "y" }}
 			>
 				<div
 					class="flex flex-col pt-6 px-6 pb-3 border-b border-(--line-divider)/40 gap-4 shrink-0"

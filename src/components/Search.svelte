@@ -61,6 +61,13 @@ const collapseDesktopSearch = () => {
 	}
 };
 
+const focusDesktopInput = () => {
+	const input = document.getElementById("search-input-desktop") as
+		| HTMLInputElement
+		| null;
+	input?.focus();
+};
+
 const handleBlur = () => {
 	// 延迟处理以允许搜索结果的点击事件先于折叠逻辑执行
 	blurTimer = setTimeout(() => {
@@ -228,12 +235,15 @@ onDestroy(() => {
         aria-label="Search"
         onmouseenter={() => {if (!isDesktopSearchExpanded) toggleDesktopSearch()}}
         onmouseleave={collapseDesktopSearch}
-        onclick={() => {
-            const input = document.getElementById("search-input-desktop") as HTMLInputElement;
-            input?.focus();
+        onclick={focusDesktopInput}
+        onkeydown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                focusDesktopInput();
+            }
         }}
     >
-        <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none {isDesktopSearchExpanded ? 'left-3' : 'left-1/2 -translate-x-1/2'} transition top-1/2 -translate-y-1/2 {isDesktopSearchExpanded ? 'search-icon-color' : ''}"></Icon>
+        <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none {isDesktopSearchExpanded ? 'left-3' : 'left-1/2 -translate-x-1/2'} transition top-1/2 -translate-y-1/2 text-black/30 dark:text-white/30"></Icon>
         <input id="search-input-desktop" placeholder={i18n(I18nKey.search)} bind:value={keywordDesktop}
             onfocus={() => {
                 clearTimeout(blurTimer);
@@ -257,7 +267,7 @@ onDestroy(() => {
 <div id="search-panel" class="float-panel float-panel-closed absolute md:w-120 top-20 left-4 md:left-[unset] right-4 z-50 search-panel shadow-2xl rounded-2xl p-2">
     <!-- search bar inside panel for phone/tablet -->
     <div id="search-bar-inside" class="flex relative lg:hidden transition-all items-center h-11 rounded-xl search-bar-bg">
-        <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto search-icon-color"></Icon>
+        <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
         <input placeholder={i18n(I18nKey.search)} bind:value={keywordMobile}
                class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
                focus:w-60 search-input-color"
@@ -291,9 +301,6 @@ onDestroy(() => {
     }
     .search-bar-bg {
         @apply bg-black/4 hover:bg-black/6 focus-within:bg-black/6 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10;
-    }
-    .search-icon-color {
-        @apply text-black/30 dark:text-white/30;
     }
     .search-input-color {
         @apply text-black/50 dark:text-white/50;
