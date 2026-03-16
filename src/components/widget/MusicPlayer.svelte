@@ -269,16 +269,10 @@
 
 	function toggleShuffle() {
 		isShuffled = !isShuffled;
-		if (isShuffled) {
-			isRepeating = 0;
-		}
 	}
 
 	function toggleRepeat() {
 		isRepeating = (isRepeating + 1) % 3;
-		if (isRepeating !== 0) {
-			isShuffled = false;
-		}
 	}
 
 	function previousSong() {
@@ -564,7 +558,7 @@
 		class:hidden-mode={isHidden}
 	>
 		<div
-			class="orb-player w-12 h-12 bg-(--primary) rounded-full shadow-lg cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
+			class="orb-player w-12 h-12 rounded-full cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
 			class:opacity-0={!isHidden}
 			class:scale-0={!isHidden}
 			class:pointer-events-none={!isHidden}
@@ -580,34 +574,24 @@
 			aria-label={i18n(Key.musicPlayerShow)}
 		>
 			{#if isLoading}
-				<Icon icon="eos-icons:loading" class="text-white text-lg" />
+				<Icon icon="eos-icons:loading" class="orb-icon text-lg" />
 			{:else if isPlaying}
-				<div class="flex items-end space-x-[2px] h-[16px]">
-					<div
-						class="w-[2px] bg-white rounded-sm music-bar bar-1"
-					></div>
-					<div
-						class="w-[2px] bg-white rounded-sm music-bar bar-2"
-					></div>
-					<div
-						class="w-[2px] bg-white rounded-sm music-bar bar-3"
-					></div>
-					<div
-						class="w-[2px] bg-white rounded-sm music-bar bar-4"
-					></div>
-					<div
-						class="w-[2px] bg-white rounded-sm music-bar bar-5"
-					></div>
+				<div class="orb-content flex items-end space-x-[2px] h-[16px]">
+					<div class="w-[2px] orb-bar rounded-sm music-bar bar-1"></div>
+					<div class="w-[2px] orb-bar rounded-sm music-bar bar-2"></div>
+					<div class="w-[2px] orb-bar rounded-sm music-bar bar-3"></div>
+					<div class="w-[2px] orb-bar rounded-sm music-bar bar-4"></div>
+					<div class="w-[2px] orb-bar rounded-sm music-bar bar-5"></div>
 				</div>
 			{:else}
 				<Icon
 					icon="material-symbols:music-note"
-					class="text-white text-lg"
+					class="orb-icon text-lg"
 				/>
 			{/if}
 		</div>
 		<div
-			class="mini-player card-base bg-(--float-panel-bg) shadow-xl rounded-2xl p-3 transition-all duration-500 ease-in-out"
+			class="mini-player music-surface card-base bg-(--float-panel-bg) shadow-xl rounded-2xl p-3 transition-all duration-500 ease-in-out"
 			class:opacity-0={isExpanded || isHidden}
 			class:scale-95={isExpanded || isHidden}
 			class:pointer-events-none={isExpanded || isHidden}
@@ -678,7 +662,7 @@
 				</div>
 				<div class="flex items-center gap-1">
 					<button
-						class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
+						class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
 						on:click|stopPropagation={toggleHidden}
 						title={i18n(Key.musicPlayerHide)}
 					>
@@ -688,7 +672,7 @@
 						/>
 					</button>
 					<button
-						class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
+						class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
 						on:click|stopPropagation={toggleExpanded}
 					>
 						<Icon
@@ -700,7 +684,7 @@
 			</div>
 		</div>
 		<div
-			class="expanded-player card-base bg-(--float-panel-bg) shadow-xl rounded-2xl p-4 transition-all duration-500 ease-in-out"
+			class="expanded-player music-surface card-base bg-(--float-panel-bg) shadow-xl rounded-2xl p-4 transition-all duration-500 ease-in-out"
 			class:opacity-0={!isExpanded}
 			class:scale-95={!isExpanded}
 			class:pointer-events-none={!isExpanded}
@@ -732,7 +716,7 @@
 				</div>
 				<div class="flex items-center gap-1">
 					<button
-						class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
+						class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
 						on:click={toggleHidden}
 						title={i18n(Key.musicPlayerHide)}
 					>
@@ -742,8 +726,8 @@
 						/>
 					</button>
 					<button
-						class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
-						class:text-[var(--primary)]={showPlaylist}
+						class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
+						class:control-active={showPlaylist}
 						on:click={togglePlaylist}
 						title={i18n(Key.musicPlayerPlaylist)}
 					>
@@ -756,7 +740,7 @@
 			</div>
 			<div class="progress-section mb-4">
 				<div
-					class="progress-bar flex-1 h-2 bg-(--btn-regular-bg) rounded-full cursor-pointer"
+					class="progress-bar music-track flex-1 h-2 bg-(--btn-regular-bg) rounded-full cursor-pointer"
 					bind:this={progressBar}
 					on:click={setProgress}
 					on:keydown={(e) => {
@@ -780,7 +764,7 @@
 						: 0}
 				>
 					<div
-						class="h-full bg-(--primary) rounded-full transition-all duration-100"
+						class="music-track-fill h-full bg-(--primary) rounded-full transition-all duration-100"
 						style="width: {duration > 0
 							? (currentTime / duration) * 100
 							: 0}%"
@@ -789,16 +773,15 @@
 			</div>
 			<div class="controls flex items-center justify-center gap-2 mb-4">
 				<button
-					class="w-10 h-10 rounded-lg"
-					class:btn-regular={isShuffled}
-					class:btn-plain={!isShuffled}
+					class="music-action-btn w-10 h-10 rounded-lg"
+					class:control-active={isShuffled}
 					on:click={toggleShuffle}
 					disabled={playlist.length <= 1}
 				>
 					<Icon icon="material-symbols:shuffle" class="text-lg" />
 				</button>
 				<button
-					class="btn-plain w-10 h-10 rounded-lg"
+					class="music-action-btn w-10 h-10 rounded-lg"
 					on:click={previousSong}
 					disabled={playlist.length <= 1}
 				>
@@ -808,7 +791,7 @@
 					/>
 				</button>
 				<button
-					class="btn-regular w-12 h-12 rounded-full flex items-center justify-center"
+					class="play-main-btn w-12 h-12 rounded-full flex items-center justify-center"
 					class:opacity-50={isLoading}
 					disabled={isLoading}
 					on:click={togglePlay}
@@ -825,16 +808,15 @@
 					{/if}
 				</button>
 				<button
-					class="btn-plain w-10 h-10 rounded-lg"
+					class="music-action-btn w-10 h-10 rounded-lg"
 					on:click={() => nextSong()}
 					disabled={playlist.length <= 1}
 				>
 					<Icon icon="material-symbols:skip-next" class="text-xl" />
 				</button>
 				<button
-					class="w-10 h-10 rounded-lg"
-					class:btn-regular={isRepeating > 0}
-					class:btn-plain={isRepeating === 0}
+					class="music-action-btn w-10 h-10 rounded-lg"
+					class:control-active={isRepeating > 0}
 					on:click={toggleRepeat}
 				>
 					{#if isRepeating === 1}
@@ -854,7 +836,7 @@
 			</div>
 			<div class="bottom-controls flex items-center gap-2">
 				<button
-					class="btn-plain w-8 h-8 rounded-lg"
+					class="music-action-btn w-8 h-8 rounded-lg"
 					on:click={toggleMute}
 				>
 					{#if isMuted || volume === 0}
@@ -875,7 +857,7 @@
 					{/if}
 				</button>
 				<div
-					class="flex-1 h-2 bg-(--btn-regular-bg) rounded-full cursor-pointer touch-none"
+					class="music-track flex-1 h-2 bg-(--btn-regular-bg) rounded-full cursor-pointer touch-none"
 					bind:this={volumeBar}
 					on:pointerdown={startVolumeDrag}
 					on:keydown={(e) => {
@@ -892,14 +874,14 @@
 					aria-valuenow={volume * 100}
 				>
 					<div
-						class="h-full bg-(--primary) rounded-full transition-all"
+						class="music-track-fill h-full bg-(--primary) rounded-full transition-all"
 						class:duration-100={!isVolumeDragging}
 						class:duration-0={isVolumeDragging}
 						style="width: {volume * 100}%"
 					></div>
 				</div>
 				<button
-					class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
+					class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
 					on:click={toggleExpanded}
 					title={i18n(Key.musicPlayerCollapse)}
 				>
@@ -909,7 +891,7 @@
 		</div>
 		{#if showPlaylist}
 			<div
-				class="playlist-panel float-panel fixed bottom-20 left-5 w-[22rem] max-h-[32rem] overflow-hidden z-50 flex flex-col rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-(--card-bg) border border-(--line-divider)/50"
+				class="playlist-panel music-surface float-panel fixed bottom-20 left-5 w-[22rem] max-h-[32rem] overflow-hidden z-50 flex flex-col rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-(--card-bg) border border-(--line-divider)/50"
 				transition:slide={{ duration: 300, axis: "y" }}
 			>
 				<div
@@ -922,7 +904,7 @@
 							{i18n(Key.musicPlayerPlaylist)}
 						</h3>
 						<button
-							class="w-8 h-8 rounded-full flex items-center justify-center text-50 hover:text-90 hover:bg-(--btn-regular-bg) transition-colors"
+							class="playlist-close-btn w-8 h-8 rounded-full flex items-center justify-center text-50 hover:text-90 hover:bg-(--btn-regular-bg) transition-colors"
 							on:click={togglePlaylist}
 						>
 							<Icon
@@ -938,10 +920,8 @@
 						>
 							{#each playlistsConfig as pConfig, pIndex}
 								<button
-									class="shrink-0 px-4 py-1.5 text-[13px] font-medium rounded-full transition-all duration-300 {currentListIndex ===
-									pIndex
-										? 'bg-(--primary) text-white shadow-md shadow-(--primary)/25'
-										: 'bg-(--primary)/10 text-60 hover:text-90 hover:bg-(--primary)/20'}"
+									class="playlist-tab-btn shrink-0 px-4 py-1.5 text-[13px] font-medium rounded-full transition-all duration-300"
+									class:tab-active={currentListIndex === pIndex}
 									on:click={() => switchPlaylist(pIndex)}
 								>
 									{pConfig.name}
@@ -956,10 +936,8 @@
 				>
 					{#each playlist as song, index}
 						<div
-							class="playlist-item flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all duration-200 {index ===
-							currentIndex
-								? 'bg-(--primary)/[0.08]'
-								: 'hover:bg-(--btn-plain-bg-hover)'}"
+							class="playlist-item playlist-item-base flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all duration-200"
+							class:item-active={index === currentIndex}
 							on:click={() => handlePlaylistClick(index)}
 							on:keydown={(e) => {
 								if (e.key === "Enter" || e.key === " ") {
@@ -1049,8 +1027,38 @@
 
 		.orb-player {
 			position: relative;
+			color: var(--primary);
+			background: linear-gradient(
+				160deg,
+				color-mix(in oklab, var(--primary) 12%, var(--card-bg)) 0%,
+				var(--card-bg) 80%
+			);
+			border: 1px solid
+				color-mix(in oklab, var(--primary) 18%, var(--line-color));
+			box-shadow:
+				0 0 0 1px color-mix(in oklab, var(--primary) 25%, transparent),
+				0 8px 24px color-mix(in oklab, var(--primary) 22%, transparent);
 			backdrop-filter: blur(10px);
 			-webkit-backdrop-filter: blur(10px);
+			transition:
+				transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+				box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+				background 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+		.orb-content {
+			position: relative;
+			z-index: 1;
+			transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+		.orb-icon {
+			color: var(--primary);
+			filter: drop-shadow(
+				0 1px 0 color-mix(in oklab, var(--card-bg) 70%, transparent)
+			);
+			transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+		.orb-bar {
+			background: var(--primary);
 		}
 		.orb-player::before {
 			content: "";
@@ -1068,19 +1076,193 @@
 			transition: opacity 0.3s ease;
 		}
 		.orb-player:hover::before {
-			opacity: 0.3;
-			animation: rotate 2s linear infinite;
+			opacity: 0.22;
+		}
+		.orb-player:hover {
+			box-shadow:
+				0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent),
+				0 12px 30px color-mix(in oklab, var(--primary) 30%, transparent);
+		}
+		.orb-player:hover .orb-icon,
+		.orb-player:hover .orb-content {
+			transform: scale(1.08);
+		}
+		.orb-player:active {
+			background: color-mix(
+				in oklab,
+				var(--primary) 14%,
+				var(--btn-card-bg-active)
+			);
 		}
 		.orb-player .animate-pulse {
 			animation: musicWave 1.5s ease-in-out infinite;
 		}
-		@keyframes rotate {
-			from {
-				transform: rotate(0deg);
-			}
-			to {
-				transform: rotate(360deg);
-			}
+		.play-main-btn {
+			color: var(--primary);
+			background: linear-gradient(
+				160deg,
+				color-mix(in oklab, var(--primary) 12%, var(--card-bg)) 0%,
+				var(--card-bg) 80%
+			);
+			border: 1px solid
+				color-mix(in oklab, var(--primary) 18%, var(--line-color));
+			box-shadow:
+				0 0 0 1px color-mix(in oklab, var(--primary) 25%, transparent),
+				0 8px 24px color-mix(in oklab, var(--primary) 22%, transparent);
+			backdrop-filter: blur(8px);
+			-webkit-backdrop-filter: blur(8px);
+			transition:
+				transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+				box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+				background 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+		.play-main-btn :global(svg) {
+			transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+		.play-main-btn:hover:not(:disabled) {
+			transform: scale(1.03);
+			box-shadow:
+				0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent),
+				0 12px 30px color-mix(in oklab, var(--primary) 30%, transparent);
+		}
+		.play-main-btn:hover:not(:disabled) :global(svg) {
+			transform: scale(1.04);
+		}
+		.play-main-btn:active:not(:disabled) {
+			transform: scale(0.94);
+			background: color-mix(
+				in oklab,
+				var(--primary) 14%,
+				var(--btn-card-bg-active)
+			);
+		}
+		.music-surface {
+			background: linear-gradient(
+				180deg,
+				color-mix(in oklab, var(--primary) 6%, var(--card-bg)) 0%,
+				var(--card-bg) 35%
+			) !important;
+			border: 1px solid
+				color-mix(in oklab, var(--primary) 20%, var(--line-color)) !important;
+			box-shadow:
+				0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent),
+				0 14px 32px color-mix(in oklab, black 18%, transparent) !important;
+			backdrop-filter: blur(10px);
+			-webkit-backdrop-filter: blur(10px);
+		}
+		.music-action-btn,
+		.playlist-close-btn {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0;
+			line-height: 1;
+			background: linear-gradient(
+				160deg,
+				color-mix(in oklab, var(--primary) 9%, var(--card-bg)) 0%,
+				color-mix(in oklab, var(--primary) 3%, var(--card-bg)) 100%
+			);
+			border: 1px solid transparent;
+			box-shadow: 0 0 0 1px
+				color-mix(in oklab, var(--primary) 10%, transparent);
+			transition:
+				transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+				background 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+				box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+				border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+		.playlist-tab-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.375rem 1rem;
+			line-height: 1.2;
+			background: linear-gradient(
+				160deg,
+				color-mix(in oklab, var(--primary) 9%, var(--card-bg)) 0%,
+				color-mix(in oklab, var(--primary) 3%, var(--card-bg)) 100%
+			);
+			border: 1px solid transparent;
+			box-shadow: 0 0 0 1px
+				color-mix(in oklab, var(--primary) 10%, transparent);
+			min-height: 2.25rem;
+		}
+		.music-action-btn,
+		.playlist-close-btn {
+			color: var(--primary);
+		}
+		.playlist-tab-btn {
+			color: var(--text-secondary);
+		}
+		.music-action-btn:hover,
+		.playlist-close-btn:hover,
+		.playlist-tab-btn:hover {
+			background: color-mix(
+				in oklab,
+				var(--primary) 10%,
+				var(--btn-regular-bg)
+			);
+			border-color: color-mix(
+				in oklab,
+				var(--primary) 20%,
+				transparent
+			);
+			box-shadow:
+				0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent),
+				0 6px 16px color-mix(in oklab, var(--primary) 20%, transparent);
+		}
+		.music-action-btn:active,
+		.playlist-close-btn:active,
+		.playlist-tab-btn:active {
+			transform: scale(0.94);
+		}
+		.music-action-btn:disabled {
+			opacity: 0.45;
+			cursor: not-allowed;
+			box-shadow: none;
+		}
+		.controls .music-action-btn,
+		.controls .play-main-btn {
+			flex-shrink: 0;
+			vertical-align: middle;
+		}
+		.controls .music-action-btn :global(svg),
+		.controls .play-main-btn :global(svg) {
+			display: block;
+			line-height: 1;
+		}
+		.music-action-btn.control-active,
+		.playlist-tab-btn.tab-active {
+			background: color-mix(
+				in oklab,
+				var(--primary) 16%,
+				var(--btn-card-bg-active)
+			);
+			border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+			box-shadow: inset 0 0 0 1px
+				color-mix(in oklab, var(--primary) 22%, transparent);
+		}
+		.music-track {
+			background: color-mix(in oklab, var(--primary) 9%, var(--line-color)) !important;
+			border: 1px solid color-mix(in oklab, var(--primary) 16%, transparent);
+		}
+		.music-track-fill {
+			background: color-mix(in oklab, var(--primary) 88%, white 12%) !important;
+		}
+		.playlist-item-base {
+			border: 1px solid transparent;
+			background: color-mix(in oklab, var(--primary) 4%, transparent);
+		}
+		.playlist-item-base:hover {
+			border-color: color-mix(in oklab, var(--primary) 18%, transparent);
+			box-shadow: inset 0 0 0 1px
+				color-mix(in oklab, var(--primary) 16%, transparent);
+		}
+		.playlist-item-base.item-active {
+			background: color-mix(in oklab, var(--primary) 12%, transparent);
+			border-color: color-mix(in oklab, var(--primary) 28%, transparent);
+			box-shadow: inset 0 0 0 1px
+				color-mix(in oklab, var(--primary) 22%, transparent);
 		}
 		@keyframes musicWave {
 			0%,
