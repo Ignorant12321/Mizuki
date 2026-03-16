@@ -31,6 +31,15 @@ interface Group {
 	posts: Post[];
 }
 
+function toAnchorSegment(value: string) {
+	return value.replace(/[^a-zA-Z0-9_-]/g, "-").replace(/-+/g, "-");
+}
+
+function getPostHeadingId(post: Post, index: number) {
+	const raw = post.url || post.data.permalink || post.data.alias || post.id;
+	return `archive-post-${toAnchorSegment(raw)}-${index}`;
+}
+
 let groups: Group[] = [];
 
 function formatDate(date: Date) {
@@ -96,9 +105,9 @@ onMount(async () => {
     {#each groups as group}
         <div>
             <div class="flex flex-row w-full items-center h-15">
-                <div class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75">
+                <h2 id={`archive-year-${group.year}`} class="m-0 w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75">
                     {group.year}
-                </div>
+                </h2>
                 <div class="w-[15%] md:w-[10%]">
                     <div
                             class="h-3 w-3 bg-none rounded-full outline outline-(--primary) mx-auto
@@ -110,7 +119,7 @@ onMount(async () => {
                 </div>
             </div>
 
-            {#each group.posts as post}
+            {#each group.posts as post, postIndex}
                 <a
                         href={post.url || `/posts/${post.id}/`}
                         aria-label={post.data.title}
@@ -135,13 +144,14 @@ onMount(async () => {
                         </div>
 
                         <!-- post title -->
-                        <div
-                                class="w-[70%] md:max-w-[65%] md:w-[65%] text-left font-bold
+                        <h3
+                                id={getPostHeadingId(post, postIndex)}
+                                class="m-0 w-[70%] md:max-w-[65%] md:w-[65%] text-left font-bold
                      group-hover:translate-x-1 transition-all group-hover:text-(--primary)
                      text-75 pr-8 whitespace-nowrap text-ellipsis overflow-hidden"
                         >
                             {post.data.title}
-                        </div>
+                        </h3>
 
                         <!-- tag list -->
                         <div
