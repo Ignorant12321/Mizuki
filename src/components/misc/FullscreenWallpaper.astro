@@ -158,7 +158,7 @@ const renderGroups = [
 						alt={`${group.key} wallpaper ${index + 1}`}
 						class={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}`}
 						data-carousel-item={index}
-						style={`transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--fullscreen-wallpaper-blur, ${blurAmount}px)); opacity: ${index === 0 ? 1 : 0};`}
+						style={`transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--fullscreen-wallpaper-blur, ${blurAmount}px)); opacity: 0;`}
 						decoding="async"
 						loading={index === 0 ? "eager" : "lazy"} 
 					/>
@@ -188,40 +188,51 @@ const renderGroups = [
 					const mobileSrc = getRandomImage(mobileImages, 'wallpaper_mobile_index');
 					
 					const container = document.getElementById('wallpaper-single-container');
+					if (!container) return;
+
+					const createLayer = ({ src, alt, className }) => {
+						if (!src) return;
+						const layer = document.createElement('div');
+						layer.className = className;
+						layer.style.transform = 'translateZ(0)';
+
+						const img = document.createElement('img');
+						img.src = src;
+						img.alt = alt;
+						img.decoding = 'async';
+						img.loading = 'eager';
+						img.className = `absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}`;
+						img.style.transform = 'translateZ(0)';
+						img.style.backfaceVisibility = 'hidden';
+						img.style.willChange = 'opacity';
+						img.style.filter = `blur(var(--fullscreen-wallpaper-blur, ${blurAmount}px))`;
+						img.style.opacity = '0';
+
+						const reveal = () => {
+							img.style.opacity = '1';
+						};
+
+						if (img.complete) {
+							requestAnimationFrame(reveal);
+						} else {
+							img.addEventListener('load', reveal, { once: true });
+							img.addEventListener('error', reveal, { once: true });
+						}
+
+						layer.appendChild(img);
+						container.appendChild(layer);
+					};
 					
-					if (desktopSrc) {
-						const desktopDiv = document.createElement('div');
-						desktopDiv.className = 'hidden lg:block w-full h-full relative';
-						desktopDiv.style.transform = 'translateZ(0)';
-						desktopDiv.innerHTML = `
-							<img
-								src="${desktopSrc}"
-								alt="desktop wallpaper"
-								class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}"
-								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--fullscreen-wallpaper-blur, ${blurAmount}px)); opacity: 1;"
-								decoding="async"
-								loading="eager"
-							/>
-						`;
-						container.appendChild(desktopDiv);
-					}
-					
-					if (mobileSrc) {
-						const mobileDiv = document.createElement('div');
-						mobileDiv.className = 'block lg:hidden w-full h-full relative';
-						mobileDiv.style.transform = 'translateZ(0)';
-						mobileDiv.innerHTML = `
-							<img
-								src="${mobileSrc}"
-								alt="mobile wallpaper"
-								class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}"
-								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--fullscreen-wallpaper-blur, ${blurAmount}px)); opacity: 1;"
-								decoding="async"
-								loading="eager"
-							/>
-						`;
-						container.appendChild(mobileDiv);
-					}
+					createLayer({
+						src: desktopSrc,
+						alt: 'desktop wallpaper',
+						className: 'hidden lg:block w-full h-full relative'
+					});
+					createLayer({
+						src: mobileSrc,
+						alt: 'mobile wallpaper',
+						className: 'block lg:hidden w-full h-full relative'
+					});
 				})();
 			</script>
 		</div>
@@ -258,12 +269,32 @@ const renderGroups = [
 			});
 
 			// 初始化显示：根据 savedIndex 立即修正图片显示
+			function revealImage(img) {
+				if (!(img instanceof HTMLImageElement)) return;
+				img.loading = 'eager';
+				try {
+					img.fetchPriority = 'high';
+				} catch (_error) {}
+
+				if (img.complete) {
+					img.style.opacity = '1';
+					return;
+				}
+
+				img.style.opacity = '0';
+				const onReady = () => {
+					img.style.opacity = '1';
+				};
+				img.addEventListener('load', onReady, { once: true });
+				img.addEventListener('error', onReady, { once: true });
+			}
+
 			function initImage(stateItem) {
 				const { items, currentIndex } = stateItem;
-				// 立即设置样式，防止视觉上跳回第一张
 				for (let i = 0; i < items.length; i++) {
-					items[i].style.opacity = i === currentIndex ? '1' : '0';
+					items[i].style.opacity = '0';
 				}
+				revealImage(items[currentIndex]);
 			}
 
 			// 切换下一张
@@ -272,7 +303,7 @@ const renderGroups = [
 				const nextIndex = (currentIndex + 1) % items.length;
 				
 				items[currentIndex].style.opacity = '0';
-				items[nextIndex].style.opacity = '1';
+				revealImage(items[nextIndex]);
 				
 				stateItem.currentIndex = nextIndex;
 

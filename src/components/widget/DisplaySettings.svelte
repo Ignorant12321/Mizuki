@@ -35,6 +35,8 @@ import {
 	setWavesEnabled,
 } from "@utils/setting-utils";
 import { onMount } from "svelte";
+import { cubicOut } from "svelte/easing";
+import { slide } from "svelte/transition";
 import type { WALLPAPER_MODE } from "@/types/config";
 
 type PostListLayoutMode = "list" | "grid";
@@ -422,7 +424,10 @@ onMount(() => {
 		{/if}
 
 		{#if wallpaperMode === WALLPAPER_FULLSCREEN}
-			<section class="setting-section">
+			<section
+				class="setting-section fullscreen-extra-section"
+				transition:slide|local={{ duration: 240, easing: cubicOut }}
+			>
 				<div class="section-header">
 					<div class="section-title">{i18n(I18nKey.displaySettingsTransparency)}</div>
 					<button

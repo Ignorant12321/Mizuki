@@ -77,6 +77,11 @@
 	padding-right: 0.2rem;
 }
 
+#display-setting .fullscreen-extra-section {
+	transform-origin: top center;
+	will-change: transform, opacity, height;
+}
+
 #display-setting .section-header {
 	display: flex;
 	align-items: center;
@@ -204,9 +209,9 @@
 }
 
 #display-setting .effect-row {
-	display: flex;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
 	align-items: center;
-	justify-content: space-between;
 	gap: 0.7rem;
 	min-height: 2.6rem;
 	padding: 0.56rem 0.64rem;
@@ -233,9 +238,16 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 0.42rem;
+	min-width: 0;
 	font-size: 0.86rem;
 	font-weight: 600;
 	color: var(--text-normal);
+}
+
+#display-setting .effect-meta > span:last-child {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 #display-setting .effect-row.is-active .effect-meta {
@@ -256,6 +268,7 @@
 
 #display-setting .effect-switch {
 	position: relative;
+	justify-self: end;
 	width: 2.15rem;
 	height: 1.2rem;
 	border-radius: 999px;
@@ -418,7 +431,15 @@
 	box-shadow: 0 1px 5px rgba(0, 0, 0, 0.28);
 }
 
-@media (max-width: 900px) {
+/* 桌面端：与主容器右侧基线对齐 */
+@media (min-width: 901px) {
+	#display-setting {
+		left: auto !important;
+		right: max(1rem, calc((100vw - var(--page-width)) / 2 + 1rem)) !important;
+	}
+}
+
+@media (max-width: 900px) and (hover: none), (max-width: 900px) and (pointer: coarse) {
 	#display-setting {
 		top: calc(4.75rem + env(safe-area-inset-top)) !important;
 		left: 0 !important;
