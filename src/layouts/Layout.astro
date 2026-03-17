@@ -23,6 +23,9 @@ const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
 // TOC模式配置
 const tocMode = siteConfig.toc.mode || "float";
 const isFloatTOC = tocMode === "float";
+const backToTopEnabled = siteConfig.floatingWidgets?.backToTop?.enable ?? true;
+const backToBottomEnabled = siteConfig.floatingWidgets?.backToBottom?.enable ?? true;
+const floatingTOCEnabled = siteConfig.floatingWidgets?.floatingTOC?.enable ?? true;
 
 import {
 	DARK_MODE,
@@ -447,11 +450,13 @@ if (siteConfig.font) {
 		{live2dConfig.enable && <Live2d client:idle />}
 
 		<!-- 顶部按钮 -->
-		<BackToTop />
+		{backToTopEnabled && <BackToTop />}
 		<!-- 浮动目录 -->
-		{siteConfig.toc.enable && isFloatTOC && <FloatingTOC />}
+		{siteConfig.toc.enable && isFloatTOC && floatingTOCEnabled && (
+			<FloatingTOC />
+		)}
 		<!-- 底部按钮 -->
-		<BackToBottom />
+		{backToBottomEnabled && <BackToBottom />}
 
 		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
 		<div id="page-height-extend" class="hidden h-[300vh]"></div>

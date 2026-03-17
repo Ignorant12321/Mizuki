@@ -28,32 +28,50 @@ const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UT
 
 const floatingWidgetsConfig: FloatingWidgetsConfig = {
 	backToTop: {
-		desktop: { left: "-4rem", bottom: "15rem" },
-		mobile: { left: "-4rem", bottom: "15rem" },
+		enable: true,
+		desktop: { side: "left", offset: "-4rem", bottom: "15rem" },
+		mobile: { side: "left", offset: "1rem", bottom: "15rem" },
 	},
 	backToBottom: {
-		desktop: { left: "-4rem", bottom: "5rem" },
-		mobile: { left: "-4rem", bottom: "5rem" },
+		enable: true,
+		desktop: { side: "left", offset: "-4rem", bottom: "5rem" },
+		mobile: { side: "left", offset: "1rem", bottom: "5rem" },
 	},
 	floatingTOC: {
-		desktop: { left: "-4rem", bottom: "10rem" },
-		mobile: { left: "1rem", bottom: "10rem" },
+		enable: true,
+		desktop: { side: "left", offset: "-4rem", bottom: "10rem" },
+		mobile: { side: "left", offset: "1rem", bottom: "10rem" },
 	},
 	musicPlayer: {
-		desktop: { left: "1.25rem", bottom: "1rem" },
-		mobile: { left: "1.3rem", bottom: "0.5rem" },
-		mobileExpanded: { left: "0.5rem" },
-		mobilePlaylist: { left: "0.5rem", bottom: "5rem" },
+		desktop: { side: "left", offset: "1.25rem", bottom: "1rem" },
+		mobile: { side: "left", offset: "1.3rem", bottom: "1rem" },
+		mobileExpanded: { side: "left", offset: "0.5rem" },
+		mobilePlaylist: { side: "left", offset: "0.5rem", bottom: "5rem" },
 	},
 	live2d: {
-		desktop: { right: "1.5rem", bottom: "0" },
-		mobile: { right: "1.5rem", bottom: "0" },
+		// Live2D 主体位置（看板娘本体）
+		desktop: { side: "right", offset: "1.5rem", bottom: "0" },
+		mobile: { side: "right", offset: "1.5rem", bottom: "0" },
+		// side 表示固定在左侧或右侧，offset 表示距离该侧边的距离
+		// 唤醒按钮默认跟随对应端的 side，不单独设置左右侧
 		toggle: {
-			right: "0",
-			hiddenOffsetRight: "-100px",
-			activeOffsetRight: "-45px",
-			hoverOffsetRight: "-35px",
-			mobileActiveOffsetRight: "-30px",
+			offset: "0", // 按钮距离当前侧边的距离
+			hiddenOffset: "-100px", // 隐藏状态偏移（越小越靠外）
+			activeOffset: "-45px", // 展开后默认偏移
+			hoverOffset: "-35px", // 鼠标悬浮按钮时偏移
+			mobileActiveOffset: "-30px", // 移动端展开偏移
+		},
+		// 动画/交互时序（单位 ms）
+		timing: {
+			enterExitDurationMs: 3000, // 看板娘出场/退场时长
+			toolFadeDurationMs: 1000, // 工具栏淡入淡出时长
+			toolAutoHideDelayMs: 2000, // 工具栏自动隐藏延迟
+		},
+		// 看板娘纵向位移（支持 px/rem/calc）
+		motion: {
+			hiddenOffsetY: "calc(100% + 2rem)", // 隐藏时向下沉没偏移
+			idleOffsetY: "20px", // 非悬浮时下沉一点（更“矮”）
+			hoverOffsetY: "10px", // 悬浮时回到正常高度
 		},
 	},
 };

@@ -6,9 +6,10 @@ import { i18n } from "../../i18n/translation";
 
 const backToTopLabel = i18n(I18nKey.backToTop);
 const backToTopPosition = siteConfig.floatingWidgets?.backToTop ?? {
-	desktop: { left: "-4rem", bottom: "15rem" },
-	mobile: { left: "-4rem", bottom: "15rem" },
+	desktop: { side: "left", offset: "-4rem", bottom: "15rem" },
+	mobile: { side: "left", offset: "-4rem", bottom: "15rem" },
 };
+const backToTopStyle = `--back-to-top-left-desktop:${backToTopPosition.desktop.side === "left" ? backToTopPosition.desktop.offset : "auto"};--back-to-top-right-desktop:${backToTopPosition.desktop.side === "right" ? backToTopPosition.desktop.offset : "auto"};--back-to-top-bottom-desktop:${backToTopPosition.desktop.bottom};--back-to-top-shift-desktop:${backToTopPosition.desktop.side === "left" ? "5rem" : "-5rem"};--back-to-top-left-mobile:${backToTopPosition.mobile.side === "left" ? backToTopPosition.mobile.offset : "auto"};--back-to-top-right-mobile:${backToTopPosition.mobile.side === "right" ? backToTopPosition.mobile.offset : "auto"};--back-to-top-bottom-mobile:${backToTopPosition.mobile.bottom};--back-to-top-shift-mobile:0;`;
 ---
 
 <!-- There can't be a filter on parent element, or it will break `fixed` -->
@@ -19,7 +20,7 @@ const backToTopPosition = siteConfig.floatingWidgets?.backToTop ?? {
 		onclick="backToTop()"
 		aria-label={backToTopLabel}
 		title={backToTopLabel}
-		style={`--back-to-top-left-desktop:${backToTopPosition.desktop.left};--back-to-top-bottom-desktop:${backToTopPosition.desktop.bottom};--back-to-top-left-mobile:${backToTopPosition.mobile.left};--back-to-top-bottom-mobile:${backToTopPosition.mobile.bottom};`}
+		style={backToTopStyle}
 	>
 		<Icon
 			name="material-symbols:keyboard-arrow-up-rounded"
@@ -39,6 +40,10 @@ const backToTopPosition = siteConfig.floatingWidgets?.backToTop ?? {
     z-index: 45
 
   .back-to-top-btn
+    --back-to-top-left: var(--back-to-top-left-desktop)
+    --back-to-top-right: var(--back-to-top-right-desktop)
+    --back-to-top-bottom: var(--back-to-top-bottom-desktop)
+    --back-to-top-shift: var(--back-to-top-shift-desktop)
     width: 3.75rem
     height: 3.75rem
     display: flex
@@ -46,11 +51,12 @@ const backToTopPosition = siteConfig.floatingWidgets?.backToTop ?? {
     justify-content: center
     color: var(--primary)
     position: fixed
-    bottom: var(--back-to-top-bottom-desktop)
+    bottom: var(--back-to-top-bottom)
     opacity: 1
-    left: var(--back-to-top-left-desktop)
+    left: var(--back-to-top-left)
+    right: var(--back-to-top-right)
     cursor: pointer
-    transform: translateX(5rem)
+    transform: translateX(var(--back-to-top-shift))
     pointer-events: auto
     transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1)
     border: 1px solid var(--line-color)
@@ -63,18 +69,18 @@ const backToTopPosition = siteConfig.floatingWidgets?.backToTop ?? {
     box-shadow: 0 0 0 1px color-mix(var(--primary) 25%, transparent), 0 8px 24px color-mix(var(--primary) 22%, transparent)
 
     &:hover
-      transform: translateX(5rem) translateY(-1px)
+      transform: translateX(var(--back-to-top-shift)) translateY(-1px)
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16)
       box-shadow: 0 0 0 1px color-mix(var(--primary) 35%, transparent), 0 12px 30px color-mix(var(--primary) 30%, transparent)
 
     &.hide
-      transform: translateX(5rem) scale(0.9)
+      transform: translateX(var(--back-to-top-shift)) scale(0.9)
       opacity: 0
       pointer-events: none
       box-shadow: none
 
     &:active
-      transform: translateX(5rem) scale(0.94)
+      transform: translateX(var(--back-to-top-shift)) scale(0.94)
       background: var(--btn-card-bg-active)
       background: color-mix(var(--primary) 14%, var(--btn-card-bg-active))
 
@@ -84,8 +90,10 @@ const backToTopPosition = siteConfig.floatingWidgets?.backToTop ?? {
   // 手机端隐藏返回顶部按钮
   @media (max-width: 768px)
     .back-to-top-btn
-      left: var(--back-to-top-left-mobile)
-      bottom: var(--back-to-top-bottom-mobile)
+      --back-to-top-left: var(--back-to-top-left-mobile)
+      --back-to-top-right: var(--back-to-top-right-mobile)
+      --back-to-top-bottom: var(--back-to-top-bottom-mobile)
+      --back-to-top-shift: var(--back-to-top-shift-mobile)
 
 </style>
 

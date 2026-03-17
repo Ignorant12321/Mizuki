@@ -8,16 +8,17 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 const tocLabel = i18n(I18nKey.tableOfContents);
 const tocBackToTopLabel = i18n(I18nKey.tocBackToTop);
 const floatingTOCPosition = siteConfig.floatingWidgets?.floatingTOC ?? {
-	desktop: { left: "-4rem", bottom: "10rem" },
-	mobile: { left: "1rem", bottom: "10rem" },
+	desktop: { side: "left", offset: "-4rem", bottom: "10rem" },
+	mobile: { side: "left", offset: "1rem", bottom: "10rem" },
 };
+const floatingTOCStyle = `--floating-toc-left-desktop:${floatingTOCPosition.desktop.side === "left" ? floatingTOCPosition.desktop.offset : "auto"};--floating-toc-right-desktop:${floatingTOCPosition.desktop.side === "right" ? floatingTOCPosition.desktop.offset : "auto"};--floating-toc-bottom-desktop:${floatingTOCPosition.desktop.bottom};--floating-toc-shift-desktop:${floatingTOCPosition.desktop.side === "left" ? "5rem" : "-5rem"};--floating-toc-panel-left-desktop:${floatingTOCPosition.desktop.side === "left" ? "0" : "auto"};--floating-toc-panel-right-desktop:${floatingTOCPosition.desktop.side === "right" ? "0" : "auto"};--floating-toc-left-mobile:${floatingTOCPosition.mobile.side === "left" ? floatingTOCPosition.mobile.offset : "auto"};--floating-toc-right-mobile:${floatingTOCPosition.mobile.side === "right" ? floatingTOCPosition.mobile.offset : "auto"};--floating-toc-bottom-mobile:${floatingTOCPosition.mobile.bottom};--floating-toc-panel-left-mobile:${floatingTOCPosition.mobile.side === "left" ? "0" : "auto"};--floating-toc-panel-right-mobile:${floatingTOCPosition.mobile.side === "right" ? "0" : "auto"};`;
 ---
 
 <div
 	class="floating-toc-wrapper"
 	data-depth={tocDepth}
 	data-japanese-badge={useJapaneseBadge}
-	style={`--floating-toc-left-desktop:${floatingTOCPosition.desktop.left};--floating-toc-bottom-desktop:${floatingTOCPosition.desktop.bottom};--floating-toc-left-mobile:${floatingTOCPosition.mobile.left};--floating-toc-bottom-mobile:${floatingTOCPosition.mobile.bottom};`}
+	style={floatingTOCStyle}
 >
 	<button
 		id="floating-toc-btn"
@@ -62,12 +63,19 @@ const floatingTOCPosition = siteConfig.floatingWidgets?.floatingTOC ?? {
 
 <style>
 	.floating-toc-wrapper {
+		--floating-toc-left: var(--floating-toc-left-desktop);
+		--floating-toc-right: var(--floating-toc-right-desktop);
+		--floating-toc-bottom: var(--floating-toc-bottom-desktop);
+		--floating-toc-shift: var(--floating-toc-shift-desktop);
+		--floating-toc-panel-left: var(--floating-toc-panel-left-desktop);
+		--floating-toc-panel-right: var(--floating-toc-panel-right-desktop);
 		position: fixed;
-		left: var(--floating-toc-left-desktop);
-		bottom: var(--floating-toc-bottom-desktop);
+		left: var(--floating-toc-left);
+		right: var(--floating-toc-right);
+		bottom: var(--floating-toc-bottom);
 		z-index: 45;
 		pointer-events: auto;
-		transform: translateX(5rem);
+		transform: translateX(var(--floating-toc-shift));
 		/* display: none; */
 		transition:
 			opacity 0.28s ease,
@@ -143,7 +151,8 @@ const floatingTOCPosition = siteConfig.floatingWidgets?.floatingTOC ?? {
 	.floating-toc-panel {
 		position: absolute;
 		bottom: 4.5rem;
-		left: 0;
+		left: var(--floating-toc-panel-left);
+		right: var(--floating-toc-panel-right);
 		width: 18rem;
 		max-height: 60vh;
 		background: linear-gradient(
@@ -236,9 +245,12 @@ const floatingTOCPosition = siteConfig.floatingWidgets?.floatingTOC ?? {
 
 	@media (max-width: 768px) {
 		.floating-toc-wrapper {
+			--floating-toc-left: var(--floating-toc-left-mobile);
+			--floating-toc-right: var(--floating-toc-right-mobile);
+			--floating-toc-bottom: var(--floating-toc-bottom-mobile);
+			--floating-toc-panel-left: var(--floating-toc-panel-left-mobile);
+			--floating-toc-panel-right: var(--floating-toc-panel-right-mobile);
 			transform: none;
-			left: var(--floating-toc-left-mobile);
-			bottom: var(--floating-toc-bottom-mobile);
 			/* opacity: 0.6; */
 		}
 
@@ -250,7 +262,6 @@ const floatingTOCPosition = siteConfig.floatingWidgets?.floatingTOC ?? {
 		.floating-toc-panel {
 			width: 85vw;
 			max-width: 20rem;
-			left: 0;
 			bottom: 4.5rem;
 		}
 	}

@@ -6,34 +6,58 @@ import type {
 	WALLPAPER_NONE,
 } from "../constants/constants";
 
+type FloatingWidgetSide = "left" | "right";
+type FloatingWidgetPosition = {
+	side: FloatingWidgetSide;
+	offset: string;
+	bottom: string;
+};
+type FloatingWidgetHorizontalPosition = {
+	side: FloatingWidgetSide;
+	offset: string;
+};
+
 export type FloatingWidgetsConfig = {
 	backToTop: {
-		desktop: { left: string; bottom: string };
-		mobile: { left: string; bottom: string };
+		enable: boolean;
+		desktop: FloatingWidgetPosition;
+		mobile: FloatingWidgetPosition;
 	};
 	backToBottom: {
-		desktop: { left: string; bottom: string };
-		mobile: { left: string; bottom: string };
+		enable: boolean;
+		desktop: FloatingWidgetPosition;
+		mobile: FloatingWidgetPosition;
 	};
 	floatingTOC: {
-		desktop: { left: string; bottom: string };
-		mobile: { left: string; bottom: string };
+		enable: boolean;
+		desktop: FloatingWidgetPosition;
+		mobile: FloatingWidgetPosition;
 	};
 	musicPlayer: {
-		desktop: { left: string; bottom: string };
-		mobile: { left: string; bottom: string };
-		mobileExpanded: { left: string };
-		mobilePlaylist: { left: string; bottom: string };
+		desktop: FloatingWidgetPosition;
+		mobile: FloatingWidgetPosition;
+		mobileExpanded: FloatingWidgetHorizontalPosition;
+		mobilePlaylist: FloatingWidgetPosition;
 	};
 	live2d: {
-		desktop: { right: string; bottom: string };
-		mobile: { right: string; bottom: string };
+		desktop: FloatingWidgetPosition;
+		mobile: FloatingWidgetPosition;
 		toggle: {
-			right: string;
-			hiddenOffsetRight: string;
-			activeOffsetRight: string;
-			hoverOffsetRight: string;
-			mobileActiveOffsetRight: string;
+			offset: string;
+			hiddenOffset: string;
+			activeOffset: string;
+			hoverOffset: string;
+			mobileActiveOffset: string;
+		};
+		timing?: {
+			enterExitDurationMs?: number;
+			toolFadeDurationMs?: number;
+			toolAutoHideDelayMs?: number;
+		};
+		motion?: {
+			hiddenOffsetY?: string;
+			idleOffsetY?: string;
+			hoverOffsetY?: string;
 		};
 	};
 };

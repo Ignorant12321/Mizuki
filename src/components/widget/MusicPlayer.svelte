@@ -10,11 +10,45 @@
 	let globalMode = musicPlayerConfig.mode ?? "meting";
 	let globalMetingApi = musicPlayerConfig.meting_api;
 	const musicPlayerPosition = siteConfig.floatingWidgets?.musicPlayer ?? {
-		desktop: { left: "1.25rem", bottom: "1rem" },
-		mobile: { left: "1.3rem", bottom: "0.5rem" },
-		mobileExpanded: { left: "0.5rem" },
-		mobilePlaylist: { left: "0.5rem", bottom: "5rem" },
+		desktop: { side: "left", offset: "1.25rem", bottom: "1rem" },
+		mobile: { side: "left", offset: "1.3rem", bottom: "0.5rem" },
+		mobileExpanded: { side: "left", offset: "0.5rem" },
+		mobilePlaylist: { side: "left", offset: "0.5rem", bottom: "5rem" },
 	};
+	type FloatingWidgetSide = "left" | "right";
+	type FloatingWidgetPosition = {
+		side: FloatingWidgetSide;
+		offset: string;
+		bottom: string;
+	};
+	type FloatingWidgetHorizontalPosition = {
+		side: FloatingWidgetSide;
+		offset: string;
+	};
+
+	function getHorizontalInsetVars(position: FloatingWidgetHorizontalPosition) {
+		return {
+			left: position.side === "left" ? position.offset : "auto",
+			right: position.side === "right" ? position.offset : "auto",
+		};
+	}
+
+	function getInsetVars(position: FloatingWidgetPosition) {
+		return {
+			...getHorizontalInsetVars(position),
+			bottom: position.bottom,
+		};
+	}
+
+	const musicPlayerDesktopVars = getInsetVars(musicPlayerPosition.desktop);
+	const musicPlayerMobileVars = getInsetVars(musicPlayerPosition.mobile);
+	const musicPlayerExpandedMobileVars = getHorizontalInsetVars(
+		musicPlayerPosition.mobileExpanded,
+	);
+	const musicPlayerPlaylistMobileVars = getInsetVars(
+		musicPlayerPosition.mobilePlaylist,
+	);
+	const musicPlayerPositionStyle = `--music-player-left-desktop:${musicPlayerDesktopVars.left};--music-player-right-desktop:${musicPlayerDesktopVars.right};--music-player-bottom-desktop:${musicPlayerDesktopVars.bottom};--music-player-left-mobile:${musicPlayerMobileVars.left};--music-player-right-mobile:${musicPlayerMobileVars.right};--music-player-bottom-mobile:${musicPlayerMobileVars.bottom};--music-player-expanded-left-mobile:${musicPlayerExpandedMobileVars.left};--music-player-expanded-right-mobile:${musicPlayerExpandedMobileVars.right};--music-player-playlist-left-mobile:${musicPlayerPlaylistMobileVars.left};--music-player-playlist-right-mobile:${musicPlayerPlaylistMobileVars.right};--music-player-playlist-bottom-mobile:${musicPlayerPlaylistMobileVars.bottom};--music-player-content-left-desktop:${musicPlayerPosition.desktop.side === "left" ? "0" : "auto"};--music-player-content-right-desktop:${musicPlayerPosition.desktop.side === "right" ? "0" : "auto"};--music-player-content-left-mobile:${musicPlayerPosition.mobile.side === "left" ? "0" : "auto"};--music-player-content-right-mobile:${musicPlayerPosition.mobile.side === "right" ? "0" : "auto"};--music-player-content-left-expanded-mobile:${musicPlayerPosition.mobileExpanded.side === "left" ? "0" : "auto"};--music-player-content-right-expanded-mobile:${musicPlayerPosition.mobileExpanded.side === "right" ? "0" : "auto"};`;
 
 	// 【核心逻辑】：向下兼容，如果没有配置 playlists 数组，自动用原版的根配置兜底
 	let playlistsConfig =
@@ -541,8 +575,9 @@
 />
 
 {#if musicPlayerConfig.enable}
+	<div class="music-player-anchor" style={musicPlayerPositionStyle}>
 	{#if showError}
-		<div class="fixed bottom-20 left-5 z-60 max-w-sm">
+		<div class="music-player-error z-60 max-w-sm">
 			<div
 				class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-up"
 			>
@@ -562,7 +597,6 @@
 		class="music-player fixed z-50 transition-all duration-300 ease-in-out"
 		class:expanded={isExpanded}
 		class:hidden-mode={isHidden}
-		style={`--music-player-left-desktop:${musicPlayerPosition.desktop.left};--music-player-bottom-desktop:${musicPlayerPosition.desktop.bottom};--music-player-left-mobile:${musicPlayerPosition.mobile.left};--music-player-bottom-mobile:${musicPlayerPosition.mobile.bottom};--music-player-expanded-left-mobile:${musicPlayerPosition.mobileExpanded.left};--music-player-playlist-left-mobile:${musicPlayerPosition.mobilePlaylist.left};--music-player-playlist-bottom-mobile:${musicPlayerPosition.mobilePlaylist.bottom};`}
 	>
 		<div
 			class="orb-player w-12 h-12 rounded-full cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
@@ -898,7 +932,7 @@
 		</div>
 		{#if showPlaylist}
 			<div
-				class="playlist-panel music-surface float-panel fixed bottom-20 left-5 w-[22rem] max-h-[32rem] overflow-hidden z-50 flex flex-col rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-(--card-bg) border border-(--line-divider)/50"
+				class="playlist-panel music-surface float-panel w-[22rem] max-h-[32rem] overflow-hidden z-50 flex flex-col rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-(--card-bg) border border-(--line-divider)/50"
 				in:slide={{ duration: 300, axis: "y" }}
 				out:slide={{ duration: 200, axis: "y" }}
 			>
@@ -1015,9 +1049,32 @@
 			</div>
 		{/if}
 	</div>
+	</div>
 
 	<style>
 		/* 定制化横向和纵向滚动条，保留滑动体验但不臃肿 */
+		.music-player-anchor {
+			--music-player-left: var(--music-player-left-desktop);
+			--music-player-right: var(--music-player-right-desktop);
+			--music-player-bottom: var(--music-player-bottom-desktop);
+			--music-player-content-left: var(--music-player-content-left-desktop);
+			--music-player-content-right: var(--music-player-content-right-desktop);
+			--music-player-expanded-left: var(--music-player-expanded-left-mobile);
+			--music-player-expanded-right: var(
+				--music-player-expanded-right-mobile
+			);
+			--music-player-playlist-left: var(--music-player-left-desktop);
+			--music-player-playlist-right: var(--music-player-right-desktop);
+			--music-player-playlist-bottom: calc(
+				var(--music-player-bottom-desktop) + 4rem
+			);
+		}
+		.music-player-error {
+			position: fixed;
+			left: var(--music-player-left);
+			right: var(--music-player-right);
+			bottom: calc(var(--music-player-bottom) + 4rem);
+		}
 		.custom-scrollbar::-webkit-scrollbar {
 			height: 4px;
 			width: 4px;
@@ -1303,20 +1360,23 @@
 		.music-player {
 			max-width: 20rem;
 			user-select: none;
-			left: var(--music-player-left-desktop);
-			bottom: var(--music-player-bottom-desktop);
+			left: var(--music-player-left);
+			right: var(--music-player-right);
+			bottom: var(--music-player-bottom);
 		}
 		.mini-player {
 			width: 17.5rem;
 			position: absolute;
 			bottom: 0;
-			left: 0;
+			left: var(--music-player-content-left);
+			right: var(--music-player-content-right);
 		}
 		.expanded-player {
 			width: 20rem;
 			position: absolute;
 			bottom: 0;
-			left: 0;
+			left: var(--music-player-content-left);
+			right: var(--music-player-content-right);
 		}
 		.animate-pulse {
 			animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -1340,24 +1400,59 @@
 			transform: scaleY(1.2);
 			transition: transform 0.2s ease;
 		}
+		.playlist-panel {
+			position: fixed;
+			left: var(--music-player-playlist-left);
+			right: var(--music-player-playlist-right);
+			bottom: var(--music-player-playlist-bottom);
+		}
 		@media (max-width: 768px) {
+			.music-player-anchor {
+				--music-player-left: var(--music-player-left-mobile);
+				--music-player-right: var(--music-player-right-mobile);
+				--music-player-bottom: var(--music-player-bottom-mobile);
+				--music-player-content-left: var(--music-player-content-left-mobile);
+				--music-player-content-right: var(--music-player-content-right-mobile);
+				--music-player-expanded-left: var(--music-player-expanded-left-mobile);
+				--music-player-expanded-right: var(
+					--music-player-expanded-right-mobile
+				);
+				--music-player-playlist-left: var(
+					--music-player-playlist-left-mobile
+				);
+				--music-player-playlist-right: var(
+					--music-player-playlist-right-mobile
+				);
+				--music-player-playlist-bottom: var(
+					--music-player-playlist-bottom-mobile
+				);
+			}
 			.music-player {
 				max-width: 280px !important;
-				left: var(--music-player-left-mobile) !important;
-				bottom: var(--music-player-bottom-mobile) !important;
+				left: var(--music-player-left) !important;
+				right: var(--music-player-right) !important;
+				bottom: var(--music-player-bottom) !important;
 			}
 			.mini-player {
 				width: 280px;
 			}
 			.music-player.expanded {
+				--music-player-content-left: var(
+					--music-player-content-left-expanded-mobile
+				);
+				--music-player-content-right: var(
+					--music-player-content-right-expanded-mobile
+				);
 				width: calc(100vw - 16px);
 				max-width: none;
-				left: var(--music-player-expanded-left-mobile) !important;
+				left: var(--music-player-expanded-left) !important;
+				right: var(--music-player-expanded-right) !important;
 			}
 			.playlist-panel {
 				width: calc(100vw - 16px) !important;
-				left: var(--music-player-playlist-left-mobile) !important;
-				bottom: var(--music-player-playlist-bottom-mobile) !important;
+				left: var(--music-player-playlist-left) !important;
+				right: var(--music-player-playlist-right) !important;
+				bottom: var(--music-player-playlist-bottom) !important;
 				max-width: none;
 			}
 			.controls {

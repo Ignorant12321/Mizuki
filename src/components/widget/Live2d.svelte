@@ -11,55 +11,111 @@
 	let waifuContainer;
 	let cleanupMobileToolToggle = () => {};
 	let cleanupTouchEndHandler = () => {};
+	let cleanupWheelGuard = () => {};
 	const MAX_INIT_RETRIES = 20;
-	const TOOL_AUTO_HIDE_DELAY = 3500;
 	const live2dPosition = siteConfig.floatingWidgets?.live2d ?? {
-		desktop: { right: "1.5rem", bottom: "0" },
-		mobile: { right: "1.5rem", bottom: "0" },
+		desktop: { side: "right", offset: "1.5rem", bottom: "0" },
+		mobile: { side: "right", offset: "1.5rem", bottom: "0" },
 		toggle: {
-			right: "0",
-			hiddenOffsetRight: "-100px",
-			activeOffsetRight: "-45px",
-			hoverOffsetRight: "-35px",
-			mobileActiveOffsetRight: "-30px",
+			offset: "0",
+			hiddenOffset: "-100px",
+			activeOffset: "-45px",
+			hoverOffset: "-35px",
+			mobileActiveOffset: "-30px",
+		},
+		timing: {
+			enterExitDurationMs: 1400,
+			toolFadeDurationMs: 80,
+			toolAutoHideDelayMs: 2200,
+		},
+		motion: {
+			hiddenOffsetY: "calc(100% + 2rem)",
+			idleOffsetY: "10px",
+			hoverOffsetY: "0px",
 		},
 	};
+	const live2dTiming = {
+		enterExitDurationMs: Math.max(
+			0,
+			Number(live2dPosition.timing?.enterExitDurationMs ?? 1400),
+		),
+		toolFadeDurationMs: Math.max(
+			0,
+			Number(live2dPosition.timing?.toolFadeDurationMs ?? 80),
+		),
+		toolAutoHideDelayMs: Math.max(
+			0,
+			Number(live2dPosition.timing?.toolAutoHideDelayMs ?? 2200),
+		),
+	};
+	const live2dMotion = {
+		hiddenOffsetY:
+			live2dPosition.motion?.hiddenOffsetY ?? "calc(100% + 2rem)",
+		idleOffsetY: live2dPosition.motion?.idleOffsetY ?? "10px",
+		hoverOffsetY: live2dPosition.motion?.hoverOffsetY ?? "0px",
+	};
+	const TOOL_AUTO_HIDE_DELAY = live2dTiming.toolAutoHideDelayMs;
 
 	function applyPositionVars() {
 		if (typeof document === "undefined") return;
 		const root = document.documentElement;
+		root.dataset.live2dDesktopSide = live2dPosition.desktop.side;
+		root.dataset.live2dMobileSide = live2dPosition.mobile.side;
 		root.style.setProperty(
-			"--live2d-right-desktop",
-			live2dPosition.desktop.right,
+			"--live2d-offset-desktop",
+			live2dPosition.desktop.offset,
 		);
 		root.style.setProperty(
 			"--live2d-bottom-desktop",
 			live2dPosition.desktop.bottom,
 		);
 		root.style.setProperty(
-			"--live2d-right-mobile",
-			live2dPosition.mobile.right,
+			"--live2d-offset-mobile",
+			live2dPosition.mobile.offset,
 		);
 		root.style.setProperty(
 			"--live2d-bottom-mobile",
 			live2dPosition.mobile.bottom,
 		);
-		root.style.setProperty("--live2d-toggle-right", live2dPosition.toggle.right);
 		root.style.setProperty(
-			"--live2d-toggle-hidden-offset-right",
-			live2dPosition.toggle.hiddenOffsetRight,
+			"--live2d-toggle-offset",
+			live2dPosition.toggle.offset,
 		);
 		root.style.setProperty(
-			"--live2d-toggle-active-offset-right",
-			live2dPosition.toggle.activeOffsetRight,
+			"--live2d-toggle-hidden-offset",
+			live2dPosition.toggle.hiddenOffset,
 		);
 		root.style.setProperty(
-			"--live2d-toggle-hover-offset-right",
-			live2dPosition.toggle.hoverOffsetRight,
+			"--live2d-toggle-active-offset",
+			live2dPosition.toggle.activeOffset,
 		);
 		root.style.setProperty(
-			"--live2d-toggle-mobile-active-offset-right",
-			live2dPosition.toggle.mobileActiveOffsetRight,
+			"--live2d-toggle-hover-offset",
+			live2dPosition.toggle.hoverOffset,
+		);
+		root.style.setProperty(
+			"--live2d-toggle-mobile-active-offset",
+			live2dPosition.toggle.mobileActiveOffset,
+		);
+		root.style.setProperty(
+			"--live2d-enter-exit-duration",
+			`${live2dTiming.enterExitDurationMs}ms`,
+		);
+		root.style.setProperty(
+			"--live2d-tool-fade-duration",
+			`${live2dTiming.toolFadeDurationMs}ms`,
+		);
+		root.style.setProperty(
+			"--live2d-hidden-offset-y",
+			live2dMotion.hiddenOffsetY,
+		);
+		root.style.setProperty(
+			"--live2d-idle-offset-y",
+			live2dMotion.idleOffsetY,
+		);
+		root.style.setProperty(
+			"--live2d-hover-offset-y",
+			live2dMotion.hoverOffsetY,
 		);
 	}
 
@@ -114,7 +170,36 @@
 		};
 	}
 
+	function isWaifuTemporarilyHiddenByUser() {
+		if (typeof window === "undefined") return false;
+		const hiddenAt = Number(localStorage.getItem("waifu-display") || 0);
+		if (!Number.isFinite(hiddenAt) || hiddenAt <= 0) return false;
+		return Date.now() - hiddenAt <= 86400000;
+	}
+
 	// 等待 DOM 和外部脚本加载完成后再初始化 Live2D
+	function setupLive2dWheelGuard() {
+		if (typeof window === "undefined") return () => {};
+		const onWheelCapture = (event) => {
+			const target = event.target;
+			if (!(target instanceof Element)) return;
+			if (target.closest("#waifu") || target.closest("#waifu-toggle")) {
+				// 禁用 Live2D 区域的滚轮，避免误触缩放/库内手势
+				event.preventDefault();
+				event.stopPropagation();
+			}
+		};
+		document.addEventListener("wheel", onWheelCapture, {
+			capture: true,
+			passive: false,
+		});
+		return () => {
+			document.removeEventListener("wheel", onWheelCapture, {
+				capture: true,
+			});
+		};
+	}
+
 	function setupToolAutoHide() {
 		if (typeof window === "undefined") return () => {};
 		const { waifuEl, waifuToolEl, live2dEl } = getLive2dElements();
@@ -218,6 +303,15 @@
 				setTimeout(() => {
 					const { waifuEl, waifuToolEl } = getLive2dElements();
 					if (!waifuEl || !waifuToolEl) {
+						const hasToggle = !!document.getElementById("waifu-toggle");
+						if (hasToggle && isWaifuTemporarilyHiddenByUser()) {
+							live2dInitialized = true;
+							live2dRetryCount = 0;
+							console.info(
+								"Live2D is hidden by user preference, skip retry until re-opened from toggle.",
+							);
+							return;
+						}
 						console.warn("Live2D DOM elements not found, retrying...");
 						scheduleInitRetry("missing library-generated #waifu");
 						return;
@@ -311,6 +405,8 @@
 
 		fixCrossOrigin();
 		loadLive2dAssets();
+		cleanupWheelGuard();
+		cleanupWheelGuard = setupLive2dWheelGuard();
 
 		// 触摸屏点击事件
 		if (typeof window !== "undefined") {
@@ -363,18 +459,12 @@
 		);
 		cleanupMobileToolToggle();
 		cleanupTouchEndHandler();
+		cleanupWheelGuard();
 	});
 </script>
 
 <style global>
 	/* 使用 global 确保 Svelte 样式能够穿透到 JS 动态生成的元素上 */
-
-	@media (max-width: 768px), (hover: none) {
-		:global(#waifu-toggle.waifu-toggle-active) {
-			margin-left: -30px !important;
-		}
-	}
-
 	:global(#waifu, #waifu-toggle) {
 		z-index: 40 !important;
 	}
@@ -383,10 +473,10 @@
 		opacity: 0 !important;
 		visibility: hidden !important;
 		pointer-events: none !important;
-		transition: opacity 0.2s ease !important;
+		transition:
+			opacity var(--live2d-tool-fade-duration, 80ms) ease !important;
 	}
 	:global(#waifu:hover #waifu-tool) {
-		/* 禁用库默认 hover 显示，避免“可见但不可点”的假状态 */
 		opacity: 0 !important;
 		visibility: hidden !important;
 		pointer-events: none !important;
@@ -399,36 +489,139 @@
 
 	:global(#waifu) {
 		left: auto !important;
-		right: var(--live2d-right-desktop, 1.5rem) !important;
+		right: auto !important;
 		bottom: var(--live2d-bottom-desktop, 0) !important;
+		opacity: 0 !important;
+		transform: translateY(var(--live2d-hidden-offset-y, calc(100% + 2rem))) !important;
+		transition:
+			transform var(--live2d-enter-exit-duration, 1400ms)
+				cubic-bezier(0.22, 1, 0.36, 1),
+			opacity var(--live2d-enter-exit-duration, 1400ms)
+				cubic-bezier(0.22, 1, 0.36, 1) !important;
+		will-change: transform, opacity;
+		pointer-events: none;
 	}
 
-	/* 将 waifu-toggle 固定到右侧 */
+	:global(html[data-live2d-desktop-side="left"] #waifu) {
+		left: var(--live2d-offset-desktop, 1.5rem) !important;
+		right: auto !important;
+	}
+
+	:global(html[data-live2d-desktop-side="right"] #waifu) {
+		left: auto !important;
+		right: var(--live2d-offset-desktop, 1.5rem) !important;
+	}
+
+	:global(#waifu.waifu-active) {
+		opacity: 1 !important;
+		transform: translateY(var(--live2d-idle-offset-y, 10px)) !important;
+		pointer-events: auto;
+	}
+
+	:global(#waifu.waifu-active:hover) {
+		transform: translateY(var(--live2d-hover-offset-y, 0px)) !important;
+	}
+
+	:global(#waifu:not(.waifu-active)) {
+		opacity: 0 !important;
+		transform: translateY(var(--live2d-hidden-offset-y, calc(100% + 2rem))) !important;
+		pointer-events: none;
+	}
+
 	:global(#waifu-toggle) {
 		left: auto !important;
-		right: var(--live2d-toggle-right, 0) !important;
+		right: auto !important;
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+		transition:
+			margin-left 1s,
+			margin-right 1s,
+			transform 0.3s ease;
+	}
+
+	:global(html[data-live2d-desktop-side="left"] #waifu-toggle) {
+		left: var(--live2d-toggle-offset, 0) !important;
+		right: auto !important;
+		transform: none;
+		margin-left: var(--live2d-toggle-hidden-offset, -100px) !important;
+		margin-right: 0 !important;
+	}
+
+	:global(html[data-live2d-desktop-side="right"] #waifu-toggle) {
+		left: auto !important;
+		right: var(--live2d-toggle-offset, 0) !important;
 		transform: rotateY(180deg);
-		margin-right: var(--live2d-toggle-hidden-offset-right, -100px);
-		transition: margin-right 1s;
+		margin-left: 0 !important;
+		margin-right: var(--live2d-toggle-hidden-offset, -100px) !important;
 	}
 
-	/* 从右侧滑入/滑出的过渡效果 */
-	:global(#waifu-toggle.waifu-toggle-active) {
-		margin-right: var(--live2d-toggle-active-offset-right, -45px) !important;
-	}
-	:global(#waifu-toggle:hover) {
-		margin-right: var(--live2d-toggle-hover-offset-right, -35px) !important;
+	:global(html[data-live2d-desktop-side="left"] #waifu-toggle.waifu-toggle-active) {
+		margin-left: var(--live2d-toggle-active-offset, -45px) !important;
+		margin-right: 0 !important;
 	}
 
-	/* 移动端也保持右侧行为 */
+	:global(html[data-live2d-desktop-side="right"] #waifu-toggle.waifu-toggle-active) {
+		margin-left: 0 !important;
+		margin-right: var(--live2d-toggle-active-offset, -45px) !important;
+	}
+
+	:global(html[data-live2d-desktop-side="left"] #waifu-toggle:hover) {
+		margin-left: var(--live2d-toggle-hover-offset, -35px) !important;
+		margin-right: 0 !important;
+	}
+
+	:global(html[data-live2d-desktop-side="right"] #waifu-toggle:hover) {
+		margin-left: 0 !important;
+		margin-right: var(--live2d-toggle-hover-offset, -35px) !important;
+	}
+
 	@media (max-width: 768px), (hover: none) {
-		:global(#waifu) {
-			right: var(--live2d-right-mobile, 1.5rem) !important;
+		:global(html[data-live2d-mobile-side="left"] #waifu) {
+			left: var(--live2d-offset-mobile, 1.5rem) !important;
+			right: auto !important;
 			bottom: var(--live2d-bottom-mobile, 0) !important;
 		}
-		:global(#waifu-toggle.waifu-toggle-active) {
-			margin-right: var(--live2d-toggle-mobile-active-offset-right, -30px) !important;
+
+		:global(html[data-live2d-mobile-side="right"] #waifu) {
+			left: auto !important;
+			right: var(--live2d-offset-mobile, 1.5rem) !important;
+			bottom: var(--live2d-bottom-mobile, 0) !important;
+		}
+
+		:global(html[data-live2d-mobile-side="left"] #waifu-toggle) {
+			left: var(--live2d-toggle-offset, 0) !important;
+			right: auto !important;
+			transform: none;
+			margin-left: var(--live2d-toggle-hidden-offset, -100px) !important;
+			margin-right: 0 !important;
+		}
+
+		:global(html[data-live2d-mobile-side="right"] #waifu-toggle) {
+			left: auto !important;
+			right: var(--live2d-toggle-offset, 0) !important;
+			transform: rotateY(180deg);
 			margin-left: 0 !important;
+			margin-right: var(--live2d-toggle-hidden-offset, -100px) !important;
+		}
+
+		:global(html[data-live2d-mobile-side="left"] #waifu-toggle.waifu-toggle-active) {
+			margin-left: var(--live2d-toggle-mobile-active-offset, -30px) !important;
+			margin-right: 0 !important;
+		}
+
+		:global(html[data-live2d-mobile-side="right"] #waifu-toggle.waifu-toggle-active) {
+			margin-left: 0 !important;
+			margin-right: var(--live2d-toggle-mobile-active-offset, -30px) !important;
+		}
+
+		:global(html[data-live2d-mobile-side="left"] #waifu-toggle:hover) {
+			margin-left: var(--live2d-toggle-hover-offset, -35px) !important;
+			margin-right: 0 !important;
+		}
+
+		:global(html[data-live2d-mobile-side="right"] #waifu-toggle:hover) {
+			margin-left: 0 !important;
+			margin-right: var(--live2d-toggle-hover-offset, -35px) !important;
 		}
 	}
 </style>
