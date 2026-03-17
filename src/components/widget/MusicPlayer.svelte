@@ -918,7 +918,8 @@
 		>
 			<div class="flex items-center gap-3">
 				<div
-					class="cover-container relative w-12 h-12 rounded-full overflow-hidden cursor-pointer"
+					class="cover-container music-cover relative w-12 h-12 rounded-full overflow-hidden cursor-pointer"
+					class:spinning={isPlaying && !isLoading}
 					on:click={togglePlay}
 					on:keydown={(e) => {
 						if (e.key === "Enter" || e.key === " ") {
@@ -935,12 +936,12 @@
 					<img
 						src={getAssetPath(currentSong.cover)}
 						alt={i18n(Key.musicPlayerCover)}
-						class="w-full h-full object-cover transition-transform duration-300"
+						class="cover-art w-full h-full object-cover transition-transform duration-300"
 						class:spinning={isPlaying && !isLoading}
 						class:animate-pulse={isLoading}
 					/>
 					<div
-						class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+						class="cover-hover-mask absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
 					>
 						{#if isLoading}
 							<Icon
@@ -1011,12 +1012,13 @@
 		>
 			<div class="flex items-center gap-4 mb-4">
 				<div
-					class="cover-container relative w-16 h-16 rounded-full overflow-hidden shrink-0"
+					class="cover-container music-cover relative w-16 h-16 rounded-full overflow-hidden shrink-0"
+					class:spinning={isPlaying && !isLoading}
 				>
 					<img
 						src={getAssetPath(currentSong.cover)}
 						alt={i18n(Key.musicPlayerCover)}
-						class="w-full h-full object-cover transition-transform duration-300"
+						class="cover-art w-full h-full object-cover transition-transform duration-300"
 						class:spinning={isPlaying && !isLoading}
 						class:animate-pulse={isLoading}
 					/>
@@ -1894,11 +1896,93 @@
 				transform: rotate(360deg);
 			}
 		}
-		.cover-container img {
-			animation: spin-continuous 3s linear infinite;
-			animation-play-state: paused;
+		.music-cover {
+			isolation: isolate;
+			border: 1px solid color-mix(in oklab, black 36%, var(--line-color));
+			background: radial-gradient(
+				circle at 50% 50%,
+				color-mix(in oklab, black 82%, var(--card-bg)) 0% 12%,
+				color-mix(in oklab, black 74%, var(--card-bg)) 13% 38%,
+				color-mix(in oklab, black 78%, var(--card-bg)) 39% 100%
+			);
+			box-shadow:
+				0 6px 14px color-mix(in oklab, black 28%, transparent),
+				inset 0 0 0 1px color-mix(in oklab, white 10%, transparent),
+				inset 0 0 18px color-mix(in oklab, black 28%, transparent);
+			transition:
+				transform 0.25s ease,
+				box-shadow 0.25s ease,
+				border-color 0.25s ease;
 		}
-		.cover-container img.spinning {
+		.music-cover::before,
+		.music-cover::after {
+			content: "";
+			position: absolute;
+			inset: 0;
+			border-radius: inherit;
+			pointer-events: none;
+		}
+		.music-cover::before {
+			inset: 2px;
+			background: repeating-radial-gradient(
+				circle at 50% 50%,
+				color-mix(in oklab, white 20%, transparent) 0 1px,
+				color-mix(in oklab, black 8%, transparent) 1.8px 3.4px
+			);
+			opacity: 0.26;
+			z-index: 1;
+		}
+		.music-cover::after {
+			inset: 50%;
+			width: 12%;
+			height: 12%;
+			transform: translate(-50%, -50%);
+			background: radial-gradient(
+				circle,
+				color-mix(in oklab, black 86%, transparent) 0% 55%,
+				color-mix(in oklab, white 20%, transparent) 56% 100%
+			);
+			box-shadow: 0 0 0 1px color-mix(in oklab, black 30%, transparent);
+			opacity: 0.92;
+			z-index: 3;
+		}
+		.music-cover:hover {
+			transform: translateY(-1px) scale(1.02);
+			border-color: color-mix(in oklab, var(--primary) 24%, var(--line-color));
+			box-shadow:
+				0 8px 18px color-mix(in oklab, black 34%, transparent),
+				inset 0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent),
+				inset 0 0 18px color-mix(in oklab, black 32%, transparent);
+		}
+		.music-cover:active {
+			transform: scale(0.98);
+		}
+		.music-cover .cover-art {
+			position: relative;
+			z-index: 2;
+			clip-path: circle(38% at 50% 50%);
+			transform: scale(1.02);
+			filter: saturate(1.02) contrast(1);
+			box-shadow:
+				0 0 0 1px color-mix(in oklab, white 18%, transparent),
+				0 2px 6px color-mix(in oklab, black 28%, transparent);
+			animation: spin-continuous 4.8s linear infinite;
+			animation-play-state: paused;
+			will-change: transform;
+		}
+		.music-cover .cover-hover-mask {
+			z-index: 4;
+			background: radial-gradient(
+				circle at 50% 50%,
+				color-mix(in oklab, black 24%, transparent) 0% 35%,
+				color-mix(in oklab, black 62%, transparent) 100%
+			);
+		}
+		.music-cover.spinning::before {
+			animation: spin-continuous 7s linear infinite reverse;
+		}
+		.music-cover .cover-art.spinning {
+			animation: spin-continuous 4.8s linear infinite;
 			animation-play-state: running;
 		}
 		button.bg-\[var\(--primary\)\] {
