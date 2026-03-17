@@ -1554,6 +1554,12 @@
 				box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
 				border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 		}
+		.music-action-btn,
+		.play-main-btn {
+			flex: 0 0 auto;
+			aspect-ratio: 1 / 1;
+			box-sizing: border-box;
+		}
 		.playlist-tab-btn {
 			display: inline-flex;
 			align-items: center;
@@ -1867,9 +1873,13 @@
 			animation: slide-up 0.3s ease-out;
 		}
 		@media (hover: none) and (pointer: coarse) {
-			.music-player button,
+			.music-player .playlist-tab-btn,
 			.playlist-item {
 				min-height: 44px;
+			}
+			.music-player .music-action-btn,
+			.music-player .play-main-btn {
+				min-height: 0;
 			}
 			.progress-section > div,
 			.bottom-controls > div:nth-child(2) {

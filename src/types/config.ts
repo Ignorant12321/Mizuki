@@ -17,6 +17,61 @@ type FloatingWidgetHorizontalPosition = {
 	offset: string;
 };
 
+export type DisplaySettingsSliderConfig = {
+	enable: boolean;
+	min: number;
+	max: number;
+	step: number;
+	defaultValue: number;
+	unit?: string;
+};
+
+export type DisplaySettingsToggleConfig = {
+	enable: boolean;
+	allowSwitch: boolean;
+	defaultValue: boolean;
+};
+
+export type DisplaySettingsConfig = {
+	panel: {
+		fixed: boolean;
+		top: string;
+		right: string;
+		width: string;
+		maxHeight: string;
+		zIndex: number;
+	};
+	themeColor: {
+		enable: boolean;
+		allowReset: boolean;
+		min: number;
+		max: number;
+		step: number;
+		defaultValue: number;
+	};
+	wallpaperMode: {
+		enable: boolean;
+		options: ("banner" | "fullscreen" | "none")[];
+		defaultMode: "banner" | "fullscreen" | "none";
+	};
+	fullscreenWallpaper: {
+		opacity: DisplaySettingsSliderConfig;
+		blur: DisplaySettingsSliderConfig;
+	};
+	effects: {
+		live2d: DisplaySettingsToggleConfig;
+		clickEffect: DisplaySettingsToggleConfig;
+		waves: DisplaySettingsToggleConfig;
+		sakura: DisplaySettingsToggleConfig;
+	};
+	postListLayout: {
+		enable: boolean;
+		allowSwitch: boolean;
+		options: ("list" | "grid")[];
+		defaultMode: "list" | "grid";
+	};
+};
+
 export type FloatingWidgetsConfig = {
 	backToTop: {
 		enable: boolean;

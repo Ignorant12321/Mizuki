@@ -8,6 +8,7 @@ import { onMount } from "svelte";
 const seq: LIGHT_DARK_MODE[] = [LIGHT_MODE, DARK_MODE];
 let mode: LIGHT_DARK_MODE = $state(DEFAULT_THEME);
 let isChanging = false;
+const SWITCH_GUARD_MS = 90;
 
 onMount(() => {
     mode = getStoredTheme();
@@ -16,15 +17,16 @@ onMount(() => {
 function switchScheme(newMode: LIGHT_DARK_MODE) {
 	// 防止连续快速点击
 	if (isChanging) return;
+	if (mode === newMode) return;
 
 	isChanging = true;
 	mode = newMode;
 	setTheme(newMode);
 
-	// 50ms 后重置状态，防止过快切换
+	// 轻量节流，避免极短时间内重复触发
 	setTimeout(() => {
 		isChanging = false;
-	}, 50);
+	}, SWITCH_GUARD_MS);
 }
 
 function toggleScheme() {
@@ -83,18 +85,18 @@ if (typeof window !== "undefined") {
         onclick={toggleScheme}
         data-mode={mode}
     >
-        <div class="absolute transition-all duration-300 ease-in-out" class:opacity-0={mode !== LIGHT_MODE} class:rotate-180={mode !== LIGHT_MODE}>
-            <Icon icon="material-symbols:wb-sunny-outline-rounded" class="text-[1.25rem]"></Icon>
-        </div>
-        <div class="absolute transition-all duration-300 ease-in-out" class:opacity-0={mode !== DARK_MODE} class:rotate-180={mode !== DARK_MODE}>
-            <Icon icon="material-symbols:dark-mode-outline-rounded" class="text-[1.25rem]"></Icon>
-        </div>
+		<div class="absolute transition-opacity duration-150 ease-out" class:opacity-0={mode !== LIGHT_MODE}>
+			<Icon icon="material-symbols:wb-sunny-outline-rounded" class="text-[1.25rem]"></Icon>
+		</div>
+		<div class="absolute transition-opacity duration-150 ease-out" class:opacity-0={mode !== DARK_MODE}>
+			<Icon icon="material-symbols:dark-mode-outline-rounded" class="text-[1.25rem]"></Icon>
+		</div>
     </button>
 </div>
 
 <style>
     /* 确保主题切换按钮的背景色即时更新 */
-    .theme-switch-btn::before {
+	.theme-switch-btn::before {
         transition: transform 75ms ease-out, background-color 0ms !important;
     }
 </style>

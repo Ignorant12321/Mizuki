@@ -285,9 +285,23 @@ export const zh_TW: Translation = {
 	[Key.second]: "秒",
 
 	// 壁紙模式
-	[Key.wallpaperBanner]: "橫幅模式",
-	[Key.wallpaperFullscreen]: "全屏模式",
-	[Key.wallpaperNone]: "隱藏壁紙",
+	[Key.wallpaperBanner]: "橫幅",
+	[Key.wallpaperFullscreen]: "全屏",
+	[Key.wallpaperNone]: "純色",
+	[Key.displaySettingsWallpaperMode]: "壁紙模式",
+	[Key.displaySettingsTransparency]: "透明設定",
+	[Key.wallpaperOpacity]: "壁紙透明度",
+	[Key.wallpaperBlur]: "背景模糊度",
+	[Key.displaySettingsEffects]: "效果開關",
+	[Key.enableLive2d]: "Live2D",
+	[Key.enableClickEffect]: "點擊效果",
+	[Key.enableWaves]: "水波紋",
+	[Key.enableSakura]: "櫻花效果",
+	[Key.displaySettingsArticleLayout]: "文章佈局",
+	[Key.layoutList]: "列表",
+	[Key.layoutGrid]: "網格",
+	[Key.displaySettingsResetAll]: "恢復預設",
+	[Key.displaySettingsResetSection]: "重設本區",
 
 	// 站點統計
 	[Key.siteStats]: "站點統計",

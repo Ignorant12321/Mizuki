@@ -10,6 +10,7 @@ import type {
 	PermalinkConfig,
 	ProfileConfig,
 	ClickEffectConfig,
+	DisplaySettingsConfig,
 	Live2DConfig,
 	SakuraConfig,
 	ShareConfig,
@@ -149,7 +150,7 @@ export const siteConfig: SiteConfig = {
 		// 注意：如果侧边栏配置启用了"both"双侧边栏，则无法使用文章列表"grid"网格（双列）布局
 		defaultMode: "list",
 		// 是否允许用户切换布局
-		allowSwitch: false,
+		allowSwitch: true,
 	},
 
 	// 首页分页配置
@@ -225,7 +226,7 @@ export const siteConfig: SiteConfig = {
 
 		waves: {
 			enable: true, // 是否启用水波纹效果（注意：此功能性能开销较大）
-			performanceMode: false, // 性能模式：减少动画复杂度(性能提升40%)
+			performanceMode: true, // 性能模式：减少动画复杂度(性能提升40%)
 			mobileDisable: true, // 移动端禁用
 		},
 
@@ -534,7 +535,7 @@ export const shareConfig: ShareConfig = {
 	avatarFrame: {
 		enable: true,
 		image: "assets/images/avatar_frame_share.webp",
-		scale: 1.5,
+		scale: 1.1,
 		offsetX: 0,
 		offsetY: 5,
 	},
@@ -757,13 +758,13 @@ export const sakuraConfig: SakuraConfig = {
 // 鼠标点击效果
 export const clickEffectConfig: ClickEffectConfig = {
 	enable: true, // 是否在桌面端启用点击效果
-	mobile: true, // 是否在移动端启用点击效果
+	mobile: false, // 是否在移动端启用点击效果
 	blacklist: ["#waifu"], // 黑名单，点击这些元素不会触发效果
 };
 
 // Live2D Widget 配置
 export const live2dConfig: Live2DConfig = {
-	enable: true,
+	enable: false,
 	mobile: true,
 	drag: false,
 	modelId: 1,
@@ -782,6 +783,77 @@ export const live2dConfig: Live2DConfig = {
 		// "info",
 		"quit",
 	],
+};
+
+export const displaySettingsConfig: DisplaySettingsConfig = {
+	panel: {
+		fixed: true,
+		top: "6rem",
+		right: "1rem",
+		width: "20rem",
+		maxHeight: "calc(100vh - 7rem)",
+		zIndex: 120,
+	},
+	themeColor: {
+		enable: !siteConfig.themeColor.fixed,
+		allowReset: true,
+		min: 0,
+		max: 360,
+		step: 5,
+		defaultValue: siteConfig.themeColor.hue,
+	},
+	wallpaperMode: {
+		enable: true,
+		options: ["banner", "fullscreen", "none"],
+		defaultMode: siteConfig.wallpaperMode.defaultMode,
+	},
+	fullscreenWallpaper: {
+		opacity: {
+			enable: true,
+			min: 0,
+			max: 1,
+			step: 0.05,
+			defaultValue: fullscreenWallpaperConfig.opacity ?? 0.8,
+			unit: "%",
+		},
+		blur: {
+			enable: true,
+			min: 0,
+			max: 20,
+			step: 0.5,
+			defaultValue: fullscreenWallpaperConfig.blur ?? 0,
+			unit: "px",
+		},
+	},
+	effects: {
+		live2d: {
+			enable: live2dConfig.enable || live2dConfig.mobile,
+			allowSwitch: true,
+			defaultValue: live2dConfig.enable,
+		},
+		clickEffect: {
+			enable:
+				clickEffectConfig.enable || clickEffectConfig.mobile === true,
+			allowSwitch: true,
+			defaultValue: clickEffectConfig.enable,
+		},
+		waves: {
+			enable: !!siteConfig.banner.waves,
+			allowSwitch: true,
+			defaultValue: siteConfig.banner.waves?.enable ?? false,
+		},
+		sakura: {
+			enable: sakuraConfig.enable || sakuraConfig.mobile === true,
+			allowSwitch: true,
+			defaultValue: sakuraConfig.enable,
+		},
+	},
+	postListLayout: {
+		enable: true,
+		allowSwitch: siteConfig.postListLayout.allowSwitch,
+		options: ["list", "grid"],
+		defaultMode: siteConfig.postListLayout.defaultMode,
+	},
 };
 
 export const externalLinkConfirmConfig: ExternalLinkConfirmConfig = {

@@ -10,7 +10,9 @@ import IconifyLoader from "../components/misc/IconifyLoader.astro";
 import ImageWrapper from "../components/misc/ImageWrapper.astro";
 import TypewriterText from "../components/TypewriterText.astro";
 import TOC from "../components/widget/TOC.astro";
+import DisplaySettings from "../components/widget/DisplaySettings.svelte";
 import {
+	displaySettingsConfig,
 	fullscreenWallpaperConfig,
 	siteConfig,
 } from "../config";
@@ -243,7 +245,7 @@ const transparentClass = shouldEnableTransparency
 
 <Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug}>
 
-<script type="module" is:inline define:vars={{navbarTransparentMode: siteConfig.banner?.navbar?.transparentMode || "semi", defaultWallpaperMode: siteConfig.wallpaperMode.defaultMode, defaultPostListLayout: siteConfig.postListLayout?.defaultMode || "list", BANNER_HEIGHT: BANNER_HEIGHT, pageScaling: siteConfig.pageScaling}}>
+<script type="module" is:inline define:vars={{navbarTransparentMode: siteConfig.banner?.navbar?.transparentMode || "semi", defaultWallpaperMode: siteConfig.wallpaperMode.defaultMode, defaultPostListLayout: siteConfig.postListLayout?.defaultMode || "list", defaultWavesEnabled: displaySettingsConfig.effects.waves.defaultValue, BANNER_HEIGHT: BANNER_HEIGHT, pageScaling: siteConfig.pageScaling}}>
 
 	// 立即执行，在页面渲染前应用壁纸模式和布局模式，避免闪烁
 	(function() {
@@ -330,6 +332,19 @@ const transparentClass = shouldEnableTransparency
 		document.addEventListener('DOMContentLoaded', applyWallpaperMode);
 	} else {
 		applyWallpaperMode();
+	}
+
+	function isWavesEnabled() {
+		const stored = localStorage.getItem('wavesEnabled');
+		if (stored === null) return defaultWavesEnabled;
+		return stored === 'true';
+	}
+
+	function syncHeaderWavesVisibility(currentWallpaperMode) {
+		const headerWaves = document.getElementById('header-waves');
+		if (!headerWaves) return;
+		const shouldShow = currentWallpaperMode === 'banner' && isWavesEnabled();
+		headerWaves.style.display = shouldShow ? 'block' : 'none';
 	}
 	
 	function applyWallpaperMode() {
@@ -454,11 +469,21 @@ const transparentClass = shouldEnableTransparency
 				forceReflow();
 				break;
 		}
+
+		syncHeaderWavesVisibility(wallpaperMode);
 	}
 	
 	// 监听壁纸模式变化，立即应用（不重载页面）
 	window.addEventListener('wallpaper-mode-change', function(_event) {
 		applyWallpaperMode();
+	});
+
+	window.addEventListener('mizuki:setting-change', function(event) {
+		const customEvent = event;
+		if (!customEvent || !customEvent.detail) return;
+		if (customEvent.detail.key === 'wavesEnabled') {
+			applyWallpaperMode();
+		}
 	});
 	
 	// 支持 Swup 页面过渡 - 在内容替换之前就应用布局，避免闪烁
@@ -594,6 +619,7 @@ const transparentClass = shouldEnableTransparency
         <Navbar></Navbar>
     </div>
 </div>
+<DisplaySettings client:only="svelte" />
 
 <!-- Banner - 始终渲染，通过 JS 控制显示隐藏 -->
 <div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden h-(--banner-height-home) ${mobileNonHomeBannerClass}`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
@@ -739,7 +765,7 @@ const transparentClass = shouldEnableTransparency
     )}
     
     <!-- Water waves effect -->
-    {siteConfig.banner.waves?.enable && (
+    {(siteConfig.banner.waves?.enable || displaySettingsConfig.effects.waves.allowSwitch) && (
         <div class="waves absolute -bottom-px h-[10vh] max-h-37.5 min-h-12.5 w-full md:h-[15vh]" id="header-waves" style="transform: translateZ(0); will-change: fill;">
             <svg
                 class="waves"

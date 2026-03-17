@@ -10,6 +10,7 @@ import ClickEffect from "../components/ClickEffect.astro";
 import {
 	musicPlayerConfig,
 	clickEffectConfig,
+	displaySettingsConfig,
 	live2dConfig,
 	profileConfig,
 	siteConfig,
@@ -42,6 +43,7 @@ import "../styles/fancybox-custom.css";
 import "../styles/expressive-code.css";
 import "../styles/panel-animations.css";
 import "../styles/main.css";
+import "../styles/display-settings.css";
 
 interface Props {
 	title?: string;
@@ -393,7 +395,8 @@ if (siteConfig.font) {
 
 		<!-- Live2d 看板娘样式 - 仅在启用时加载 -->
 		{
-			live2dConfig.enable && (
+			(live2dConfig.enable ||
+				displaySettingsConfig.effects.live2d.allowSwitch) && (
 				<link
 					rel="stylesheet"
 					href={live2dConfig.live2dPath + "waifu.css"}
@@ -401,7 +404,9 @@ if (siteConfig.font) {
 			)
 		}
 		<!-- 点击特效样式 -->
-		{(clickEffectConfig.enable || clickEffectConfig.mobile) && (
+		{(clickEffectConfig.enable ||
+			clickEffectConfig.mobile ||
+			displaySettingsConfig.effects.clickEffect.allowSwitch) && (
 			<ClickEffect />
 		)}
 
@@ -447,7 +452,10 @@ if (siteConfig.font) {
 		{musicPlayerConfig.enable && <MusicPlayer client:idle />}
 
 		<!-- Live2d 看板娘组件 - 仅在启用时加载 -->
-		{live2dConfig.enable && <Live2d client:idle />}
+		{(live2dConfig.enable ||
+			displaySettingsConfig.effects.live2d.allowSwitch) && (
+			<Live2d client:idle />
+		)}
 
 		<!-- 顶部按钮 -->
 		{backToTopEnabled && <BackToTop />}
@@ -539,9 +547,13 @@ if (siteConfig.font) {
 	const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
 
 	// const MAIN_PANEL_OVERLAPS_BANNER_HEIGHT = 3.5;
-	import { siteConfig } from "../config";
-	import { widgetConfigs } from "../config";
-	import { initSakura } from "../utils/sakura-manager";
+	import { displaySettingsConfig, siteConfig, widgetConfigs } from "../config";
+	import { initSakura, stopSakura } from "../utils/sakura-manager";
+	import {
+		SETTING_CHANGE_EVENT,
+		applyAllStoredSettings,
+		getStoredSakuraEnabled,
+	} from "../utils/setting-utils";
 
 	// const setTimeout = window.setTimeout;
 	// @ts-ignore
@@ -621,10 +633,6 @@ function disableAnimation() {
 				{
 					panel: "mobile-toc-panel",
 					ignores: ["mobile-toc-panel", "mobile-toc-switch"],
-				},
-				{
-					panel: "wallpaper-mode-panel",
-					ignores: ["wallpaper-mode-panel", "wallpaper-mode-switch"],
 				},
 			] as const;
 
@@ -902,24 +910,54 @@ function disableAnimation() {
 		}
 	}
 
-	function setupSakura() {
+	function applySakuraSetting() {
 		const sakuraConfig = (widgetConfigs as any)?.sakura;
 		if (!sakuraConfig) return;
-		const isMobile = window.matchMedia(
-			"(max-width: 768px)",
-		).matches;
-		if (!sakuraConfig.enable) return;
-		if (isMobile && sakuraConfig.mobile !== true) return;
-		if ((window as any).sakuraInitialized) return;
-		initSakura(sakuraConfig);
-		(window as any).sakuraInitialized = true;
+
+		const enabledBySetting = getStoredSakuraEnabled();
+
+		if (enabledBySetting) {
+			initSakura({ ...sakuraConfig, enable: true });
+			(window as any).sakuraInitialized = true;
+			return;
+		}
+
+		stopSakura();
+		(window as any).sakuraInitialized = false;
+	}
+
+	function syncDisplaySettingsPanelShell() {
+		const panel = document.getElementById("display-setting");
+		if (!panel) return;
+
+		panel.classList.add("float-panel", "card-base", "fixed", "px-3", "py-3");
+		panel.style.top = displaySettingsConfig.panel.top;
+		panel.style.right = displaySettingsConfig.panel.right;
+		panel.style.width = `min(${displaySettingsConfig.panel.width}, calc(100vw - 1rem))`;
+		panel.style.maxHeight = displaySettingsConfig.panel.maxHeight;
+		panel.style.zIndex = String(displaySettingsConfig.panel.zIndex);
 	}
 
 	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", setupSakura);
+		document.addEventListener("DOMContentLoaded", () => {
+			applyAllStoredSettings();
+			applySakuraSetting();
+			syncDisplaySettingsPanelShell();
+		});
 	} else {
-		setupSakura();
+		applyAllStoredSettings();
+		applySakuraSetting();
+		syncDisplaySettingsPanelShell();
 	}
+
+	window.addEventListener(SETTING_CHANGE_EVENT, (event) => {
+		const customEvent = event as CustomEvent<{
+			key?: string;
+		}>;
+		if (customEvent.detail?.key === "sakuraEnabled") {
+			applySakuraSetting();
+		}
+	});
 
 	let fancyboxSelectors: string[] = [];
 	let Fancybox: any;
@@ -1062,6 +1100,10 @@ function disableAnimation() {
 		});
 
 		window.swup.hooks.on("content:replace", () => {
+			applyAllStoredSettings();
+			applySakuraSetting();
+			syncDisplaySettingsPanelShell();
+
 			// 初始化新页面的图片、公式、滚动条和TOC
 			initFancybox();
 			checkKatex();
@@ -1204,6 +1246,10 @@ function disableAnimation() {
 		);
 
 		window.swup.hooks.on("page:view", () => {
+			applyAllStoredSettings();
+			applySakuraSetting();
+			syncDisplaySettingsPanelShell();
+
 			// hide the temp high element when the transition is done
 			const heightExtend = document.getElementById("page-height-extend");
 			if (heightExtend) {

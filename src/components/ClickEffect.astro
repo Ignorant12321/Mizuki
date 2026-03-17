@@ -185,10 +185,22 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 				window.matchMedia("(hover: none)").matches ||
 				window.matchMedia("(max-width: 768px)").matches)) ||
 		"ontouchstart" in window;
-	const effectEnabled = isMobile ? mobileEnabled : desktopEnabled;
+	let runtimeEnabled = (() => {
+		const stored = localStorage.getItem("clickEffectEnabled");
+		if (stored === null) {
+			return isMobile ? mobileEnabled : desktopEnabled;
+		}
+		return stored === "true";
+	})();
 
-	if (effectEnabled && !(window as any)[CLICK_EFFECT_BOUND_KEY]) {
+	const isEffectEnabled = () => {
+		return runtimeEnabled;
+	};
+
+	if (!(window as any)[CLICK_EFFECT_BOUND_KEY]) {
 		const handler = (e: MouseEvent) => {
+			if (!isEffectEnabled()) return;
+
 			if (blacklist.length > 0) {
 				const target = e.target as HTMLElement | null;
 				if (
@@ -247,7 +259,17 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 			document.body.appendChild(fragment);
 		};
 
+		const settingChangeHandler = (event: Event) => {
+			const customEvent = event as CustomEvent<{
+				key?: string;
+				value?: unknown;
+			}>;
+			if (customEvent.detail?.key !== "clickEffectEnabled") return;
+			runtimeEnabled = Boolean(customEvent.detail.value);
+		};
+
 		document.addEventListener("click", handler, { passive: true });
+		window.addEventListener("mizuki:setting-change", settingChangeHandler);
 		(window as any)[CLICK_EFFECT_BOUND_KEY] = true;
 	}
 </script>

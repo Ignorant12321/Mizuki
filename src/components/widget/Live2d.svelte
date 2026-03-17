@@ -1,6 +1,10 @@
 <script>
 	import { onDestroy, onMount } from "svelte";
 	import { live2dConfig, siteConfig } from "@/config";
+	import {
+		SETTING_CHANGE_EVENT,
+		getStoredLive2dEnabled,
+	} from "@utils/setting-utils";
 
 	// 全局状态引用
 	let live2dInitialized = false;
@@ -13,6 +17,8 @@
 	let cleanupTouchEndHandler = () => {};
 	let cleanupWheelGuard = () => {};
 	let cleanupToggleReopenHandler = () => {};
+	let cleanupSettingChangeHandler = () => {};
+	let live2dBootstrapped = false;
 	const MAX_INIT_RETRIES = 20;
 	const live2dPosition = siteConfig.floatingWidgets?.live2d ?? {
 		desktop: { side: "right", offset: "1.5rem", bottom: "0" },
@@ -118,6 +124,13 @@
 			"--live2d-hover-offset-y",
 			live2dMotion.hoverOffsetY,
 		);
+	}
+
+	function applyLive2dEnabledState(enabled) {
+		if (typeof document === "undefined") return;
+		document.documentElement.dataset.live2dEnabled = enabled
+			? "true"
+			: "false";
 	}
 
 	// 解决图片资源跨域问题 (非常重要，否则 Canvas 渲染会报错)
@@ -412,54 +425,71 @@
 			});
 	}
 
-	onMount(() => {
-		isComponentMounted = true;
-		applyPositionVars();
-		if (!live2dConfig.enable) return;
-		if (!live2dConfig.mobile) {
-			// 移动端/小屏幕隐藏逻辑 (<768px)
-			if (window.matchMedia("(max-width: 768px)").matches) {
-				return;
-			}
-		}
+	function bootstrapLive2dRuntime() {
+		if (live2dBootstrapped) return;
+		live2dBootstrapped = true;
 
 		fixCrossOrigin();
 		loadLive2dAssets();
 		cleanupWheelGuard();
 		cleanupWheelGuard = setupLive2dWheelGuard();
 
-		// 触摸屏点击事件
-		if (typeof window !== "undefined") {
-			const handleTouchEnd = (e) => {
-				const target = e.target;
-				if (target && target.id === "live2d") {
-					const touch = e.changedTouches[0];
-					const clientX = touch ? touch.clientX : 0;
-					const clientY = touch ? touch.clientY : 0;
+		const handleTouchEnd = (e) => {
+			const target = e.target;
+			if (target && target.id === "live2d") {
+				const touch = e.changedTouches[0];
+				const clientX = touch ? touch.clientX : 0;
+				const clientY = touch ? touch.clientY : 0;
 
-					setTimeout(() => {
-						const clickEvent = new MouseEvent("click", {
-							bubbles: true,
-							cancelable: true,
-							view: window,
-							clientX: clientX,
-							clientY: clientY,
-						});
-						target.dispatchEvent(clickEvent);
-					}, 50);
-				}
-			};
+				setTimeout(() => {
+					const clickEvent = new MouseEvent("click", {
+						bubbles: true,
+						cancelable: true,
+						view: window,
+						clientX: clientX,
+						clientY: clientY,
+					});
+					target.dispatchEvent(clickEvent);
+				}, 50);
+			}
+		};
 
-			window.addEventListener("touchend", handleTouchEnd, {
+		window.addEventListener("touchend", handleTouchEnd, {
+			capture: true,
+			passive: true,
+		});
+		cleanupTouchEndHandler = () => {
+			window.removeEventListener("touchend", handleTouchEnd, {
 				capture: true,
-				passive: true,
 			});
-			cleanupTouchEndHandler = () => {
-				window.removeEventListener("touchend", handleTouchEnd, {
-					capture: true,
-				});
-			};
-		}
+		};
+	}
+
+	onMount(() => {
+		isComponentMounted = true;
+		applyPositionVars();
+		const initialEnabled = getStoredLive2dEnabled();
+		applyLive2dEnabledState(initialEnabled);
+		const onSettingChange = (event) => {
+			const customEvent = event;
+			if (!customEvent.detail) return;
+			if (customEvent.detail.key !== "live2dEnabled") return;
+			const enabled = Boolean(customEvent.detail.value);
+			applyLive2dEnabledState(enabled);
+			if (enabled) bootstrapLive2dRuntime();
+		};
+		window.addEventListener(SETTING_CHANGE_EVENT, onSettingChange);
+		const onSwupPageView = () => {
+			const enabled = getStoredLive2dEnabled();
+			applyLive2dEnabledState(enabled);
+			if (enabled) bootstrapLive2dRuntime();
+		};
+		document.addEventListener("swup:page:view", onSwupPageView);
+		cleanupSettingChangeHandler = () => {
+			window.removeEventListener(SETTING_CHANGE_EVENT, onSettingChange);
+			document.removeEventListener("swup:page:view", onSwupPageView);
+		};
+		if (initialEnabled) bootstrapLive2dRuntime();
 	});
 
 	onDestroy(() => {
@@ -481,6 +511,7 @@
 		cleanupTouchEndHandler();
 		cleanupWheelGuard();
 		cleanupToggleReopenHandler();
+		cleanupSettingChangeHandler();
 	});
 </script>
 
@@ -488,6 +519,12 @@
 	/* 使用 global 确保 Svelte 样式能够穿透到 JS 动态生成的元素上 */
 	:global(#waifu, #waifu-toggle) {
 		z-index: 40 !important;
+	}
+	:global(html[data-live2d-enabled="false"] #waifu),
+	:global(html[data-live2d-enabled="false"] #waifu-toggle) {
+		opacity: 0 !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
 	}
 	:global(#waifu-tool) {
 		z-index: 60 !important;
