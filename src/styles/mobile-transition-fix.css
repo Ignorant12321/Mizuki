@@ -27,14 +27,14 @@
   /* 优化页面切换动画 */
   html.is-changing .transition-main {
     transition:
-      opacity 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
-      transform 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      opacity 120ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      transform 120ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
   html.is-leaving .transition-main {
     transition:
-      opacity 200ms cubic-bezier(0.55, 0.055, 0.675, 0.19),
-      transform 200ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
+      opacity 120ms cubic-bezier(0.55, 0.055, 0.675, 0.19),
+      transform 120ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
   }
 
   /* 减少移动端动画幅度 */
@@ -50,11 +50,11 @@
 
   /* 优化侧边栏动画 */
   #dynamic-sidebar {
-    transition: all 0.2s ease-in-out;
+    transition: all 0.12s ease-in-out;
   }
 
   .widget-container {
-    transition: all 0.2s ease-in-out;
+    transition: all 0.12s ease-in-out;
   }
 
   /* 防止页面加载时的闪烁 */
@@ -81,7 +81,7 @@
 
   /* 减少动画元素的数量 */
   .onload-animation {
-    animation-duration: 0.3s;
+    animation-duration: 0.12s;
   }
 
   /* 优化字体渲染 */
@@ -105,11 +105,11 @@
 
   /* 简化侧边栏动画 */
   #dynamic-sidebar {
-    transition: all 0.15s ease-in-out;
+    transition: all 0.12s ease-in-out;
   }
 
   .widget-container {
-    transition: all 0.15s ease-in-out;
+    transition: all 0.12s ease-in-out;
   }
 }
 
