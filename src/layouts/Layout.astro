@@ -899,7 +899,12 @@ function disableAnimation() {
 
 	function setupSakura() {
 		const sakuraConfig = (widgetConfigs as any)?.sakura;
-		if (!sakuraConfig || !sakuraConfig.enable) return;
+		if (!sakuraConfig) return;
+		const isMobile = window.matchMedia(
+			"(max-width: 768px)",
+		).matches;
+		if (!sakuraConfig.enable) return;
+		if (isMobile && sakuraConfig.mobile !== true) return;
 		if ((window as any).sakuraInitialized) return;
 		initSakura(sakuraConfig);
 		(window as any).sakuraInitialized = true;

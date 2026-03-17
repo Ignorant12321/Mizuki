@@ -467,6 +467,7 @@ export type SidebarLayoutConfig = {
 
 export type SakuraConfig = {
 	enable: boolean; // 是否启用樱花特效
+	mobile?: boolean; // 是否在移动端启用（默认 false）
 	sakuraNum: number; // 樱花数量，默认21
 	limitTimes: number; // 樱花越界限制次数，-1为无限循环
 	size: {
