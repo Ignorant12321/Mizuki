@@ -52,14 +52,18 @@ const backToBottomPosition = siteConfig.floatingWidgets?.backToBottom ?? {
     transform: translateX(5rem)
     pointer-events: auto
     transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1)
+    border: 1px solid var(--line-color)
     border: 1px solid color-mix(var(--primary) 18%, var(--line-color))
     border-radius: 1rem
+    background: var(--card-bg)
     background: linear-gradient(160deg, color-mix(var(--primary) 12%, var(--card-bg)) 0%, var(--card-bg) 80%)
     backdrop-filter: blur(8px)
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12)
     box-shadow: 0 0 0 1px color-mix(var(--primary) 25%, transparent), 0 8px 24px color-mix(var(--primary) 22%, transparent)
 
     &:hover
       transform: translateX(5rem) translateY(-1px)
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16)
       box-shadow: 0 0 0 1px color-mix(var(--primary) 35%, transparent), 0 12px 30px color-mix(var(--primary) 30%, transparent)
 
     &.hide
@@ -70,6 +74,7 @@ const backToBottomPosition = siteConfig.floatingWidgets?.backToBottom ?? {
 
     &:active
       transform: translateX(5rem) scale(0.94)
+      background: var(--btn-card-bg-active)
       background: color-mix(var(--primary) 14%, var(--btn-card-bg-active))
 
   .back-to-bottom-icon

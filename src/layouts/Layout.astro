@@ -314,6 +314,11 @@ if (siteConfig.font) {
 			// Load the hue from local storage
 			const hue = localStorage.getItem("hue") || configHue;
 			document.documentElement.style.setProperty("--hue", hue);
+			// Precompute wave fill color to avoid first-frame black/white flash.
+			document.documentElement.style.setProperty(
+				"--wave-fill",
+				isDark ? `oklch(0.16 0.014 ${hue})` : `oklch(0.95 0.01 ${hue})`,
+			);
 
 			// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
 			let offset = Math.floor(

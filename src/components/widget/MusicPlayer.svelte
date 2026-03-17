@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
 	import { onDestroy, onMount } from "svelte";
+	import { slide } from "svelte/transition";
 	import { musicPlayerConfig, siteConfig } from "../../config";
 	import Key from "../../i18n/i18nKey";
 	import { i18n } from "../../i18n/translation";
@@ -580,7 +581,7 @@
 			aria-label={i18n(Key.musicPlayerShow)}
 		>
 			{#if isLoading}
-				<Icon icon="eos-icons:loading" class="orb-icon text-lg" />
+				<span class="orb-spinner" aria-hidden="true"></span>
 			{:else if isPlaying}
 				<div class="orb-content flex items-end space-x-[2px] h-[16px]">
 					<div class="w-[2px] orb-bar rounded-sm music-bar bar-1"></div>
@@ -1064,8 +1065,23 @@
 			);
 			transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 		}
+		.orb-spinner {
+			width: 1.05rem;
+			height: 1.05rem;
+			border-radius: 9999px;
+			border: 2px solid color-mix(in oklab, var(--primary) 28%, transparent);
+			border-top-color: var(--primary);
+			filter: drop-shadow(
+				0 1px 0 color-mix(in oklab, var(--card-bg) 70%, transparent)
+			);
+			animation: orbSpin 0.95s linear infinite;
+		}
 		.orb-bar {
-			background: var(--primary);
+			background: color-mix(in oklab, var(--primary) 85%, white 15%);
+			border-radius: 9999px;
+			filter: drop-shadow(
+				0 1px 0 color-mix(in oklab, var(--card-bg) 70%, transparent)
+			);
 		}
 		.orb-player::before {
 			content: "";
@@ -1102,7 +1118,7 @@
 			);
 		}
 		.orb-player .animate-pulse {
-			animation: musicWave 1.5s ease-in-out infinite;
+			animation: orbPulse 1.5s ease-in-out infinite;
 		}
 		.play-main-btn {
 			color: var(--primary);
@@ -1271,7 +1287,7 @@
 			box-shadow: inset 0 0 0 1px
 				color-mix(in oklab, var(--primary) 22%, transparent);
 		}
-		@keyframes musicWave {
+		@keyframes orbPulse {
 			0%,
 			100% {
 				transform: scaleY(0.5);
@@ -1312,6 +1328,11 @@
 			}
 			50% {
 				opacity: 0.5;
+			}
+		}
+		@keyframes orbSpin {
+			to {
+				transform: rotate(360deg);
 			}
 		}
 		.progress-section div:hover,
@@ -1428,35 +1449,44 @@
 	<style>
 		.music-bar {
 			transform-origin: bottom;
-			animation: musicWave 0.6s ease-in-out infinite alternate;
+			animation: orbBarsWave 2.1s linear infinite;
 			will-change: transform;
 		}
 		.bar-1 {
-			height: 60%;
+			height: 58%;
 			animation-delay: 0ms;
 		}
 		.bar-2 {
-			height: 100%;
-			animation-delay: -300ms;
+			height: 90%;
+			animation-delay: -420ms;
 		}
 		.bar-3 {
-			height: 75%;
-			animation-delay: -500ms;
+			height: 70%;
+			animation-delay: -840ms;
 		}
 		.bar-4 {
-			height: 90%;
-			animation-delay: -200ms;
+			height: 82%;
+			animation-delay: -1260ms;
 		}
 		.bar-5 {
-			height: 50%;
-			animation-delay: -600ms;
+			height: 52%;
+			animation-delay: -1680ms;
 		}
-		@keyframes musicWave {
+		@keyframes orbBarsWave {
 			0% {
-				transform: scaleY(0.2);
+				transform: scaleY(0.34);
+			}
+			20% {
+				transform: scaleY(0.92);
+			}
+			45% {
+				transform: scaleY(0.52);
+			}
+			70% {
+				transform: scaleY(0.88);
 			}
 			100% {
-				transform: scaleY(1);
+				transform: scaleY(0.34);
 			}
 		}
 	</style>
