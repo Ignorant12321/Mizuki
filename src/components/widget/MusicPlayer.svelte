@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
-	import { onDestroy, onMount } from "svelte";
+	import { onDestroy, onMount, tick } from "svelte";
 	import { slide } from "svelte/transition";
 	import { musicPlayerConfig, siteConfig } from "../../config";
 	import Key from "../../i18n/i18nKey";
@@ -96,12 +96,24 @@
 	};
 
 	type Song = {
-		id: number;
+		id: number | string;
 		title: string;
 		artist: string;
 		cover: string;
 		url: string;
 		duration: number;
+		lyric?: string;
+		lyricUrl?: string;
+	};
+
+	type LyricLine = {
+		time: number;
+		text: string;
+	};
+
+	type ParsedLyric = {
+		lines: LyricLine[];
+		timed: boolean;
 	};
 
 	let playlist: Song[] = [];
@@ -109,6 +121,14 @@
 	let audio: HTMLAudioElement;
 	let progressBar: HTMLElement;
 	let volumeBar: HTMLElement;
+	let lyricContainer: HTMLDivElement;
+
+	let lyricLines: LyricLine[] = [];
+	let lyricIsTimed = false;
+	let currentLyricIndex = -1;
+	let lyricLoading = false;
+	let lyricRequestToken = 0;
+	let lyricCache: Record<string, ParsedLyric> = {};
 
 	const localPlaylist: Song[] = [
 		{
@@ -176,19 +196,266 @@
 		}
 	}
 
+	function normalizeDuration(duration: unknown): number {
+		let dur = Number(duration ?? 0);
+		if (dur > 10000) dur = Math.floor(dur / 1000);
+		if (!Number.isFinite(dur) || dur <= 0) dur = 0;
+		return dur;
+	}
+
+	function hasLyricTimestamp(text: string): boolean {
+		return /\[\d{1,2}:\d{1,2}(?:\.\d{1,3})?\]/.test(text);
+	}
+
+	function isLikelyLyricUrl(value: string): boolean {
+		const text = value.trim();
+		if (!text) return false;
+		if (/^(https?:)?\/\//.test(text)) return true;
+		if (text.startsWith("/")) return true;
+		if (/\.(lrc|txt)(\?.*)?$/i.test(text)) return true;
+		if (!text.includes("\n") && !text.includes("[") && text.includes("/"))
+			return true;
+		return false;
+	}
+
+	function extractSongLyricFields(song: any): Pick<Song, "lyric" | "lyricUrl"> {
+		const candidates: string[] = [];
+		const pushCandidate = (value: unknown) => {
+			if (typeof value !== "string") return;
+			const trimmed = value.trim();
+			if (!trimmed) return;
+			candidates.push(trimmed);
+		};
+
+		pushCandidate(song.lyric);
+		pushCandidate(song.lrc);
+		pushCandidate(song?.lrc?.lyric);
+		pushCandidate(song?.lrc?.url);
+		pushCandidate(song?.lyric?.lyric);
+		pushCandidate(song.lyricUrl);
+		pushCandidate(song.lrcUrl);
+
+		let lyric: string | undefined;
+		let lyricUrl: string | undefined;
+		for (const candidate of candidates) {
+			if (!lyric && (hasLyricTimestamp(candidate) || candidate.includes("\n"))) {
+				lyric = candidate;
+				continue;
+			}
+			if (!lyricUrl && isLikelyLyricUrl(candidate)) {
+				lyricUrl = candidate;
+			}
+		}
+
+		if (!lyric && !lyricUrl && candidates.length > 0) {
+			lyric = candidates[0];
+		}
+
+		return { lyric, lyricUrl };
+	}
+
+	function parseLocalSong(song: any): Song {
+		const { lyric, lyricUrl } = extractSongLyricFields(song);
+		return {
+			id: song.id ?? `${song.title ?? "song"}-${song.url ?? ""}`,
+			title: song.title ?? i18n(Key.unknownSong),
+			artist: song.artist ?? song.author ?? i18n(Key.unknownArtist),
+			cover: song.cover ?? song.pic ?? "",
+			url: song.url ?? "",
+			duration: normalizeDuration(song.duration),
+			lyric,
+			lyricUrl,
+		};
+	}
+
+	function parseLyricText(rawText: string): ParsedLyric {
+		const source = rawText.replace(/\uFEFF/g, "").trim();
+		if (!source) return { lines: [], timed: false };
+
+		const result: LyricLine[] = [];
+		let hasTimedLine = false;
+		const rows = source.split(/\r?\n/);
+		const timeTagReg = /\[(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?\]/g;
+
+		for (const row of rows) {
+			const matches = [...row.matchAll(timeTagReg)];
+			const text = row.replace(/\[[^\]]*]/g, "").trim();
+			if (matches.length === 0) continue;
+
+			hasTimedLine = true;
+			const normalizedText = text || "♪";
+			for (const match of matches) {
+				const min = Number(match[1] ?? 0);
+				const sec = Number(match[2] ?? 0);
+				const msRaw = match[3] ?? "0";
+				const ms = Number(msRaw.padEnd(3, "0").slice(0, 3));
+				const time = min * 60 + sec + ms / 1000;
+				result.push({ time, text: normalizedText });
+			}
+		}
+
+		if (hasTimedLine) {
+			result.sort((a, b) => a.time - b.time);
+			const deduped = result.filter((line, index, arr) => {
+				if (index === 0) return true;
+				const prev = arr[index - 1];
+				return prev.time !== line.time || prev.text !== line.text;
+			});
+			return { lines: deduped, timed: true };
+		}
+
+		const plainLines = rows.map((line) => line.trim()).filter(Boolean);
+		if (plainLines.length === 0) return { lines: [], timed: false };
+		return {
+			lines: plainLines.map((text, index) => ({ time: index * 5, text })),
+			timed: false,
+		};
+	}
+
+	function clearLyrics() {
+		lyricLines = [];
+		lyricIsTimed = false;
+		currentLyricIndex = -1;
+		lyricLoading = false;
+	}
+
+	function getLyricCacheKey(song: Song): string {
+		return `${song.id ?? "unknown"}::${song.url}`;
+	}
+
+	async function fetchLyricByUrl(url: string): Promise<string> {
+		try {
+			const response = await fetch(getAssetPath(url));
+			if (!response.ok) return "";
+			return await response.text();
+		} catch {
+			return "";
+		}
+	}
+
+	async function resolveSongLyricText(song: Song): Promise<string> {
+		if (song.lyric) {
+			if (isLikelyLyricUrl(song.lyric) && !hasLyricTimestamp(song.lyric)) {
+				const remoteLyric = await fetchLyricByUrl(song.lyric);
+				if (remoteLyric) return remoteLyric;
+			} else {
+				return song.lyric;
+			}
+		}
+
+		if (song.lyricUrl) {
+			return await fetchLyricByUrl(song.lyricUrl);
+		}
+
+		return "";
+	}
+
+	async function applyLyricResult(parsed: ParsedLyric) {
+		lyricLines = parsed.lines;
+		lyricIsTimed = parsed.timed;
+		currentLyricIndex = -1;
+		lyricLoading = false;
+		syncLyricWithCurrentTime();
+		await tick();
+		scrollActiveLyricLine("auto");
+	}
+
+	function syncLyricWithCurrentTime() {
+		if (!lyricIsTimed || lyricLines.length === 0) {
+			currentLyricIndex = -1;
+			return;
+		}
+		const time = Number.isFinite(currentTime) ? currentTime : 0;
+		let activeIndex = -1;
+		for (let i = 0; i < lyricLines.length; i++) {
+			if (time >= lyricLines[i].time) {
+				activeIndex = i;
+			} else {
+				break;
+			}
+		}
+
+		if (activeIndex !== currentLyricIndex) {
+			currentLyricIndex = activeIndex;
+			scrollActiveLyricLine("auto");
+		}
+	}
+
+	function scrollActiveLyricLine(behavior: ScrollBehavior = "smooth") {
+		if (!lyricContainer || currentLyricIndex < 0) return;
+		const activeLine = lyricContainer.querySelector<HTMLElement>(
+			`[data-lyric-index="${currentLyricIndex}"]`,
+		);
+		if (!activeLine) return;
+
+		const containerRect = lyricContainer.getBoundingClientRect();
+		const lineRect = activeLine.getBoundingClientRect();
+		const containerCenterY = containerRect.top + containerRect.height / 2;
+		const lineCenterY = lineRect.top + lineRect.height / 2;
+		const delta = lineCenterY - containerCenterY;
+		const maxScrollTop =
+			lyricContainer.scrollHeight - lyricContainer.clientHeight;
+		const targetTop = Math.max(
+			0,
+			Math.min(maxScrollTop, lyricContainer.scrollTop + delta),
+		);
+
+		lyricContainer.scrollTo({
+			top: targetTop,
+			behavior,
+		});
+	}
+
+	async function loadLyricsForSong(song: Song) {
+		const cacheKey = getLyricCacheKey(song);
+		const requestToken = ++lyricRequestToken;
+		currentLyricIndex = -1;
+
+		if (!song.url) {
+			clearLyrics();
+			return;
+		}
+
+		if (lyricCache[cacheKey]) {
+			await applyLyricResult(lyricCache[cacheKey]);
+			return;
+		}
+
+		lyricLoading = true;
+		try {
+			const rawLyric = await resolveSongLyricText(song);
+			if (requestToken !== lyricRequestToken) return;
+
+			const parsed = parseLyricText(rawLyric);
+			lyricCache[cacheKey] = parsed;
+			await applyLyricResult(parsed);
+		} catch {
+			if (requestToken !== lyricRequestToken) return;
+			const parsed = { lines: [], timed: false };
+			lyricCache[cacheKey] = parsed;
+			await applyLyricResult(parsed);
+		}
+	}
+
+	function handleTimeUpdate() {
+		if (!audio) return;
+		currentTime = audio.currentTime;
+		syncLyricWithCurrentTime();
+	}
+
 	function parseMetingSong(song: any): Song {
 		let title = song.name ?? song.title ?? i18n(Key.unknownSong);
 		let artist = song.artist ?? song.author ?? i18n(Key.unknownArtist);
-		let dur = song.duration ?? 0;
-		if (dur > 10000) dur = Math.floor(dur / 1000);
-		if (!Number.isFinite(dur) || dur <= 0) dur = 0;
+		const { lyric, lyricUrl } = extractSongLyricFields(song);
 		return {
-			id: song.id,
+			id: song.id ?? `${title}-${song.url ?? ""}`,
 			title,
 			artist,
 			cover: song.pic ?? "",
 			url: song.url ?? "",
-			duration: dur,
+			duration: normalizeDuration(song.duration),
+			lyric,
+			lyricUrl,
 		};
 	}
 
@@ -231,7 +498,8 @@
 		// 处理 Local 模式
 		if (currentMode === "local") {
 			const localData = config.audioList ?? localPlaylist;
-			playlistCache[cacheKey] = [...localData];
+			const safeLocalData = Array.isArray(localData) ? localData : [];
+			playlistCache[cacheKey] = safeLocalData.map(parseLocalSong);
 			if (listIndex === currentListIndex) {
 				playlist = playlistCache[cacheKey];
 				syncCurrentSongWithPlaylist(); // 替换了原来的强制切歌
@@ -255,7 +523,8 @@
 			const res = await fetch(apiUrl);
 			if (!res.ok) throw new Error("meting api error");
 			const list = await res.json();
-			const newPlaylist = list.map(parseMetingSong);
+			const safeList = Array.isArray(list) ? list : [];
+			const newPlaylist = safeList.map(parseMetingSong);
 
 			playlistCache[cacheKey] = newPlaylist;
 			if (listIndex === currentListIndex) {
@@ -363,14 +632,19 @@
 		return `/${path}`;
 	}
 
-	function loadSong(song: typeof currentSong) {
+	function loadSong(song: Song) {
 		if (!song) return;
 		if (song.url !== currentSong.url) {
 			currentSong = { ...song };
+			currentTime = 0;
+			duration = song.duration ?? 0;
+			currentLyricIndex = -1;
 			if (song.url) {
 				isLoading = true;
+				loadLyricsForSong(song);
 			} else {
 				isLoading = false;
+				clearLyrics();
 			}
 		}
 	}
@@ -456,6 +730,7 @@
 		const newTime = percent * duration;
 		audio.currentTime = newTime;
 		currentTime = newTime;
+		syncLyricWithCurrentTime();
 	}
 
 	let isVolumeDragging = false;
@@ -524,6 +799,10 @@
 		return `${mins}:${secs.toString().padStart(2, "0")}`;
 	}
 
+	$: if (isExpanded && lyricContainer && currentLyricIndex >= 0) {
+		scrollActiveLyricLine("auto");
+	}
+
 	const interactionEvents = ["click", "keydown", "touchstart"];
 	onMount(() => {
 		loadVolumeSettings();
@@ -561,7 +840,7 @@
 	bind:muted={isMuted}
 	on:play={() => (isPlaying = true)}
 	on:pause={() => (isPlaying = false)}
-	on:timeupdate={() => (currentTime = audio.currentTime)}
+	on:timeupdate={handleTimeUpdate}
 	on:ended={handleAudioEnded}
 	on:error={handleLoadError}
 	on:loadeddata={handleLoadSuccess}
@@ -751,9 +1030,6 @@
 					<div class="song-artist text-sm text-50 truncate">
 						{currentSong.artist}
 					</div>
-					<div class="text-xs text-30 mt-1">
-						{formatTime(currentTime)} / {formatTime(duration)}
-					</div>
 				</div>
 				<div class="flex items-center gap-1">
 					<button
@@ -780,36 +1056,63 @@
 				</div>
 			</div>
 			<div class="progress-section mb-4">
-				<div
-					class="progress-bar music-track flex-1 h-2 bg-(--btn-regular-bg) rounded-full cursor-pointer"
-					bind:this={progressBar}
-					on:click={setProgress}
-					on:keydown={(e) => {
-						if (e.key === "Enter" || e.key === " ") {
-							e.preventDefault();
-							const percent = 0.5;
-							const newTime = percent * duration;
-							if (audio) {
-								audio.currentTime = newTime;
-								currentTime = newTime;
-							}
-						}
-					}}
-					role="slider"
-					tabindex="0"
-					aria-label={i18n(Key.musicPlayerProgress)}
-					aria-valuemin="0"
-					aria-valuemax="100"
-					aria-valuenow={duration > 0
-						? (currentTime / duration) * 100
-						: 0}
-				>
+				<div class="progress-row flex items-center gap-2">
 					<div
-						class="music-track-fill h-full bg-(--primary) rounded-full transition-all duration-100"
-						style="width: {duration > 0
+						class="progress-bar music-track flex-1 h-2 bg-(--btn-regular-bg) rounded-full cursor-pointer"
+						bind:this={progressBar}
+						on:click={setProgress}
+						on:keydown={(e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								const percent = 0.5;
+								const newTime = percent * duration;
+								if (audio) {
+									audio.currentTime = newTime;
+									currentTime = newTime;
+								}
+							}
+						}}
+						role="slider"
+						tabindex="0"
+						aria-label={i18n(Key.musicPlayerProgress)}
+						aria-valuemin="0"
+						aria-valuemax="100"
+						aria-valuenow={duration > 0
 							? (currentTime / duration) * 100
-							: 0}%"
-					></div>
+							: 0}
+					>
+						<div
+							class="music-track-fill h-full bg-(--primary) rounded-full transition-all duration-100"
+							style="width: {duration > 0
+								? (currentTime / duration) * 100
+								: 0}%"
+						></div>
+					</div>
+					<div class="progress-time shrink-0 text-xs text-30 tabular-nums">
+						{formatTime(currentTime)} / {formatTime(duration)}
+					</div>
+				</div>
+			</div>
+			<div class="lyrics-section mb-4">
+				<div class="lyrics-panel custom-scrollbar" bind:this={lyricContainer}>
+					{#if lyricLoading}
+						<p class="lyrics-placeholder">歌词加载中...</p>
+					{:else if lyricLines.length === 0}
+						<p class="lyrics-placeholder">暂无歌词</p>
+					{:else}
+						<div class="lyrics-spacer" aria-hidden="true"></div>
+						{#each lyricLines as line, lyricIndex}
+							<p
+								class="lyric-line"
+								class:active={lyricIsTimed &&
+									lyricIndex === currentLyricIndex}
+								data-lyric-index={lyricIndex}
+							>
+								{line.text}
+							</p>
+						{/each}
+						<div class="lyrics-spacer" aria-hidden="true"></div>
+					{/if}
 				</div>
 			</div>
 			<div class="controls flex items-center justify-center gap-2 mb-4">
@@ -1329,6 +1632,44 @@
 		.music-track-fill {
 			background: color-mix(in oklab, var(--primary) 88%, white 12%) !important;
 		}
+		.lyrics-panel {
+			max-height: 8rem;
+			overflow-y: auto;
+			padding: 0.625rem 0.75rem;
+			border-radius: 0.875rem;
+			background: color-mix(in oklab, var(--primary) 5%, var(--card-bg));
+			border: 1px solid color-mix(in oklab, var(--primary) 14%, transparent);
+			scroll-behavior: smooth;
+		}
+		.lyrics-spacer {
+			height: 2.75rem;
+			pointer-events: none;
+		}
+		.lyric-line {
+			margin: 0.25rem 0;
+			font-size: 0.8rem;
+			line-height: 1.45;
+			text-align: center;
+			color: var(--text-secondary);
+			opacity: 0.72;
+			transition:
+				color 0.22s ease,
+				opacity 0.22s ease,
+				transform 0.22s ease;
+		}
+		.lyric-line.active {
+			color: var(--primary);
+			opacity: 1;
+			font-weight: 600;
+			transform: scale(1.02);
+		}
+		.lyrics-placeholder {
+			margin: 0;
+			padding: 1.2rem 0;
+			font-size: 0.8rem;
+			text-align: center;
+			color: var(--text-tertiary);
+		}
 		.playlist-item-base {
 			border: 1px solid transparent;
 			background: color-mix(in oklab, var(--primary) 4%, transparent);
@@ -1395,7 +1736,7 @@
 				transform: rotate(360deg);
 			}
 		}
-		.progress-section div:hover,
+		.progress-bar:hover,
 		.bottom-controls > div:hover {
 			transform: scaleY(1.2);
 			transition: transform 0.2s ease;
@@ -1476,6 +1817,21 @@
 			}
 			.song-artist {
 				font-size: 12px;
+			}
+			.progress-row {
+				gap: 0.5rem;
+			}
+			.progress-time {
+				font-size: 0.68rem;
+			}
+			.lyrics-panel {
+				max-height: 6.75rem;
+			}
+			.lyrics-spacer {
+				height: 2.2rem;
+			}
+			.lyric-line {
+				font-size: 0.75rem;
 			}
 			.controls {
 				gap: 6px;

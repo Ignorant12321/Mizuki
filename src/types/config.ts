@@ -416,6 +416,18 @@ export type AnnouncementConfig = {
 };
 
 // 单个歌单独立配置（用于多歌单列表）
+export type LocalAudioSong = {
+	id?: number | string;
+	title?: string;
+	artist?: string;
+	cover?: string;
+	url?: string;
+	duration?: number;
+	lyric?: string; // 支持内联歌词文本（可写 LRC）
+	lyricUrl?: string; // 支持歌词文件地址（.lrc / .txt）
+	lrc?: string; // 兼容字段：可写歌词文本或歌词地址
+};
+
 export type PlaylistConfig = {
 	name: string; // 歌单显示名称
 	mode?: "meting" | "local"; // 独立模式（可选），如果为空则继承外层全局 mode
@@ -423,7 +435,7 @@ export type PlaylistConfig = {
 	id?: string; // 歌单 ID (meting专用)
 	server?: string; // 音乐源服务器 (meting专用)
 	type?: string; // 音乐类型 (meting专用)
-	audioList?: any[]; // local 模式专用：本地歌曲数组
+	audioList?: LocalAudioSong[]; // local 模式专用：本地歌曲数组
 };
 
 // 音乐播放器主配置

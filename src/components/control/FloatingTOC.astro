@@ -508,53 +508,11 @@ const floatingTOCStyle = `--floating-toc-left-desktop:${floatingTOCPosition.desk
 		}
 
 		private updateActiveHeading() {
-			if (
-				!this.content ||
-				this.mode !== "headings" ||
-				this.headings.length === 0
-			)
-				return;
-			const scrollY = window.scrollY;
-			const offsetTop = 150;
+			if (!this.content || this.mode !== "headings") return;
 
-			let activeIndex = -1;
-			for (let i = 0; i < this.headings.length; i++) {
-				const heading = this.headings[i];
-				if (
-					heading.getBoundingClientRect().top + scrollY <
-					scrollY + offsetTop
-				) {
-					activeIndex = i;
-				} else {
-					break;
-				}
-			}
-
-			const links = Array.from(
-				this.content.querySelectorAll(".floating-toc-item"),
-			);
-			links.forEach((link, index) => {
-				if (index === activeIndex) {
-					link.classList.add("active");
-					if (this.isOpen) {
-						const panelContent = this.content;
-						if (panelContent) {
-							const linkEl = link as HTMLElement;
-							const panelRect =
-								panelContent.getBoundingClientRect();
-							const linkRect = linkEl.getBoundingClientRect();
-							if (
-								linkRect.top < panelRect.top ||
-								linkRect.bottom > panelRect.bottom
-							) {
-								linkEl.scrollIntoView({ block: "nearest" });
-							}
-						}
-					}
-				} else {
-					link.classList.remove("active");
-				}
-			});
+			// 不显示“当前所在位置”，统一移除目录项高亮状态
+			const links = this.content.querySelectorAll(".floating-toc-item");
+			links.forEach((link) => link.classList.remove("active"));
 		}
 
 		private generateTOC() {
