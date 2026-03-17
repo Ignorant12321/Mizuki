@@ -97,6 +97,25 @@ const backToBottomStyle = `--back-to-bottom-left-desktop:${backToBottomPosition.
 
 <script is:raw is:inline>
 	function backToBottom() {
+		const commentSubmitButton = document.querySelector(
+			".tk-submit.tk-fade-in",
+		);
+		if (commentSubmitButton instanceof HTMLElement) {
+			const style = window.getComputedStyle(commentSubmitButton);
+			const isVisible =
+				style.display !== "none" &&
+				style.visibility !== "hidden" &&
+				commentSubmitButton.getClientRects().length > 0;
+
+			if (isVisible) {
+				commentSubmitButton.scrollIntoView({
+					behavior: "smooth",
+					block: "end",
+				});
+				return;
+			}
+		}
+
 		window.scroll({
 			top: document.documentElement.scrollHeight,
 			behavior: "smooth",
