@@ -34,6 +34,7 @@ import {
 	setWallpaperMode,
 	setWavesEnabled,
 } from "@utils/setting-utils";
+import { panelManager } from "@utils/panel-manager.js";
 import { onMount } from "svelte";
 import { cubicOut } from "svelte/easing";
 import { slide } from "svelte/transition";
@@ -224,6 +225,10 @@ function resetLayoutSection(): void {
 	syncFromStorage();
 }
 
+async function closeDisplaySettingsPanel(): Promise<void> {
+	await panelManager.closePanel("display-setting");
+}
+
 function updateHue(event: Event): void {
 	const target = event.currentTarget as HTMLInputElement;
 	const value = Number.parseInt(target.value, 10);
@@ -359,6 +364,17 @@ onMount(() => {
 	class="float-panel float-panel-closed card-base fixed px-3 py-3"
 	style={panelStyle}
 >
+	<div class="panel-header">
+		<h3 class="panel-title">{i18n(I18nKey.displaySettingsTitle)}</h3>
+		<button
+			type="button"
+			class="panel-close-btn active:scale-90"
+			aria-label={i18n(I18nKey.displaySettingsClose)}
+			on:click={closeDisplaySettingsPanel}
+		>
+			<Icon icon="material-symbols:close" class="text-[1rem]" />
+		</button>
+	</div>
 	<div class="panel-scroll">
 		{#if displaySettingsConfig.themeColor.enable}
 			<section class="setting-section">

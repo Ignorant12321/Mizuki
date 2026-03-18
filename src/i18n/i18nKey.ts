@@ -277,6 +277,8 @@ enum I18nKey {
 	wallpaperBanner = "wallpaperBanner",
 	wallpaperFullscreen = "wallpaperFullscreen",
 	wallpaperNone = "wallpaperNone",
+	displaySettingsTitle = "displaySettingsTitle",
+	displaySettingsClose = "displaySettingsClose",
 	displaySettingsWallpaperMode = "displaySettingsWallpaperMode",
 	displaySettingsTransparency = "displaySettingsTransparency",
 	wallpaperOpacity = "wallpaperOpacity",

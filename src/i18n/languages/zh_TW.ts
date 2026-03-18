@@ -288,6 +288,8 @@ export const zh_TW: Translation = {
 	[Key.wallpaperBanner]: "橫幅",
 	[Key.wallpaperFullscreen]: "全屏",
 	[Key.wallpaperNone]: "純色",
+	[Key.displaySettingsTitle]: "主題面板",
+	[Key.displaySettingsClose]: "關閉顯示設定面板",
 	[Key.displaySettingsWallpaperMode]: "壁紙模式",
 	[Key.displaySettingsTransparency]: "透明設定",
 	[Key.wallpaperOpacity]: "壁紙透明度",

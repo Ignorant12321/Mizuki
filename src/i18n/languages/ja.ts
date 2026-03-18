@@ -220,6 +220,8 @@ export const ja: Translation = {
 	[Key.wallpaperBanner]: "バナーモード",
 	[Key.wallpaperFullscreen]: "フルスクリーンモード",
 	[Key.wallpaperNone]: "壁紙を非表示",
+	[Key.displaySettingsTitle]: "テーマパネル",
+	[Key.displaySettingsClose]: "表示設定パネルを閉じる",
 	[Key.displaySettingsWallpaperMode]: "壁紙モード",
 	[Key.displaySettingsTransparency]: "透過設定",
 	[Key.wallpaperOpacity]: "壁紙の透明度",

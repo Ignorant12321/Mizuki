@@ -218,6 +218,8 @@ export const en: Translation = {
 	[Key.wallpaperBanner]: "Banner Mode",
 	[Key.wallpaperFullscreen]: "Fullscreen Mode",
 	[Key.wallpaperNone]: "Hide Wallpaper",
+	[Key.displaySettingsTitle]: "Theme Panel",
+	[Key.displaySettingsClose]: "Close display settings panel",
 	[Key.displaySettingsWallpaperMode]: "Wallpaper Mode",
 	[Key.displaySettingsTransparency]: "Transparency",
 	[Key.wallpaperOpacity]: "Wallpaper Opacity",
