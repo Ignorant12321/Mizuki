@@ -533,6 +533,28 @@
 		pointer-events: none !important;
 		transition: opacity var(--live2d-tool-fade-duration, 80ms) ease !important;
 	}
+	/* 覆盖 CDN waifu.css 的颜色定义，确保跟随主题文本色 */
+	:global(#waifu),
+	:global(#waifu-toggle),
+	:global(#waifu-tips) {
+		color: inherit !important;
+	}
+	:global(#waifu-toggle svg),
+	:global(#waifu-tool svg),
+	:global(#waifu-tips span) {
+		fill: currentColor !important;
+		color: currentColor !important;
+	}
+	:global(#waifu-tips) {
+		/* 主题色 + 透明，避免颜色过深 */
+		background-color: color-mix(
+			in oklab,
+			var(--primary) 42%,
+			transparent
+		) !important;
+		border: 1px solid color-mix(in oklab, var(--primary) 38%, transparent) !important;
+		box-shadow: 0 3px 15px 2px color-mix(in oklab, var(--primary) 18%, transparent) !important;
+	}
 	:global(#waifu:hover #waifu-tool) {
 		opacity: 0 !important;
 		visibility: hidden !important;

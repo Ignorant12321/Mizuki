@@ -11,6 +11,7 @@
 	position: fixed;
 	transition: margin-left 1s;
 	width: 60px;
+	color: inherit;
 }
 
 #waifu-toggle.waifu-toggle-active {
@@ -22,12 +23,13 @@
 }
 
 #waifu-toggle svg {
-	fill: #fff;
+	fill: currentColor;
 	height: 25px;
 }
 
 #waifu {
 	bottom: -500px;
+	color: inherit;
 	left: 0;
 	position: fixed;
 	transform: translateY(25px);
@@ -49,10 +51,11 @@
 
 #waifu-tips {
 	animation: waifu-shake 50s ease-in-out 5s infinite;
-	background-color: rgba(236, 217, 188, .5);
-	border: 1px solid rgba(224, 186, 140, .62);
+	background-color: var(--primary);
+	border: 1px solid color-mix(in oklab, var(--primary) 72%, black 28%);
 	border-radius: 12px;
-	box-shadow: 0 3px 15px 2px rgba(191, 158, 118, .2);
+	box-shadow: 0 3px 15px 2px color-mix(in oklab, var(--primary) 30%, transparent);
+	color: inherit;
 	font-size: 14px;
 	line-height: 24px;
 	margin: -30px 20px;
@@ -73,7 +76,7 @@
 }
 
 #waifu-tips span {
-	color: #0099cc;
+	color: currentColor;
 }
 
 #live2d {
@@ -106,13 +109,13 @@
 #waifu-tool svg {
 	cursor: pointer;
 	display: block;
-	fill: #7b8c9d;
+	fill: currentColor;
 	height: 25px;
 	transition: fill .3s;
 }
 
 #waifu-tool svg:hover {
-	fill: #0684bd; /* #34495e */
+	fill: currentColor;
 }
 
 @keyframes waifu-shake {
