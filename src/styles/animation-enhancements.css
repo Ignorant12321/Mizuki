@@ -1,10 +1,10 @@
 /* 动画增强样式 - 参考 yukina 主题优化 */
 :root {
-  --motion-instant: 120ms;
-  --motion-fast: 140ms;
-  --motion-base: 180ms;
-  --motion-soft: 220ms;
-  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-instant: 180ms;
+  --motion-fast: 180ms;
+  --motion-base: 240ms;
+  --motion-soft: 300ms;
+  --motion-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --motion-ease-exit: cubic-bezier(0.55, 0.055, 0.675, 0.19);
 }
 

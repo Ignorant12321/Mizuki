@@ -27,6 +27,8 @@ const isFloatTOC = tocMode === "float";
 const backToTopEnabled = siteConfig.floatingWidgets?.backToTop?.enable ?? true;
 const backToBottomEnabled = siteConfig.floatingWidgets?.backToBottom?.enable ?? true;
 const floatingTOCEnabled = siteConfig.floatingWidgets?.floatingTOC?.enable ?? true;
+const hidePageScrollbar = siteConfig.ui?.hidePageScrollbar ?? false;
+const showTopProgressBar = !(siteConfig.ui?.hideTopProgressBar ?? false);
 
 import {
 	DARK_MODE,
@@ -183,6 +185,7 @@ if (siteConfig.font) {
 <html
 	lang={siteLang}
 	class="bg-(--page-bg) text-[14px] md:text-[16px]"
+	class:list={[{ "hide-page-scrollbar": hidePageScrollbar }]}
 	data-overlayscrollbars-initialize
 >
 	<head>
@@ -435,7 +438,7 @@ if (siteConfig.font) {
 		style={bodyFontFamily ? `font-family: ${bodyFontFamily};` : ""}
 		data-overlayscrollbars-initialize
 	>
-		<div id="progress-bar" aria-hidden="true"></div>
+		{showTopProgressBar && <div id="progress-bar" aria-hidden="true"></div>}
 		<noscript
 			><iframe
 				src="https://www.googletagmanager.com/ns.html?id=GTM-KRX3XGVH"
@@ -483,6 +486,19 @@ if (siteConfig.font) {
 	@reference "../styles/main.css";
 
 	@layer components {
+		html.hide-page-scrollbar,
+		html.hide-page-scrollbar body {
+			scrollbar-width: none !important;
+			-ms-overflow-style: none;
+			scrollbar-color: transparent transparent !important;
+		}
+		html.hide-page-scrollbar::-webkit-scrollbar,
+		html.hide-page-scrollbar body::-webkit-scrollbar {
+			width: 0 !important;
+			height: 0 !important;
+			display: none;
+		}
+
 		.enable-banner.is-home #banner-wrapper {
 			@apply lg:h-(--banner-height-home) lg:translate-y-[var(--banner-height-extend)];
 		}

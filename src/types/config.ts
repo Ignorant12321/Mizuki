@@ -168,6 +168,10 @@ export type SiteConfig = {
 		hue: number;
 		fixed: boolean;
 	};
+	ui?: {
+		hidePageScrollbar?: boolean; // 是否隐藏页面主滚动条（html/body）
+		hideTopProgressBar?: boolean; // 是否隐藏顶部页面切换进度条
+	};
 
 	// 特色页面开关配置
 	featurePages: {

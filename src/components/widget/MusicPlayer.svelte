@@ -73,6 +73,7 @@
 	let isExpanded = false;
 	let isHidden = true;
 	let showPlaylist = false;
+	let hideTransitionTimer: ReturnType<typeof setTimeout> | null = null;
 	let currentTime = 0;
 	let duration = 0;
 
@@ -557,6 +558,10 @@
 	}
 
 	function toggleExpanded() {
+		if (hideTransitionTimer) {
+			clearTimeout(hideTransitionTimer);
+			hideTransitionTimer = null;
+		}
 		isExpanded = !isExpanded;
 		if (isExpanded) {
 			showPlaylist = false;
@@ -565,14 +570,41 @@
 	}
 
 	function toggleHidden() {
-		isHidden = !isHidden;
+		// 从隐藏状态恢复显示：立即展开到 mini 态
 		if (isHidden) {
-			isExpanded = false;
-			showPlaylist = false;
+			isHidden = false;
+			return;
 		}
+
+		// 避免快速连续点击导致状态竞争
+		if (hideTransitionTimer) {
+			clearTimeout(hideTransitionTimer);
+			hideTransitionTimer = null;
+		}
+
+		// 播放列表先退场，再隐藏播放器，避免两个面板同时关闭时的突兀感
+		const hadPlaylistOpen = showPlaylist;
+		showPlaylist = false;
+
+		const finishHide = () => {
+			isExpanded = false;
+			isHidden = true;
+			hideTransitionTimer = null;
+		};
+
+		if (hadPlaylistOpen) {
+			hideTransitionTimer = setTimeout(finishHide, 220);
+			return;
+		}
+
+		finishHide();
 	}
 
 	function togglePlaylist() {
+		if (hideTransitionTimer) {
+			clearTimeout(hideTransitionTimer);
+			hideTransitionTimer = null;
+		}
 		showPlaylist = !showPlaylist;
 	}
 
@@ -823,6 +855,10 @@
 	});
 
 	onDestroy(() => {
+		if (hideTransitionTimer) {
+			clearTimeout(hideTransitionTimer);
+			hideTransitionTimer = null;
+		}
 		if (typeof document !== "undefined") {
 			interactionEvents.forEach((event) => {
 				document.removeEventListener(event, handleUserInteraction, {
@@ -1759,9 +1795,17 @@
 		}
 		.playlist-panel {
 			position: fixed;
+			top: auto;
 			left: var(--music-player-playlist-left);
 			right: var(--music-player-playlist-right);
 			bottom: var(--music-player-playlist-bottom);
+		}
+		@media (min-width: 769px) {
+			.music-player.expanded .playlist-panel {
+				left: calc(var(--music-player-left) + 20.75rem);
+				right: calc(var(--music-player-right) + 20.75rem);
+				bottom: var(--music-player-bottom);
+			}
 		}
 		@media (max-width: 768px) {
 			.music-player-anchor {

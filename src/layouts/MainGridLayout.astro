@@ -345,7 +345,7 @@ const transparentClass = shouldEnableTransparency
 		const headerWaves = document.getElementById('header-waves');
 		if (!headerWaves) return;
 		const shouldShow = currentWallpaperMode === 'banner' && isWavesEnabled();
-		headerWaves.style.display = shouldShow ? 'block' : 'none';
+		headerWaves.classList.toggle('waves-hidden', !shouldShow);
 	}
 
 	function setWallpaperLayerState(element, visible) {
@@ -359,7 +359,7 @@ const transparentClass = shouldEnableTransparency
 		element.classList.remove('wallpaper-layer-visible');
 		element.classList.add('wallpaper-layer-hidden');
 	}
-	
+
 	function applyWallpaperMode() {
 		var wallpaperMode = localStorage.getItem('wallpaperMode') || defaultWallpaperMode;
 		var bannerWrapper = document.getElementById('banner-wrapper');
@@ -933,6 +933,12 @@ const transparentClass = shouldEnableTransparency
 /* 当没有 banner 时，主内容区域移到顶部 */
 body.no-banner-mode .absolute.w-full.z-30 {
     top: 5.5rem !important;
+}
+
+/* 壁纸模式切换时，主内容纵向位移也做平滑过渡（含桌面端） */
+.absolute.w-full.z-30 {
+    transition: top 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: top;
 }
 
 /* TOC 垂直对齐优化 */
@@ -1606,7 +1612,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 :global(.wallpaper-layer) {
     opacity: 1;
     visibility: visible;
-    transition: opacity 0.45s ease, visibility 0.45s ease;
+    transition: opacity 0.62s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.62s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: opacity;
     contain: paint;
 }
@@ -1657,6 +1663,17 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     contain: layout style paint;
     /* 精确对齐 */
     margin-bottom: -1px;
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+        opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#header-waves.waves-hidden {
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
 }
 
 /* 主题切换时的额外保护 */

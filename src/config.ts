@@ -93,6 +93,10 @@ export const siteConfig: SiteConfig = {
 		hue: 180, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
 		fixed: false, // 对访问者隐藏主题色选择器
 	},
+	ui: {
+		hidePageScrollbar: true, // 隐藏页面主滚动条（html/body）
+		hideTopProgressBar: true, // 隐藏顶部页面切换进度条
+	},
 
 	// 特色页面开关配置（关闭未使用的页面有助于提升 SEO，关闭后请记得在 navbarConfig 中移除对应链接）
 	featurePages: {
