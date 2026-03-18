@@ -63,6 +63,7 @@ export type DisplaySettingsConfig = {
 		clickEffect: DisplaySettingsToggleConfig;
 		waves: DisplaySettingsToggleConfig;
 		sakura: DisplaySettingsToggleConfig;
+		wallpaperCarousel: DisplaySettingsToggleConfig;
 	};
 	postListLayout: {
 		enable: boolean;

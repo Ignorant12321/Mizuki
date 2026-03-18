@@ -231,6 +231,7 @@ export const ja: Translation = {
 	[Key.enableClickEffect]: "クリックエフェクト",
 	[Key.enableWaves]: "波紋",
 	[Key.enableSakura]: "花びら効果",
+	[Key.enableWallpaperCarousel]: "壁紙カルーセル",
 	[Key.displaySettingsArticleLayout]: "記事レイアウト",
 	[Key.layoutList]: "リスト",
 	[Key.layoutGrid]: "グリッド",

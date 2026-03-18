@@ -757,6 +757,12 @@ function disableAnimation() {
 	}
 
 	function initCarousel() {
+		const cleanup = (window as any).__bannerCarouselCleanup;
+		if (typeof cleanup === "function") {
+			cleanup();
+			(window as any).__bannerCarouselCleanup = null;
+		}
+
 		const carouselItems = document.querySelectorAll(".carousel-item");
 		// 根据屏幕尺寸过滤有效的轮播项
 		const isMobile = window.innerWidth < 768; // md breakpoint
@@ -775,6 +781,11 @@ function disableAnimation() {
 			const interval = siteConfig.banner.carousel?.interval || 6;
 			let carouselInterval: any;
 			let isPaused = false;
+			let carouselEnabled = (() => {
+				const stored = localStorage.getItem("wallpaperCarouselEnabled");
+				if (stored === null) return true;
+				return stored === "true";
+			})();
 
 			// 移动端触摸手势支持
 			let startX = 0;
@@ -813,79 +824,92 @@ function disableAnimation() {
 
 			// 移动端触摸事件
 			if (carousel && "ontouchstart" in window) {
+				const onTouchStart = (e: TouchEvent) => {
+					if (!carouselEnabled) return;
+					startX = e.touches[0].clientX;
+					startY = e.touches[0].clientY;
+					isSwiping = false;
+					isPaused = true;
+					clearInterval(carouselInterval);
+				};
 				carousel.addEventListener(
 					"touchstart",
-					(e) => {
-						startX = e.touches[0].clientX;
-						startY = e.touches[0].clientY;
-						isSwiping = false;
-						isPaused = true;
-						clearInterval(carouselInterval);
-					},
+					onTouchStart,
 					{ passive: true },
 				);
 
+				const onTouchMove = (e: TouchEvent) => {
+					if (!carouselEnabled) return;
+					if (!startX || !startY) return;
+
+					const diffX = Math.abs(e.touches[0].clientX - startX);
+					const diffY = Math.abs(e.touches[0].clientY - startY);
+
+					// 判断是否为水平滑动
+					if (diffX > diffY && diffX > 30) {
+						isSwiping = true;
+						e.preventDefault();
+					}
+				};
 				carousel.addEventListener(
 					"touchmove",
-					(e) => {
-						if (!startX || !startY) return;
-
-						const diffX = Math.abs(e.touches[0].clientX - startX);
-						const diffY = Math.abs(e.touches[0].clientY - startY);
-
-						// 判断是否为水平滑动
-						if (diffX > diffY && diffX > 30) {
-							isSwiping = true;
-							e.preventDefault();
-						}
-					},
+					onTouchMove,
 					{ passive: false },
 				);
 
+				const onTouchEnd = (e: TouchEvent) => {
+					if (!carouselEnabled) return;
+					if (!startX || !startY || !isSwiping) {
+						isPaused = false;
+						startCarousel();
+						return;
+					}
+
+					const endX = e.changedTouches[0].clientX;
+					const diffX = startX - endX;
+
+					// 滑动距离超过50px才切换
+					if (Math.abs(diffX) > 50) {
+						if (diffX > 0) {
+							// 向左滑动，显示下一张
+							const nextIndex =
+								(currentIndex + 1) % validItems.length;
+							switchToSlide(nextIndex);
+						} else {
+							// 向右滑动，显示上一张
+							const prevIndex =
+								(currentIndex - 1 + validItems.length) %
+								validItems.length;
+							switchToSlide(prevIndex);
+						}
+					}
+
+					startX = 0;
+					startY = 0;
+					isSwiping = false;
+					isPaused = false;
+					// 重新开始自动轮播
+					startCarousel();
+				};
 				carousel.addEventListener(
 					"touchend",
-					(e) => {
-						if (!startX || !startY || !isSwiping) {
-							isPaused = false;
-							startCarousel();
-							return;
-						}
-
-						const endX = e.changedTouches[0].clientX;
-						const diffX = startX - endX;
-
-						// 滑动距离超过50px才切换
-						if (Math.abs(diffX) > 50) {
-							if (diffX > 0) {
-								// 向左滑动，显示下一张
-								const nextIndex =
-									(currentIndex + 1) % validItems.length;
-								switchToSlide(nextIndex);
-							} else {
-								// 向右滑动，显示上一张
-								const prevIndex =
-									(currentIndex - 1 + validItems.length) %
-									validItems.length;
-								switchToSlide(prevIndex);
-							}
-						}
-
-						startX = 0;
-						startY = 0;
-						isSwiping = false;
-						isPaused = false;
-						// 重新开始自动轮播
-						startCarousel();
-					},
+					onTouchEnd,
 					{ passive: true },
 				);
+
+				(window as any).__bannerCarouselTouchCleanup = () => {
+					carousel.removeEventListener("touchstart", onTouchStart);
+					carousel.removeEventListener("touchmove", onTouchMove);
+					carousel.removeEventListener("touchend", onTouchEnd);
+				};
 			}
 
 			// 开始轮播的函数
 			function startCarousel() {
+				if (!carouselEnabled) return;
 				clearInterval(carouselInterval);
 				carouselInterval = setInterval(() => {
-					if (!isPaused) {
+					if (!isPaused && carouselEnabled) {
 						const nextIndex =
 							(currentIndex + 1) % validItems.length;
 						switchToSlide(nextIndex);
@@ -895,14 +919,44 @@ function disableAnimation() {
 
 			// 鼠标悬停暂停（桌面端）
 			if (carousel) {
-				carousel.addEventListener("mouseenter", () => {
+				const onMouseEnter = () => {
+					if (!carouselEnabled) return;
 					isPaused = true;
 					clearInterval(carouselInterval);
-				});
-				carousel.addEventListener("mouseleave", () => {
+				};
+				const onMouseLeave = () => {
+					if (!carouselEnabled) return;
 					isPaused = false;
 					startCarousel();
-				});
+				};
+				carousel.addEventListener("mouseenter", onMouseEnter);
+				carousel.addEventListener("mouseleave", onMouseLeave);
+
+				const onSettingChange = (event: Event) => {
+					const customEvent = event as CustomEvent<{ key?: string; value?: unknown }>;
+					if (customEvent.detail?.key !== "wallpaperCarouselEnabled") return;
+					carouselEnabled = Boolean(customEvent.detail.value);
+					if (carouselEnabled) {
+						isPaused = false;
+						startCarousel();
+						return;
+					}
+					clearInterval(carouselInterval);
+					isPaused = false;
+				};
+				window.addEventListener(SETTING_CHANGE_EVENT, onSettingChange);
+
+				(window as any).__bannerCarouselCleanup = () => {
+					clearInterval(carouselInterval);
+					carousel.removeEventListener("mouseenter", onMouseEnter);
+					carousel.removeEventListener("mouseleave", onMouseLeave);
+					window.removeEventListener(SETTING_CHANGE_EVENT, onSettingChange);
+					const touchCleanup = (window as any).__bannerCarouselTouchCleanup;
+					if (typeof touchCleanup === "function") {
+						touchCleanup();
+						(window as any).__bannerCarouselTouchCleanup = null;
+					}
+				};
 			}
 
 			// 开始自动轮播

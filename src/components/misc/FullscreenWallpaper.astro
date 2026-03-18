@@ -54,6 +54,7 @@ if (!hasDesktopImages && !hasMobileImages) return null;
 const isCarouselEnabled = config.carousel?.enable && 
 	(imageSources.desktop.length > 1 || imageSources.mobile.length > 1);
 const carouselInterval = config.carousel?.interval || 5;
+const defaultCarouselEnabled = config.carousel?.enable ?? false;
 
 // 样式配置
 const position = config.position || "center";
@@ -240,7 +241,7 @@ const renderGroups = [
 </div>
 
 {isCarouselEnabled && (
-	<script is:inline define:vars={{ carouselInterval }}>
+	<script is:inline define:vars={{ carouselInterval, defaultCarouselEnabled }}>
 		function initFullscreenWallpaperCarousel() {
 			const container = document.querySelector('[data-fullscreen-wallpaper]');
 			if (!container) return;
@@ -251,7 +252,13 @@ const renderGroups = [
 			}
 
 			const STORAGE_KEY = 'mizuki_wallpaper_index';
+			const CAROUSEL_STORAGE_KEY = 'wallpaperCarouselEnabled';
 			let savedIndex = parseInt(sessionStorage.getItem(STORAGE_KEY) || '0');
+			let carouselEnabled = (() => {
+				const stored = localStorage.getItem(CAROUSEL_STORAGE_KEY);
+				if (stored === null) return defaultCarouselEnabled;
+				return stored === 'true';
+			})();
 
 			const groups = [
 				container.querySelectorAll('.hidden.md\\:block [data-carousel-item]'),
@@ -311,6 +318,7 @@ const renderGroups = [
 			}
 
 			function start() {
+				if (!carouselEnabled) return;
 				state.forEach(s => {
 					if (s.active && !s.timer) {
 						s.timer = setInterval(() => {
@@ -338,8 +346,19 @@ const renderGroups = [
 					stop();
 				} else {
 					const exists = state.some(s => s.items.length > 0 && document.body.contains(s.items[0]));
-					if (exists) start();
+					if (exists && carouselEnabled) start();
 				}
+			};
+
+			const handleSettingChange = (event) => {
+				const customEvent = event;
+				if (customEvent?.detail?.key !== 'wallpaperCarouselEnabled') return;
+				carouselEnabled = Boolean(customEvent.detail.value);
+				if (carouselEnabled) {
+					start();
+					return;
+				}
+				stop();
 			};
 
 			// 初始化状态
@@ -350,10 +369,12 @@ const renderGroups = [
 			start();
 
 			document.addEventListener('visibilitychange', handleVisibilityChange);
+			window.addEventListener('mizuki:setting-change', handleSettingChange);
 
 			window.__wallpaper_cleanup = () => {
 				stop();
 				document.removeEventListener('visibilitychange', handleVisibilityChange);
+				window.removeEventListener('mizuki:setting-change', handleSettingChange);
 			};
 		}
 

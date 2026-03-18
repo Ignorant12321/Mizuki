@@ -299,6 +299,7 @@ export const zh_TW: Translation = {
 	[Key.enableClickEffect]: "點擊效果",
 	[Key.enableWaves]: "水波紋",
 	[Key.enableSakura]: "櫻花效果",
+	[Key.enableWallpaperCarousel]: "壁紙輪播",
 	[Key.displaySettingsArticleLayout]: "文章佈局",
 	[Key.layoutList]: "列表",
 	[Key.layoutGrid]: "網格",

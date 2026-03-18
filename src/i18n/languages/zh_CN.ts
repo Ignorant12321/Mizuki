@@ -297,6 +297,7 @@ export const zh_CN: Translation = {
 	[Key.enableClickEffect]: "点击效果",
 	[Key.enableWaves]: "水波纹",
 	[Key.enableSakura]: "樱花效果",
+	[Key.enableWallpaperCarousel]: "壁纸轮播",
 	[Key.displaySettingsArticleLayout]: "文章布局",
 	[Key.layoutList]: "列表",
 	[Key.layoutGrid]: "网格",

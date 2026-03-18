@@ -27,6 +27,7 @@ type SettingKey =
 	| "clickEffectEnabled"
 	| "wavesEnabled"
 	| "sakuraEnabled"
+	| "wallpaperCarouselEnabled"
 	| "postListLayout";
 
 type PostListLayoutMode = "list" | "grid";
@@ -47,6 +48,7 @@ const STORAGE_KEYS = {
 	clickEffectEnabled: "clickEffectEnabled",
 	wavesEnabled: "wavesEnabled",
 	sakuraEnabled: "sakuraEnabled",
+	wallpaperCarouselEnabled: "wallpaperCarouselEnabled",
 	postListLayout: "postListLayout",
 } as const;
 
@@ -388,6 +390,26 @@ export function setSakuraEnabled(enabled: boolean): void {
 	dispatchSettingChange("sakuraEnabled", enabled);
 }
 
+export function getDefaultWallpaperCarouselEnabled(): boolean {
+	return displaySettingsConfig.effects.wallpaperCarousel.defaultValue;
+}
+
+export function getStoredWallpaperCarouselEnabled(): boolean {
+	return parseBoolean(
+		localStorage.getItem(STORAGE_KEYS.wallpaperCarouselEnabled),
+		getDefaultWallpaperCarouselEnabled(),
+	);
+}
+
+export function setWallpaperCarouselEnabled(enabled: boolean): void {
+	localStorage.setItem(
+		STORAGE_KEYS.wallpaperCarouselEnabled,
+		enabled ? "true" : "false",
+	);
+	applyBooleanDataset("wallpaperCarouselEnabled", enabled);
+	dispatchSettingChange("wallpaperCarouselEnabled", enabled);
+}
+
 function normalizePostListLayout(mode: string | null): PostListLayoutMode {
 	return mode === "grid" ? "grid" : "list";
 }
@@ -445,6 +467,9 @@ export function resetDisplaySettingGroup(group: DisplaySettingGroup): void {
 			);
 			setWavesEnabled(displaySettingsConfig.effects.waves.defaultValue);
 			setSakuraEnabled(displaySettingsConfig.effects.sakura.defaultValue);
+			setWallpaperCarouselEnabled(
+				displaySettingsConfig.effects.wallpaperCarousel.defaultValue,
+			);
 			break;
 		case "postListLayout":
 			setPostListLayout(displaySettingsConfig.postListLayout.defaultMode);
@@ -465,5 +490,9 @@ export function applyAllStoredSettings(): void {
 	applyBooleanDataset("clickEffectEnabled", getStoredClickEffectEnabled());
 	applyBooleanDataset("wavesEnabled", getStoredWavesEnabled());
 	applyBooleanDataset("sakuraEnabled", getStoredSakuraEnabled());
+	applyBooleanDataset(
+		"wallpaperCarouselEnabled",
+		getStoredWallpaperCarouselEnabled(),
+	);
 	root.dataset.postListLayout = getStoredPostListLayout();
 }

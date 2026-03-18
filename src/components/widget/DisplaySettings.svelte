@@ -20,6 +20,7 @@ import {
 	getStoredFullscreenWallpaperOpacity,
 	getStoredLive2dEnabled,
 	getStoredPostListLayout,
+	getStoredWallpaperCarouselEnabled,
 	getStoredSakuraEnabled,
 	getStoredWallpaperMode,
 	getStoredWavesEnabled,
@@ -30,6 +31,7 @@ import {
 	setHue,
 	setLive2dEnabled,
 	setPostListLayout,
+	setWallpaperCarouselEnabled,
 	setSakuraEnabled,
 	setWallpaperMode,
 	setWavesEnabled,
@@ -93,6 +95,8 @@ const defaultClickEffectEnabled =
 	displaySettingsConfig.effects.clickEffect.defaultValue;
 const defaultWavesEnabled = displaySettingsConfig.effects.waves.defaultValue;
 const defaultSakuraEnabled = displaySettingsConfig.effects.sakura.defaultValue;
+const defaultWallpaperCarouselEnabled =
+	displaySettingsConfig.effects.wallpaperCarousel.defaultValue;
 const defaultPostListLayout =
 	displaySettingsConfig.postListLayout.defaultMode as PostListLayoutMode;
 
@@ -105,6 +109,7 @@ let live2dEnabled = defaultLive2dEnabled;
 let clickEffectEnabled = defaultClickEffectEnabled;
 let wavesEnabled = defaultWavesEnabled;
 let sakuraEnabled = defaultSakuraEnabled;
+let wallpaperCarouselEnabled = defaultWallpaperCarouselEnabled;
 let postListLayout: PostListLayoutMode = defaultPostListLayout;
 let wallpaperOpacityProgress = wallpaperOpacity;
 let wallpaperBlurProgress = 0;
@@ -127,7 +132,8 @@ $: isEffectsDefault =
 	live2dEnabled === defaultLive2dEnabled &&
 	clickEffectEnabled === defaultClickEffectEnabled &&
 	wavesEnabled === defaultWavesEnabled &&
-	sakuraEnabled === defaultSakuraEnabled;
+	sakuraEnabled === defaultSakuraEnabled &&
+	wallpaperCarouselEnabled === defaultWallpaperCarouselEnabled;
 $: isLayoutDefault = postListLayout === defaultPostListLayout;
 $: wallpaperOpacityProgress = wallpaperOpacity;
 $: wallpaperBlurProgress =
@@ -162,12 +168,20 @@ function canShowSakuraSwitch(): boolean {
 	);
 }
 
+function canShowWallpaperCarouselSwitch(): boolean {
+	return (
+		displaySettingsConfig.effects.wallpaperCarousel.enable &&
+		displaySettingsConfig.effects.wallpaperCarousel.allowSwitch
+	);
+}
+
 function hasVisibleEffectSwitches(): boolean {
 	return (
 		canShowLive2dSwitch() ||
 		canShowClickEffectSwitch() ||
 		canShowWavesSwitch() ||
-		canShowSakuraSwitch()
+		canShowSakuraSwitch() ||
+		canShowWallpaperCarouselSwitch()
 	);
 }
 
@@ -188,6 +202,7 @@ function syncFromStorage(): void {
 	clickEffectEnabled = getStoredClickEffectEnabled();
 	wavesEnabled = getStoredWavesEnabled();
 	sakuraEnabled = getStoredSakuraEnabled();
+	wallpaperCarouselEnabled = getStoredWallpaperCarouselEnabled();
 	postListLayout = getStoredPostListLayout();
 }
 
@@ -279,6 +294,12 @@ function toggleSakura(): void {
 	setSakuraEnabled(sakuraEnabled);
 }
 
+function toggleWallpaperCarousel(): void {
+	if (!canShowWallpaperCarouselSwitch()) return;
+	wallpaperCarouselEnabled = !wallpaperCarouselEnabled;
+	setWallpaperCarouselEnabled(wallpaperCarouselEnabled);
+}
+
 function updatePostListLayout(layout: PostListLayoutMode): void {
 	if (
 		!(
@@ -319,6 +340,9 @@ function handleSettingChange(event: Event): void {
 			break;
 		case "sakuraEnabled":
 			sakuraEnabled = Boolean(customEvent.detail.value);
+			break;
+		case "wallpaperCarouselEnabled":
+			wallpaperCarouselEnabled = Boolean(customEvent.detail.value);
 			break;
 		case "postListLayout":
 			postListLayout = customEvent.detail.value as PostListLayoutMode;
@@ -574,6 +598,23 @@ onMount(() => {
 							<span class="effect-meta">
 								<Icon icon="material-symbols:local-florist-outline-rounded" class="text-base" />
 								<span>{i18n(I18nKey.enableSakura)}</span>
+							</span>
+							<span class="effect-switch" aria-hidden="true">
+								<span class="effect-thumb"></span>
+							</span>
+						</button>
+					{/if}
+					{#if canShowWallpaperCarouselSwitch()}
+						<button
+							type="button"
+							class="effect-row"
+							class:is-active={wallpaperCarouselEnabled}
+							on:click={toggleWallpaperCarousel}
+							aria-pressed={wallpaperCarouselEnabled}
+						>
+							<span class="effect-meta">
+								<Icon icon="material-symbols:slideshow-rounded" class="text-base" />
+								<span>{i18n(I18nKey.enableWallpaperCarousel)}</span>
 							</span>
 							<span class="effect-switch" aria-hidden="true">
 								<span class="effect-thumb"></span>

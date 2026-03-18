@@ -288,6 +288,7 @@ enum I18nKey {
 	enableClickEffect = "enableClickEffect",
 	enableWaves = "enableWaves",
 	enableSakura = "enableSakura",
+	enableWallpaperCarousel = "enableWallpaperCarousel",
 	displaySettingsArticleLayout = "displaySettingsArticleLayout",
 	layoutList = "layoutList",
 	layoutGrid = "layoutGrid",

@@ -229,6 +229,7 @@ export const en: Translation = {
 	[Key.enableClickEffect]: "Click Effect",
 	[Key.enableWaves]: "Waves",
 	[Key.enableSakura]: "Falling Petals",
+	[Key.enableWallpaperCarousel]: "Wallpaper Carousel",
 	[Key.displaySettingsArticleLayout]: "Article Layout",
 	[Key.layoutList]: "List",
 	[Key.layoutGrid]: "Grid",
