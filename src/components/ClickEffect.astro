@@ -21,8 +21,8 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 		border-radius: 50%;
 		z-index: 9999;
 		will-change: transform, opacity;
-		animation: particle-explosion 0.62s cubic-bezier(0.2, 0.8, 0.3, 1) both;
-		box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+		animation: particle-explosion 0.48s cubic-bezier(0.18, 0.84, 0.32, 1) both;
+		box-shadow: 0 0 4px rgba(255, 255, 255, 0.72);
 	}
 
 	:global(.dark .click-particle) {
@@ -34,19 +34,19 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 			opacity: 1;
 			transform: scale(0.4) translate(0, 0);
 		}
-		20% {
+		18% {
 			opacity: 1;
-			transform: scale(1.2) translate(var(--dx), var(--dy));
+			transform: scale(1.12) translate(var(--dx), var(--dy));
 		}
-		55% {
-			opacity: 0.65;
+		45% {
+			opacity: 0.45;
 			transform: scale(1)
-				translate(calc(var(--dx) * 2.5), calc(var(--dy) * 2.5));
+				translate(calc(var(--dx) * 2.2), calc(var(--dy) * 2.2));
 		}
 		100% {
 			opacity: 0;
-			transform: scale(0.2)
-				translate(calc(var(--dx) * 3.2), calc(var(--dy) * 3.2));
+			transform: scale(0.1)
+				translate(calc(var(--dx) * 2.8), calc(var(--dy) * 2.8));
 		}
 	}
 
@@ -118,11 +118,11 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 	// 同时存在的最大粒子数，避免连续点击导致卡顿
 	const MAX_ACTIVE_PARTICLES = 84;
 	// 原版视觉参数：环形粒子 + 随机粒子
-	const RING_PARTICLES = 10;
-	const EXTRA_PARTICLES = 4;
+	const RING_PARTICLES = 8;
+	const EXTRA_PARTICLES = 2;
 	const BASE_DISTANCE = 18;
 	const PARTICLE_COLORS = 10;
-	const STAGGER_MS = 6;
+	const STAGGER_MS = 3;
 
 	let activeParticles = 0;
 
