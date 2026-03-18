@@ -435,6 +435,7 @@ if (siteConfig.font) {
 		style={bodyFontFamily ? `font-family: ${bodyFontFamily};` : ""}
 		data-overlayscrollbars-initialize
 	>
+		<div id="progress-bar" aria-hidden="true"></div>
 		<noscript
 			><iframe
 				src="https://www.googletagmanager.com/ns.html?id=GTM-KRX3XGVH"
@@ -545,6 +546,8 @@ if (siteConfig.font) {
 	const BANNER_HEIGHT = 35;
 	const BANNER_HEIGHT_EXTEND = 30;
 	const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
+	const PROGRESS_FINISH_MS = 180;
+	const PROGRESS_FADE_MS = 220;
 
 	// const MAIN_PANEL_OVERLAPS_BANNER_HEIGHT = 3.5;
 	import { displaySettingsConfig, siteConfig, widgetConfigs } from "../config";
@@ -1123,6 +1126,44 @@ function disableAnimation() {
 	const setup = () => {
 		if ((window as any)[SWUP_SETUP_BOUND_KEY]) return;
 		(window as any)[SWUP_SETUP_BOUND_KEY] = true;
+		const progressBar = document.getElementById("progress-bar");
+		let progressFinishTimer: ReturnType<typeof setTimeout> | undefined;
+		let progressFadeTimer: ReturnType<typeof setTimeout> | undefined;
+
+		const clearProgressTimers = () => {
+			if (progressFinishTimer) {
+				clearTimeout(progressFinishTimer);
+				progressFinishTimer = undefined;
+			}
+			if (progressFadeTimer) {
+				clearTimeout(progressFadeTimer);
+				progressFadeTimer = undefined;
+			}
+		};
+
+		const startProgressBar = () => {
+			if (!progressBar) return;
+			clearProgressTimers();
+			progressBar.classList.remove("finishing", "done");
+			// 强制重排以确保 loading 动画每次都能重新触发
+			void (progressBar as HTMLElement).offsetWidth;
+			progressBar.classList.add("loading");
+		};
+
+		const finishProgressBar = () => {
+			if (!progressBar) return;
+			clearProgressTimers();
+			progressBar.classList.remove("loading", "done");
+			progressBar.classList.add("finishing");
+
+			progressFinishTimer = setTimeout(() => {
+				progressBar.classList.remove("finishing");
+				progressBar.classList.add("done");
+				progressFadeTimer = setTimeout(() => {
+					progressBar.classList.remove("done");
+				}, PROGRESS_FADE_MS);
+			}, PROGRESS_FINISH_MS);
+		};
 
 		// TODO: temp solution to change the height of the banner
 		/*
@@ -1211,6 +1252,7 @@ function disableAnimation() {
 		window.swup.hooks.on(
 			"visit:start",
 			(visit: { to: { url: string } }) => {
+				startProgressBar();
 				// 清理上一页的 Fancybox
 				cleanupFancybox();
 
@@ -1374,6 +1416,7 @@ function disableAnimation() {
 		});
 
 		window.swup.hooks.on("visit:end", (_visit: { to: { url: string } }) => {
+			finishProgressBar();
 			setTimeout(() => {
 				const heightExtend =
 					document.getElementById("page-height-extend");
