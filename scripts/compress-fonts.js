@@ -230,6 +230,71 @@ function getAsciiCharset() {
 	return text;
 }
 
+function addCharsToSet(targetSet, text) {
+	if (!text) return;
+	for (const char of text) {
+		if (!char.trim()) continue;
+		targetSet.add(char);
+	}
+}
+
+function isLikelyLyricUrl(value) {
+	if (typeof value !== "string") return false;
+	const text = value.trim();
+	if (!text) return false;
+	if (/^(https?:)?\/\//i.test(text)) return true;
+	if (text.startsWith("/")) return true;
+	if (/\.lrc(\?.*)?$/i.test(text)) return true;
+	if (/type=lrc/i.test(text)) return true;
+	return false;
+}
+
+function normalizeLyricText(raw) {
+	if (!raw) return "";
+	return raw
+		.replace(/^\uFEFF/, "")
+		.replace(/\r/g, "")
+		// 去掉 LRC 时间轴/元数据标签
+		.replace(/\[(?:\d{1,2}:\d{1,2}(?:\.\d{1,3})?|[a-z]+:[^\]]*)\]/gi, " ")
+		// 去掉简单 HTML 标签
+		.replace(/<[^>]+>/g, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+function toAbsoluteLyricUrl(rawUrl, baseUrl) {
+	if (!rawUrl) return null;
+	const decoded = rawUrl.trim().replace(/&amp;/g, "&");
+	if (!decoded) return null;
+	if (/^\/\//.test(decoded)) return `https:${decoded}`;
+	try {
+		return new URL(decoded, baseUrl).toString();
+	} catch {
+		return null;
+	}
+}
+
+async function fetchLyricFromUrl(url) {
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), 8000);
+	try {
+		const response = await fetch(url, {
+			signal: controller.signal,
+			headers: {
+				"User-Agent":
+					"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+				Accept: "text/plain,application/json;q=0.9,*/*;q=0.8",
+			},
+		});
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}`);
+		}
+		return await response.text();
+	} finally {
+		clearTimeout(timeoutId);
+	}
+}
+
 // 获取 Meting API 歌单数据中的文字
 async function fetchMetingPlaylistText() {
 	try {
@@ -359,6 +424,9 @@ async function fetchMetingPlaylistText() {
 			`ℹ Fetching music playlists from ${uniqueRequests.length} Meting API endpoints...`,
 		);
 		const textSet = new Set();
+		const lyricUrls = new Set();
+		let inlineLyricSongCount = 0;
+		let lyricUrlCount = 0;
 
 		// 4. 遍历所有 API 端点获取数据
 		for (const apiUrl of uniqueRequests) {
@@ -397,11 +465,46 @@ async function fetchMetingPlaylistText() {
 				playlist.forEach((song) => {
 					const title = song.name ?? song.title ?? "";
 					const artist = song.artist ?? song.author ?? "";
+					const hasSongText = title.trim() || artist.trim();
 
-					if (title.trim() || artist.trim()) {
+					if (hasSongText) {
 						songCount++;
-						for (const char of title) textSet.add(char);
-						for (const char of artist) textSet.add(char);
+					}
+					addCharsToSet(textSet, title);
+					addCharsToSet(textSet, artist);
+
+					const lyricCandidates = [
+						song.lyric,
+						song.lrc,
+						song?.lrc?.lyric,
+						song?.lyric?.lyric,
+						song.lyricUrl,
+						song.lrcUrl,
+					];
+
+					let hasInlineLyric = false;
+					for (const candidate of lyricCandidates) {
+						if (typeof candidate !== "string") continue;
+						const value = candidate.trim();
+						if (!value) continue;
+
+						if (isLikelyLyricUrl(value)) {
+							const absoluteUrl = toAbsoluteLyricUrl(value, apiUrl);
+							if (absoluteUrl) {
+								lyricUrls.add(absoluteUrl);
+							}
+							continue;
+						}
+
+						const normalized = normalizeLyricText(value);
+						if (normalized) {
+							hasInlineLyric = true;
+							addCharsToSet(textSet, normalized);
+						}
+					}
+
+					if (hasInlineLyric) {
+						inlineLyricSongCount++;
 					}
 				});
 
@@ -422,6 +525,38 @@ async function fetchMetingPlaylistText() {
 					);
 				}
 			}
+		}
+
+		// 5. 拉取远程歌词 URL（通常来自 Meting 的 lrc 字段）
+		if (lyricUrls.size > 0) {
+			const maxLyricRequests = 120;
+			const lyricUrlList = Array.from(lyricUrls).slice(0, maxLyricRequests);
+			console.log(
+				`ℹ Fetching lyrics from ${lyricUrlList.length}/${lyricUrls.size} lyric URLs...`,
+			);
+
+			for (const lyricUrl of lyricUrlList) {
+				try {
+					const lyricRaw = await fetchLyricFromUrl(lyricUrl);
+					const lyricText = normalizeLyricText(lyricRaw);
+					if (lyricText) {
+						addCharsToSet(textSet, lyricText);
+						lyricUrlCount++;
+					}
+				} catch (error) {
+					const message =
+						error?.name === "AbortError"
+							? "timeout"
+							: error?.message || "unknown error";
+					console.log(`  ⚠ Failed lyric URL: ${lyricUrl} (${message})`);
+				}
+			}
+		}
+
+		if (inlineLyricSongCount > 0 || lyricUrlCount > 0) {
+			console.log(
+				`✓ Added lyric chars (inline songs: ${inlineLyricSongCount}, remote lyric files: ${lyricUrlCount})`,
+			);
 		}
 
 		return textSet;
