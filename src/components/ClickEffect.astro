@@ -1,6 +1,7 @@
 ---
 import { clickEffectConfig } from "@/config";
 
+const whitelist = clickEffectConfig.whitelist || [];
 const blacklist = clickEffectConfig.blacklist || [];
 const desktopEnabled = clickEffectConfig.enable !== false;
 const mobileEnabled = clickEffectConfig.mobile ?? false;
@@ -8,6 +9,7 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 
 <template
 	id="click-effect-config"
+	data-whitelist={JSON.stringify(whitelist)}
 	data-blacklist={JSON.stringify(blacklist)}
 	data-enable-desktop={desktopEnabled ? "true" : "false"}
 	data-enable-mobile={mobileEnabled ? "true" : "false"}></template>
@@ -163,10 +165,18 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 	}
 
 	const configEl = document.getElementById("click-effect-config");
+	let whitelist: string[] = [];
 	let blacklist: string[] = [];
 	let desktopEnabled = true;
 	let mobileEnabled = false;
 
+	if (configEl?.dataset.whitelist) {
+		try {
+			whitelist = JSON.parse(configEl.dataset.whitelist);
+		} catch (e) {
+			console.error("Failed to parse click effect whitelist", e);
+		}
+	}
 	if (configEl?.dataset.blacklist) {
 		try {
 			blacklist = JSON.parse(configEl.dataset.blacklist);
@@ -197,19 +207,49 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 		return runtimeEnabled;
 	};
 
+	const normalizeSelectorList = (selectors: string[]) => {
+		return selectors.map((item) => item.trim()).filter(Boolean);
+	};
+
+	const whitelistSelector = normalizeSelectorList(whitelist).join(",");
+	const blacklistSelector = normalizeSelectorList(blacklist).join(",");
+
+	const getEventTargetElement = (event: MouseEvent): Element | null => {
+		const path =
+			typeof event.composedPath === "function"
+				? event.composedPath()
+				: undefined;
+		const firstTarget = path && path.length > 0 ? path[0] : event.target;
+		if (firstTarget instanceof Element) return firstTarget;
+		if (firstTarget instanceof Node) return firstTarget.parentElement;
+		return null;
+	};
+
+	const matchesSelectorTree = (target: Element, selector: string) => {
+		if (!selector) return false;
+		try {
+			return Boolean(target.closest(selector));
+		} catch (e) {
+			console.error(
+				"Invalid click effect selector, skip matching:",
+				selector,
+				e,
+			);
+			return false;
+		}
+	};
+
 	if (!(window as any)[CLICK_EFFECT_BOUND_KEY]) {
 		const handler = (e: MouseEvent) => {
 			if (!isEffectEnabled()) return;
 
-			if (blacklist.length > 0) {
-				const target = e.target as HTMLElement | null;
-				if (
-					target &&
-					blacklist.some((selector) => target.closest(selector))
-				) {
-					return;
-				}
-			}
+			const target = getEventTargetElement(e);
+			if (!target) return;
+
+			if (whitelistSelector && !matchesSelectorTree(target, whitelistSelector))
+				return;
+			if (blacklistSelector && matchesSelectorTree(target, blacklistSelector))
+				return;
 
 			const availableSlots = MAX_ACTIVE_PARTICLES - activeParticles;
 			if (availableSlots <= 0) return;

@@ -772,6 +772,7 @@ export const sakuraConfig: SakuraConfig = {
 export const clickEffectConfig: ClickEffectConfig = {
 	enable: true, // 是否在桌面端启用点击效果
 	mobile: false, // 是否在移动端启用点击效果
+	// whitelist: [], // 可选：仅在这些区域触发（设置后未命中区域不触发）
 	blacklist: ["#waifu"], // 黑名单，点击这些元素不会触发效果
 };
 
@@ -802,7 +803,9 @@ export const live2dConfig: Live2DConfig = {
 function toImageList(source: unknown): string[] {
 	if (typeof source === "string") return source ? [source] : [];
 	if (Array.isArray(source)) {
-		return source.filter((item): item is string => typeof item === "string");
+		return source.filter(
+			(item): item is string => typeof item === "string",
+		);
 	}
 	return [];
 }
@@ -897,14 +900,15 @@ export const displaySettingsConfig: DisplaySettingsConfig = {
 				hasPotentialWallpaperCarouselSources &&
 				Boolean(
 					siteConfig.banner.carousel?.enable ||
-						fullscreenWallpaperConfig.carousel?.enable,
+					fullscreenWallpaperConfig.carousel?.enable,
 				),
 			allowSwitch: true,
 			defaultValue:
 				siteConfig.wallpaperMode.defaultMode === "fullscreen"
-					? fullscreenWallpaperConfig.carousel?.enable ?? false
-					: siteConfig.banner.carousel?.enable ??
-						(fullscreenWallpaperConfig.carousel?.enable ?? false),
+					? (fullscreenWallpaperConfig.carousel?.enable ?? false)
+					: (siteConfig.banner.carousel?.enable ??
+						fullscreenWallpaperConfig.carousel?.enable ??
+						false),
 		},
 	},
 	postListLayout: {
