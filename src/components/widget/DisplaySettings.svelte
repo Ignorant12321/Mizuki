@@ -38,8 +38,7 @@ import {
 } from "@utils/setting-utils";
 import { panelManager } from "@utils/panel-manager.js";
 import { onMount } from "svelte";
-import { cubicOut } from "svelte/easing";
-import { slide } from "svelte/transition";
+import { fade, fly } from "svelte/transition";
 import type { WALLPAPER_MODE } from "@/types/config";
 
 type PostListLayoutMode = "list" | "grid";
@@ -71,7 +70,7 @@ const wallpaperOptions: {
 	},
 ];
 
-const panelStyle = [
+const panelBaseStyle = [
 	`top: ${displaySettingsConfig.panel.top}`,
 	`right: ${displaySettingsConfig.panel.right}`,
 	`width: min(${displaySettingsConfig.panel.width}, calc(100vw - 1rem))`,
@@ -113,6 +112,7 @@ let wallpaperCarouselEnabled = defaultWallpaperCarouselEnabled;
 let postListLayout: PostListLayoutMode = defaultPostListLayout;
 let wallpaperOpacityProgress = wallpaperOpacity;
 let wallpaperBlurProgress = 0;
+let panelStyle = "";
 
 let isThemeDefault = true;
 let isWallpaperDefault = true;
@@ -139,6 +139,15 @@ $: wallpaperOpacityProgress = wallpaperOpacity;
 $: wallpaperBlurProgress =
 	((wallpaperBlur - blurConfig.min) / (blurConfig.max - blurConfig.min)) *
 	100;
+$: panelStyle = getPanelStyle(wallpaperMode);
+
+function getPanelStyle(mode: WALLPAPER_MODE): string {
+	const lockPanelHeight =
+		mode === WALLPAPER_FULLSCREEN
+			? `height: ${displaySettingsConfig.panel.maxHeight}`
+			: "height: auto";
+	return `${panelBaseStyle}; ${lockPanelHeight}`;
+}
 
 function canShowLive2dSwitch(): boolean {
 	return (
@@ -189,7 +198,7 @@ function ensurePanelShell(): void {
 	const panel = document.getElementById("display-setting");
 	if (!panel) return;
 	panel.classList.add("float-panel", "card-base", "fixed", "px-3", "py-3");
-	panel.style.cssText = panelStyle;
+	panel.style.cssText = getPanelStyle(wallpaperMode);
 }
 
 function syncFromStorage(): void {
@@ -207,8 +216,8 @@ function syncFromStorage(): void {
 }
 
 function syncPanelState(): void {
-	ensurePanelShell();
 	syncFromStorage();
+	ensurePanelShell();
 }
 
 function getResetAriaLabel(sectionTitleKey: I18nKey): string {
@@ -466,7 +475,8 @@ onMount(() => {
 		{#if wallpaperMode === WALLPAPER_FULLSCREEN}
 			<section
 				class="setting-section fullscreen-extra-section"
-				transition:slide|local={{ duration: 240, easing: cubicOut }}
+				in:fly|local={{ y: -8, duration: 180 }}
+				out:fade|local={{ duration: 120 }}
 			>
 				<div class="section-header">
 					<div class="section-title">{i18n(I18nKey.displaySettingsTransparency)}</div>
