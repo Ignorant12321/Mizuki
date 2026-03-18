@@ -563,6 +563,9 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 	mode: "meting",
 	meting_api:
 		"https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r",
+	// https://api.qijieya.cn/meting/
+	// https://meting.mikus.ink
+
 	id: "17699694803",
 	server: "netease",
 	type: "playlist",
@@ -578,7 +581,7 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 			name: "游四方",
 			mode: "meting",
 			meting_api:
-				"https://meting.mikus.ink/api?server=:server&type=:type&id=:id&auth=:auth&r=:r",
+				"https://api.qijieya.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r",
 			server: "netease",
 			type: "playlist",
 			id: "17699636947",
@@ -846,6 +849,18 @@ export const displaySettingsConfig: DisplaySettingsConfig = {
 			enable: sakuraConfig.enable || sakuraConfig.mobile === true,
 			allowSwitch: true,
 			defaultValue: sakuraConfig.enable,
+		},
+		wallpaperCarousel: {
+			enable: Boolean(
+				siteConfig.banner.carousel?.enable ||
+					fullscreenWallpaperConfig.carousel?.enable,
+			),
+			allowSwitch: true,
+			defaultValue:
+				siteConfig.wallpaperMode.defaultMode === "fullscreen"
+					? fullscreenWallpaperConfig.carousel?.enable ?? false
+					: siteConfig.banner.carousel?.enable ??
+						(fullscreenWallpaperConfig.carousel?.enable ?? false),
 		},
 	},
 	postListLayout: {
