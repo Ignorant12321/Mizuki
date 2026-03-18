@@ -1,29 +1,38 @@
 /* Page transition animations with Swup - Enhanced version inspired by yukina */
 
+:root {
+  --motion-instant: 120ms;
+  --motion-fast: 140ms;
+  --motion-base: 180ms;
+  --motion-soft: 220ms;
+  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-exit: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+}
+
 /* 主要内容区域的过渡动画 - 参考yukina的侧滑效果 */
 .transition-main {
   transition:
-    opacity 120ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 120ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity var(--motion-instant) var(--motion-ease-out),
+    transform var(--motion-instant) var(--motion-ease-out);
 }
 
 /* 离开动画 - 内容向右上滑出并淡出 */
 .transition-leaving {
   transition:
-    transform 120ms cubic-bezier(0.55, 0.055, 0.675, 0.19),
-    opacity 120ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
+    transform var(--motion-instant) var(--motion-ease-exit),
+    opacity var(--motion-instant) var(--motion-ease-exit);
 }
 
 html.is-changing .transition-main {
   transition:
-    opacity 120ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 120ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity var(--motion-instant) var(--motion-ease-out),
+    transform var(--motion-instant) var(--motion-ease-out);
 }
 
 html.is-leaving .transition-main {
   transition:
-    opacity 120ms cubic-bezier(0.55, 0.055, 0.675, 0.19),
-    transform 120ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
+    opacity var(--motion-instant) var(--motion-ease-exit),
+    transform var(--motion-instant) var(--motion-ease-exit);
 }
 
 /* 进入动画 - 从右下角轻微滑入，模仿yukina效果 */
@@ -40,7 +49,9 @@ html.is-animating.is-leaving .transition-leaving {
 
 /* Swup fade 动画 - 保持兼容性 */
 html.is-changing .transition-swup-fade {
-  transition: all 120ms ease-out;
+  transition:
+    opacity var(--motion-instant) var(--motion-ease-out),
+    transform var(--motion-instant) var(--motion-ease-out);
 }
 
 html.is-animating .transition-swup-fade {
@@ -74,12 +85,12 @@ html.is-animating .transition-swup-fade {
 /* 页面加载动画 - yukina风格 */
 .onload-animation {
   opacity: 0;
-  animation: fade-in-up 120ms ease-out forwards;
+  animation: fade-in-up var(--motion-instant) var(--motion-ease-out) forwards;
 }
 
 .onload-animation-fade-in {
   opacity: 0;
-  animation: fade-in 120ms ease-in forwards;
+  animation: fade-in var(--motion-instant) var(--motion-ease-out) forwards;
 }
 
 @keyframes fade-in {
@@ -112,7 +123,9 @@ html.is-animating .transition-swup-fade {
 .transition-slide-in {
   opacity: 0;
   transform: translateY(20px) translateX(8px);
-  transition: all 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition:
+    opacity var(--motion-soft) var(--motion-ease-out),
+    transform var(--motion-soft) var(--motion-ease-out);
 }
 
 .transition-slide-in.active {
@@ -124,7 +137,9 @@ html.is-animating .transition-swup-fade {
 .card-animation {
   opacity: 0;
   transform: translateY(30px) translateX(10px) scale(0.98);
-  transition: all 350ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition:
+    opacity var(--motion-soft) var(--motion-ease-out),
+    transform var(--motion-soft) var(--motion-ease-out);
 }
 
 .card-animation.visible {
@@ -136,7 +151,9 @@ html.is-animating .transition-swup-fade {
 .nav-animation {
   opacity: 0;
   transform: translateX(-20px);
-  transition: all 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition:
+    opacity var(--motion-base) var(--motion-ease-out),
+    transform var(--motion-base) var(--motion-ease-out);
 }
 
 .nav-animation.loaded {

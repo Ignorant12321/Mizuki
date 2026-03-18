@@ -14,6 +14,13 @@ export class AnimationManager {
 	private static instance: AnimationManager;
 	private isAnimating = false;
 	private animationQueue: (() => void)[] = [];
+	private static readonly MOTION = {
+		INSTANT: 120,
+		FAST: 140,
+		BASE: 180,
+		SOFT: 220,
+		ONLOAD_DELAY_CAP: 180,
+	} as const;
 
 	static getInstance(): AnimationManager {
 		if (!AnimationManager.instance) {
@@ -94,7 +101,7 @@ export class AnimationManager {
 			document.documentElement.classList.remove("is-entering");
 			this.isAnimating = false;
 			this.processAnimationQueue();
-		}, 300);
+		}, AnimationManager.MOTION.SOFT);
 	}
 
 	/**
@@ -105,17 +112,18 @@ export class AnimationManager {
 		const animatedElements = document.querySelectorAll(".onload-animation");
 		animatedElements.forEach((element, index) => {
 			const htmlElement = element as HTMLElement;
-			const delay =
+			const rawDelay =
 				Number.parseInt(htmlElement.style.animationDelay, 10) ||
 				index * 50;
+			const delay = Math.min(rawDelay, AnimationManager.MOTION.ONLOAD_DELAY_CAP);
 
 			// 重置动画
 			htmlElement.style.opacity = "0";
-			htmlElement.style.transform = "translateY(1.5rem)";
+			htmlElement.style.transform = "translateY(1rem)";
 
 			setTimeout(() => {
 				htmlElement.style.transition =
-					"opacity 320ms cubic-bezier(0.4, 0, 0.2, 1), transform 320ms cubic-bezier(0.4, 0, 0.2, 1)";
+					`opacity ${AnimationManager.MOTION.BASE}ms cubic-bezier(0.22, 1, 0.36, 1), transform ${AnimationManager.MOTION.BASE}ms cubic-bezier(0.22, 1, 0.36, 1)`;
 				htmlElement.style.opacity = "1";
 				htmlElement.style.transform = "translateY(0)";
 			}, delay);
@@ -198,9 +206,9 @@ export class AnimationManager {
 	 */
 	createAnimation(element: HTMLElement, config: AnimationConfig): void {
 		const {
-			duration = 300,
+			duration = AnimationManager.MOTION.BASE,
 			delay = 0,
-			easing = "cubic-bezier(0.4, 0, 0.2, 1)",
+			easing = "cubic-bezier(0.22, 1, 0.36, 1)",
 			direction = "up",
 		} = config;
 
@@ -244,7 +252,7 @@ export class AnimationManager {
 		elements: NodeListOf<Element> | HTMLElement[],
 		config: AnimationConfig & { stagger?: number } = {},
 	): void {
-		const { stagger = 50, ...animationConfig } = config;
+		const { stagger = 30, ...animationConfig } = config;
 
 		elements.forEach((element: Element | HTMLElement, index: number) => {
 			this.createAnimation(element as HTMLElement, {

@@ -20,13 +20,22 @@ const {
 	background = "",
 } = Astro.props;
 
+const DIALOG_IN_MS = 180;
+const DIALOG_OUT_MS = 140;
+const BUTTON_MOTION_MS = 180;
+const BUTTON_ACTIVE_MS = 140;
+const MOTION_EASE_OUT = "cubic-bezier(0.22, 1, 0.36, 1)";
+const MOTION_EASE_EXIT = "cubic-bezier(0.55, 0.055, 0.675, 0.19)";
+
 const bgStyle = background ? `url('${background}')` : "none";
 ---
 
 <dialog
 	id="external-link-dialog"
 	class="mizuki-dialog"
-	style={`--dialog-bg-img: ${bgStyle};`}
+	style={`--dialog-bg-img: ${bgStyle}; --dialog-in-ms: ${DIALOG_IN_MS}ms; --dialog-out-ms: ${DIALOG_OUT_MS}ms; --button-motion-ms: ${BUTTON_MOTION_MS}ms; --button-active-ms: ${BUTTON_ACTIVE_MS}ms; --motion-ease-out: ${MOTION_EASE_OUT}; --motion-ease-exit: ${MOTION_EASE_EXIT};`}
+	data-dialog-in-ms={String(DIALOG_IN_MS)}
+	data-dialog-out-ms={String(DIALOG_OUT_MS)}
 	data-whitelist-site={JSON.stringify(whiteListSite)}
 	data-whitelist-page={JSON.stringify(whiteListPage)}
 >
@@ -128,8 +137,8 @@ const bgStyle = background ? `url('${background}')` : "none";
 		opacity: 0;
 		transform: scale(0.95) translateY(10px);
 		transition:
-			opacity 0.25s ease,
-			transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+			opacity var(--dialog-in-ms) var(--motion-ease-out),
+			transform var(--dialog-in-ms) var(--motion-ease-out);
 		z-index: 1000;
 	}
 
@@ -146,7 +155,7 @@ const bgStyle = background ? `url('${background}')` : "none";
 		background-color: rgba(0, 0, 0, 0.5);
 		backdrop-filter: blur(5px);
 		opacity: 0;
-		transition: opacity 0.25s ease;
+		transition: opacity var(--dialog-out-ms) var(--motion-ease-out);
 	}
 
 	.mizuki-dialog.dialog-show::backdrop {
@@ -244,7 +253,7 @@ const bgStyle = background ? `url('${background}')` : "none";
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: background-color 0.2s;
+		transition: background-color var(--button-motion-ms) var(--motion-ease-out);
 		position: relative;
 		width: 32px;
 		height: 32px;
@@ -256,8 +265,8 @@ const bgStyle = background ? `url('${background}')` : "none";
 
 	.copy-btn .icon-copy {
 		transition:
-			opacity 0.2s,
-			transform 0.2s;
+			opacity var(--button-motion-ms) var(--motion-ease-out),
+			transform var(--button-motion-ms) var(--motion-ease-out);
 		position: absolute;
 	}
 
@@ -265,8 +274,8 @@ const bgStyle = background ? `url('${background}')` : "none";
 		opacity: 0;
 		transform: scale(0.5);
 		transition:
-			opacity 0.2s,
-			transform 0.2s;
+			opacity var(--button-motion-ms) var(--motion-ease-out),
+			transform var(--button-motion-ms) var(--motion-ease-out);
 		position: absolute;
 	}
 
@@ -309,11 +318,16 @@ const bgStyle = background ? `url('${background}')` : "none";
 		font-size: 0.95rem;
 		font-weight: 600;
 		cursor: pointer;
-		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+		transition:
+			background-color var(--button-motion-ms) var(--motion-ease-out),
+			color var(--button-motion-ms) var(--motion-ease-out),
+			border-color var(--button-motion-ms) var(--motion-ease-out),
+			transform var(--button-active-ms) var(--motion-ease-out),
+			box-shadow var(--button-motion-ms) var(--motion-ease-out);
 	}
 
 	.mizuki-btn:active {
-		transform: scale(0.95);
+		transform: scale(0.96);
 	}
 
 	.mizuki-btn-primary {
@@ -331,6 +345,17 @@ const bgStyle = background ? `url('${background}')` : "none";
 	}
 	.mizuki-btn-secondary:hover {
 		background-color: var(--btn-plain-bg-hover);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.mizuki-dialog,
+		.mizuki-dialog::backdrop,
+		.copy-btn,
+		.copy-btn .icon-copy,
+		.copy-btn .icon-check,
+		.mizuki-btn {
+			transition-duration: 0.01ms !important;
+		}
 	}
 </style>
 
@@ -360,6 +385,12 @@ const bgStyle = background ? `url('${background}')` : "none";
 		if (!dialog) return;
 		const controller = new AbortController();
 		const { signal } = controller;
+		const dialogInMs = Number.parseInt(dialog.dataset.dialogInMs || "180", 10);
+		const dialogOutMs = Number.parseInt(dialog.dataset.dialogOutMs || "140", 10);
+		const safeDialogInMs = Number.isFinite(dialogInMs) ? dialogInMs : 180;
+		const safeDialogOutMs = Number.isFinite(dialogOutMs) ? dialogOutMs : 140;
+		dialog.style.setProperty("--dialog-in-ms", `${safeDialogInMs}ms`);
+		dialog.style.setProperty("--dialog-out-ms", `${safeDialogOutMs}ms`);
 		// --- 1. 读取域名白名单---
 		let whitelistSite: string[] = [];
 		try {
@@ -414,7 +445,12 @@ const bgStyle = background ? `url('${background}')` : "none";
 			if (!dialog.open) {
 				dialog.showModal();
 			}
-			requestAnimationFrame(() => dialog.classList.add("dialog-show"));
+			dialog.classList.remove("dialog-show");
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					dialog.classList.add("dialog-show");
+				});
+			});
 		};
 
 		const closeDialog = () => {
@@ -422,7 +458,7 @@ const bgStyle = background ? `url('${background}')` : "none";
 			clearTimeout(state.closeTimer);
 			state.closeTimer = window.setTimeout(() => {
 				if (dialog.open) dialog.close();
-			}, 250);
+			}, safeDialogOutMs);
 		};
 
 		document.addEventListener(
@@ -482,7 +518,7 @@ const bgStyle = background ? `url('${background}')` : "none";
 					} else {
 						window.location.href = href;
 					}
-				}, 250);
+				}, safeDialogOutMs);
 			},
 			{ signal },
 		);
