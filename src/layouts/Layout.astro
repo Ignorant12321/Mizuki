@@ -783,7 +783,10 @@ function disableAnimation() {
 			let isPaused = false;
 			let carouselEnabled = (() => {
 				const stored = localStorage.getItem("wallpaperCarouselEnabled");
-				if (stored === null) return true;
+				if (stored === null) {
+					return displaySettingsConfig.effects.wallpaperCarousel
+						.defaultValue;
+				}
 				return stored === "true";
 			})();
 

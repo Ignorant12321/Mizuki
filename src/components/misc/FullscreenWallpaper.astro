@@ -93,13 +93,21 @@ const renderGroups = [
 	style={`z-index: ${zIndex}; --fullscreen-wallpaper-opacity: ${opacity}; --fullscreen-wallpaper-blur: ${blurAmount}px; opacity: var(--fullscreen-wallpaper-opacity); transform: translateZ(0); perspective: 1000px;`}
 	data-fullscreen-wallpaper
 >
-	<script is:inline>
+	<script
+		is:inline
+		define:vars={{ defaultWallpaperMode: siteConfig.wallpaperMode.defaultMode }}>
 	// 立即执行脚本：防止闪烁
 	(function() {
-		const mode = localStorage.getItem('wallpaperMode') || 'banner';
-		if (mode !== 'fullscreen') {
-			document.currentScript.parentElement.style.display = 'none';
+		const mode = localStorage.getItem('wallpaperMode') || defaultWallpaperMode;
+		const container = document.currentScript.parentElement;
+		if (!container) return;
+		if (mode === 'fullscreen') {
+			container.classList.remove('wallpaper-layer-hidden');
+			container.classList.add('wallpaper-layer-visible');
+			return;
 		}
+		container.classList.remove('wallpaper-layer-visible');
+		container.classList.add('wallpaper-layer-hidden');
 	})();
 	</script>
 

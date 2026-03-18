@@ -128,6 +128,7 @@ const mainPanelTop =
 // 当默认模式不是 banner 时，主内容区域应该始终从顶栏下面开始
 const finalMainPanelTop =
 	siteConfig.wallpaperMode.defaultMode === "banner" ? mainPanelTop : "5.5rem";
+const defaultWallpaperMode = siteConfig.wallpaperMode.defaultMode;
 
 // 检查左侧边栏是否有组件
 const hasLeftSidebarComponents =
@@ -245,7 +246,7 @@ const transparentClass = shouldEnableTransparency
 
 <Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug}>
 
-<script type="module" is:inline define:vars={{navbarTransparentMode: siteConfig.banner?.navbar?.transparentMode || "semi", defaultWallpaperMode: siteConfig.wallpaperMode.defaultMode, defaultPostListLayout: siteConfig.postListLayout?.defaultMode || "list", defaultWavesEnabled: displaySettingsConfig.effects.waves.defaultValue, BANNER_HEIGHT: BANNER_HEIGHT, pageScaling: siteConfig.pageScaling}}>
+<script type="module" is:inline define:vars={{navbarTransparentMode: siteConfig.banner?.navbar?.transparentMode || "semi", defaultWallpaperMode: defaultWallpaperMode, defaultPostListLayout: siteConfig.postListLayout?.defaultMode || "list", defaultWavesEnabled: displaySettingsConfig.effects.waves.defaultValue, BANNER_HEIGHT: BANNER_HEIGHT, pageScaling: siteConfig.pageScaling}}>
 
 	// 立即执行，在页面渲染前应用壁纸模式和布局模式，避免闪烁
 	(function() {
@@ -346,6 +347,18 @@ const transparentClass = shouldEnableTransparency
 		const shouldShow = currentWallpaperMode === 'banner' && isWavesEnabled();
 		headerWaves.style.display = shouldShow ? 'block' : 'none';
 	}
+
+	function setWallpaperLayerState(element, visible) {
+		if (!element) return;
+		element.classList.add('wallpaper-layer');
+		if (visible) {
+			element.classList.remove('wallpaper-layer-hidden');
+			element.classList.add('wallpaper-layer-visible');
+			return;
+		}
+		element.classList.remove('wallpaper-layer-visible');
+		element.classList.add('wallpaper-layer-hidden');
+	}
 	
 	function applyWallpaperMode() {
 		var wallpaperMode = localStorage.getItem('wallpaperMode') || defaultWallpaperMode;
@@ -364,12 +377,8 @@ const transparentClass = shouldEnableTransparency
 		switch(wallpaperMode) {
 			case 'banner':
 				// 显示 banner，隐藏全屏壁纸
-				if (bannerWrapper) {
-					bannerWrapper.style.display = 'block';
-				}
-				if (fullscreenWallpaper) {
-					fullscreenWallpaper.style.display = 'none';
-				}
+				setWallpaperLayerState(bannerWrapper, true);
+				setWallpaperLayerState(fullscreenWallpaper, false);
 				// 恢复 TOC 在 banner 模式下的隐藏状态，让滚动逻辑接管
 				if (tocWrapper) {
 					const scrollTop = document.documentElement.scrollTop;
@@ -405,12 +414,8 @@ const transparentClass = shouldEnableTransparency
 				
 			case 'fullscreen':
 				// 隐藏 banner，显示全屏壁纸
-				if (bannerWrapper) {
-					bannerWrapper.style.display = 'none';
-				}
-				if (fullscreenWallpaper) {
-					fullscreenWallpaper.style.display = 'block';
-				}
+				setWallpaperLayerState(bannerWrapper, false);
+				setWallpaperLayerState(fullscreenWallpaper, true);
 				// 在全屏模式下始终显示 TOC
 				if (tocWrapper) {
 					tocWrapper.classList.remove('toc-hide');
@@ -438,12 +443,8 @@ const transparentClass = shouldEnableTransparency
 				
 			case 'none':
 				// 隐藏所有壁纸
-				if (bannerWrapper) {
-					bannerWrapper.style.display = 'none';
-				}
-				if (fullscreenWallpaper) {
-					fullscreenWallpaper.style.display = 'none';
-				}
+				setWallpaperLayerState(bannerWrapper, false);
+				setWallpaperLayerState(fullscreenWallpaper, false);
 				// 在无壁纸模式下也始终显示 TOC
 				if (tocWrapper) {
 					tocWrapper.classList.remove('toc-hide');
@@ -607,7 +608,14 @@ const transparentClass = shouldEnableTransparency
 </script>
 
 <!-- 全屏壁纸 - 始终渲染，通过 JS 控制显示隐藏 -->
-<FullscreenWallpaper config={fullscreenWallpaperConfig} />
+<FullscreenWallpaper
+	config={fullscreenWallpaperConfig}
+	className={`wallpaper-layer ${
+		defaultWallpaperMode === "fullscreen"
+			? "wallpaper-layer-visible"
+			: "wallpaper-layer-hidden"
+	}`}
+/>
 
 <!-- 全局图标加载器 -->
 <IconifyLoader />
@@ -622,7 +630,27 @@ const transparentClass = shouldEnableTransparency
 <DisplaySettings client:only="svelte" />
 
 <!-- Banner - 始终渲染，通过 JS 控制显示隐藏 -->
-<div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden h-(--banner-height-home) ${mobileNonHomeBannerClass}`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
+<div id="banner-wrapper" class={`wallpaper-layer absolute z-10 w-full transition duration-700 overflow-hidden h-(--banner-height-home) ${mobileNonHomeBannerClass} ${
+	defaultWallpaperMode === "banner"
+		? "wallpaper-layer-visible"
+		: "wallpaper-layer-hidden"
+}`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
+	<script
+		is:inline
+		define:vars={{ defaultWallpaperMode }}>
+		(function() {
+			const mode = localStorage.getItem("wallpaperMode") || defaultWallpaperMode;
+			const container = document.currentScript?.parentElement;
+			if (!container) return;
+			if (mode === "banner") {
+				container.classList.remove("wallpaper-layer-hidden");
+				container.classList.add("wallpaper-layer-visible");
+				return;
+			}
+			container.classList.remove("wallpaper-layer-visible");
+			container.classList.add("wallpaper-layer-hidden");
+		})();
+	</script>
 
     {siteConfig.banner.carousel?.enable && ((bannerImages.desktop && Array.isArray(bannerImages.desktop) && bannerImages.desktop.length > 1) || (bannerImages.mobile && Array.isArray(bannerImages.mobile) && bannerImages.mobile.length > 1)) ? (
         <!-- Carousel mode for multiple images -->
@@ -1592,6 +1620,25 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 }
 
 /* 水波纹显示优化 */
+:global(.wallpaper-layer) {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.45s ease, visibility 0.45s ease;
+    will-change: opacity;
+    contain: paint;
+}
+
+:global(.wallpaper-layer-hidden) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+:global(.wallpaper-layer-visible) {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
 .waves {
     /* 确保水波纹完整显示 */
     overflow: visible;

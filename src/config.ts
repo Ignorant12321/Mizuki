@@ -788,6 +788,34 @@ export const live2dConfig: Live2DConfig = {
 	],
 };
 
+function toImageList(source: unknown): string[] {
+	if (typeof source === "string") return source ? [source] : [];
+	if (Array.isArray(source)) {
+		return source.filter((item): item is string => typeof item === "string");
+	}
+	return [];
+}
+
+function hasMultipleImages(source: unknown): boolean {
+	if (!source) return false;
+	if (typeof source === "string") return false;
+	if (Array.isArray(source)) return toImageList(source).length > 1;
+
+	if (typeof source === "object") {
+		const srcObject = source as { desktop?: unknown; mobile?: unknown };
+		const desktop = toImageList(srcObject.desktop);
+		const mobile = toImageList(srcObject.mobile);
+		return desktop.length > 1 || mobile.length > 1;
+	}
+
+	return false;
+}
+
+const hasPotentialWallpaperCarouselSources =
+	siteConfig.banner.imageApi?.enable === true ||
+	hasMultipleImages(siteConfig.banner.src) ||
+	hasMultipleImages(fullscreenWallpaperConfig.src);
+
 export const displaySettingsConfig: DisplaySettingsConfig = {
 	panel: {
 		fixed: true,
@@ -851,10 +879,12 @@ export const displaySettingsConfig: DisplaySettingsConfig = {
 			defaultValue: sakuraConfig.enable,
 		},
 		wallpaperCarousel: {
-			enable: Boolean(
-				siteConfig.banner.carousel?.enable ||
-					fullscreenWallpaperConfig.carousel?.enable,
-			),
+			enable:
+				hasPotentialWallpaperCarouselSources &&
+				Boolean(
+					siteConfig.banner.carousel?.enable ||
+						fullscreenWallpaperConfig.carousel?.enable,
+				),
 			allowSwitch: true,
 			defaultValue:
 				siteConfig.wallpaperMode.defaultMode === "fullscreen"
