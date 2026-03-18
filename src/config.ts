@@ -22,11 +22,13 @@ import type {
 import { LinkPreset } from "./types/config";
 
 // 移除i18n导入以避免循环依赖
+// 本文件集中管理站点的全部可配置项，按“基础站点 -> 功能模块 -> 派生配置”顺序组织。
 
 // 定义站点语言
 const SITE_LANG = "zh_CN"; // 语言代码，例如：'en', 'zh_CN', 'ja' 等。
 const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UTC+8
 
+// 悬浮组件位置与交互参数（返回顶部、目录、音乐播放器、Live2D 等）
 const floatingWidgetsConfig: FloatingWidgetsConfig = {
 	backToTop: {
 		enable: true,
@@ -312,6 +314,7 @@ export const siteConfig: SiteConfig = {
 	},
 	showLastModified: true, // 控制“上次编辑”卡片显示的开关
 };
+// 全屏壁纸配置（仅在 wallpaperMode = "fullscreen" 时生效）
 export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	src: {
 		desktop: [
@@ -353,6 +356,7 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	blur: 1, // 背景模糊程度
 };
 
+// 顶部导航配置（支持预设链接与自定义多级菜单）
 export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
@@ -437,6 +441,7 @@ export const navBarConfig: NavBarConfig = {
 	],
 };
 
+// 侧边栏个人卡片配置
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avatar.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
 	avatarFrame: {
@@ -482,6 +487,7 @@ export const profileConfig: ProfileConfig = {
 	],
 };
 
+// 文章版权许可配置（文章页底部）
 export const licenseConfig: LicenseConfig = {
 	enable: true,
 	name: "CC BY-NC-SA 4.0",
@@ -522,6 +528,7 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	hideDuringThemeTransition: true,
 };
 
+// 评论系统配置（Twikoo）
 export const commentConfig: CommentConfig = {
 	enable: true, // 启用评论功能。当设置为 false 时，评论组件将不会显示在文章区域。
 	twikoo: {
@@ -530,6 +537,7 @@ export const commentConfig: CommentConfig = {
 	},
 };
 
+// 文章分享卡配置（用于站内分享组件）
 export const shareConfig: ShareConfig = {
 	enable: true, // 启用分享功能
 	avatarFrame: {
@@ -541,6 +549,7 @@ export const shareConfig: ShareConfig = {
 	},
 };
 
+// 公告栏配置（空内容时将回退到 src/data/announcement.json）
 export const announcementConfig: AnnouncementConfig = {
 	title: "公告栏",
 	placeholder: {
@@ -558,6 +567,7 @@ export const announcementConfig: AnnouncementConfig = {
 	content: [], // 留空则读取 src/data/announcement.json
 };
 
+// 音乐播放器配置（支持 meting / local 两种模式）
 export const musicPlayerConfig: MusicPlayerConfig = {
 	enable: true,
 	mode: "meting",
@@ -765,7 +775,7 @@ export const clickEffectConfig: ClickEffectConfig = {
 	blacklist: ["#waifu"], // 黑名单，点击这些元素不会触发效果
 };
 
-// Live2D Widget 配置
+// Live2D Widget 主插件配置
 export const live2dConfig: Live2DConfig = {
 	enable: true,
 	mobile: true,
@@ -788,6 +798,7 @@ export const live2dConfig: Live2DConfig = {
 	],
 };
 
+// 将可能为字符串或字符串数组的配置统一转换为字符串数组
 function toImageList(source: unknown): string[] {
 	if (typeof source === "string") return source ? [source] : [];
 	if (Array.isArray(source)) {
@@ -796,6 +807,7 @@ function toImageList(source: unknown): string[] {
 	return [];
 }
 
+// 判断配置源中是否存在“可轮播”的多图来源
 function hasMultipleImages(source: unknown): boolean {
 	if (!source) return false;
 	if (typeof source === "string") return false;
@@ -811,11 +823,13 @@ function hasMultipleImages(source: unknown): boolean {
 	return false;
 }
 
+// 壁纸轮播是否具备可用数据源（图片 API 或本地多图）
 const hasPotentialWallpaperCarouselSources =
 	siteConfig.banner.imageApi?.enable === true ||
 	hasMultipleImages(siteConfig.banner.src) ||
 	hasMultipleImages(fullscreenWallpaperConfig.src);
 
+// 显示设置面板配置：通过读取上方主配置生成默认值，避免重复维护
 export const displaySettingsConfig: DisplaySettingsConfig = {
 	panel: {
 		fixed: true,
@@ -901,6 +915,7 @@ export const displaySettingsConfig: DisplaySettingsConfig = {
 	},
 };
 
+// 外链二次确认弹窗配置
 export const externalLinkConfirmConfig: ExternalLinkConfirmConfig = {
 	enable: true, // 是否启用外部链接确认功能
 	title: "喂！要出站啦！",
