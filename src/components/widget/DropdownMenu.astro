@@ -142,6 +142,24 @@ const hasChildren = children.length > 0;
 		@apply rotate-180;
 	}
 
+	/* 平板扩展：1080px 起显示导航文字（保持原有 lg 结构，仅做覆盖） */
+	@media (min-width: 1080px) and (max-width: 1279.98px) {
+		.dropdown-trigger,
+		.dropdown-container > a.btn-plain {
+			width: auto;
+			padding-left: 1.25rem;
+			padding-right: 1.25rem;
+			justify-content: flex-start;
+		}
+
+		.dropdown-trigger .truncate,
+		.dropdown-container > a.btn-plain .truncate,
+		.dropdown-trigger .dropdown-arrow,
+		.dropdown-container > a.btn-plain [name="fa7-solid:arrow-up-right-from-square"] {
+			display: inline;
+		}
+	}
+
 	@media (max-width: 767px) {
 		.dropdown-container {
 			@apply hidden;
