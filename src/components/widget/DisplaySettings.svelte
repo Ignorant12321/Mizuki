@@ -14,6 +14,10 @@ import {
 	SETTING_CHANGE_EVENT,
 	applyAllStoredSettings,
 	getDefaultHue,
+	getDefaultClickEffectEnabled,
+	getDefaultLive2dEnabled,
+	getDefaultSakuraEnabled,
+	getDefaultWavesEnabled,
 	getHue,
 	getStoredClickEffectEnabled,
 	getStoredFullscreenWallpaperBlur,
@@ -89,11 +93,11 @@ const defaultWallpaperMode =
 	displaySettingsConfig.wallpaperMode.defaultMode as WALLPAPER_MODE;
 const defaultWallpaperOpacity = Math.round(opacityConfig.defaultValue * 100);
 const defaultWallpaperBlur = blurConfig.defaultValue;
-const defaultLive2dEnabled = displaySettingsConfig.effects.live2d.defaultValue;
-const defaultClickEffectEnabled =
+let defaultLive2dEnabled = displaySettingsConfig.effects.live2d.defaultValue;
+let defaultClickEffectEnabled =
 	displaySettingsConfig.effects.clickEffect.defaultValue;
-const defaultWavesEnabled = displaySettingsConfig.effects.waves.defaultValue;
-const defaultSakuraEnabled = displaySettingsConfig.effects.sakura.defaultValue;
+let defaultWavesEnabled = displaySettingsConfig.effects.waves.defaultValue;
+let defaultSakuraEnabled = displaySettingsConfig.effects.sakura.defaultValue;
 const defaultWallpaperCarouselEnabled =
 	displaySettingsConfig.effects.wallpaperCarousel.defaultValue;
 const defaultPostListLayout =
@@ -204,6 +208,10 @@ function ensurePanelShell(): void {
 function syncFromStorage(): void {
 	hue = getHue();
 	defaultHue = getDefaultHue();
+	defaultLive2dEnabled = getDefaultLive2dEnabled();
+	defaultClickEffectEnabled = getDefaultClickEffectEnabled();
+	defaultWavesEnabled = getDefaultWavesEnabled();
+	defaultSakuraEnabled = getDefaultSakuraEnabled();
 	wallpaperMode = getStoredWallpaperMode();
 	wallpaperOpacity = Math.round(getStoredFullscreenWallpaperOpacity() * 100);
 	wallpaperBlur = getStoredFullscreenWallpaperBlur();

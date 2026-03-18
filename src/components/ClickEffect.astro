@@ -195,12 +195,14 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 				window.matchMedia("(hover: none)").matches ||
 				window.matchMedia("(max-width: 768px)").matches)) ||
 		"ontouchstart" in window;
+	const storageKey = `clickEffectEnabled:${isMobile ? "mobile" : "desktop"}`;
 	let runtimeEnabled = (() => {
-		const stored = localStorage.getItem("clickEffectEnabled");
-		if (stored === null) {
-			return isMobile ? mobileEnabled : desktopEnabled;
-		}
-		return stored === "true";
+		const scopedStored = localStorage.getItem(storageKey);
+		if (scopedStored !== null) return scopedStored === "true";
+		// Backward compatibility: legacy key before device-scoped storage.
+		const legacyStored = localStorage.getItem("clickEffectEnabled");
+		if (legacyStored !== null) return legacyStored === "true";
+		return isMobile ? mobileEnabled : desktopEnabled;
 	})();
 
 	const isEffectEnabled = () => {

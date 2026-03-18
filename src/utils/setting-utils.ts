@@ -30,6 +30,11 @@ type SettingKey =
 	| "wallpaperCarouselEnabled"
 	| "postListLayout";
 
+type DeviceScopedEffectKey =
+	| "live2dEnabled"
+	| "clickEffectEnabled"
+	| "sakuraEnabled";
+
 type PostListLayoutMode = "list" | "grid";
 export type DisplaySettingGroup =
 	| "themeColor"
@@ -313,20 +318,43 @@ function isMobileViewport(): boolean {
 	return window.matchMedia("(max-width: 768px)").matches;
 }
 
+function getScopedEffectStorageKey(baseKey: DeviceScopedEffectKey): string {
+	return `${baseKey}:${isMobileViewport() ? "mobile" : "desktop"}`;
+}
+
+function getStoredScopedBoolean(
+	baseKey: DeviceScopedEffectKey,
+	fallback: boolean,
+): boolean {
+	const scopedValue = localStorage.getItem(getScopedEffectStorageKey(baseKey));
+	if (scopedValue !== null) {
+		return parseBoolean(scopedValue, fallback);
+	}
+	// Backward compatibility: migrate from legacy unified key behavior.
+	return parseBoolean(localStorage.getItem(baseKey), fallback);
+}
+
+function setScopedBoolean(baseKey: DeviceScopedEffectKey, enabled: boolean): void {
+	localStorage.setItem(
+		getScopedEffectStorageKey(baseKey),
+		enabled ? "true" : "false",
+	);
+}
+
 export function getDefaultLive2dEnabled(): boolean {
 	if (isMobileViewport()) return live2dConfig.mobile === true;
 	return live2dConfig.enable;
 }
 
 export function getStoredLive2dEnabled(): boolean {
-	return parseBoolean(
-		localStorage.getItem(STORAGE_KEYS.live2dEnabled),
+	return getStoredScopedBoolean(
+		STORAGE_KEYS.live2dEnabled,
 		getDefaultLive2dEnabled(),
 	);
 }
 
 export function setLive2dEnabled(enabled: boolean): void {
-	localStorage.setItem(STORAGE_KEYS.live2dEnabled, enabled ? "true" : "false");
+	setScopedBoolean(STORAGE_KEYS.live2dEnabled, enabled);
 	applyBooleanDataset("live2dEnabled", enabled);
 	dispatchSettingChange("live2dEnabled", enabled);
 }
@@ -337,17 +365,14 @@ export function getDefaultClickEffectEnabled(): boolean {
 }
 
 export function getStoredClickEffectEnabled(): boolean {
-	return parseBoolean(
-		localStorage.getItem(STORAGE_KEYS.clickEffectEnabled),
+	return getStoredScopedBoolean(
+		STORAGE_KEYS.clickEffectEnabled,
 		getDefaultClickEffectEnabled(),
 	);
 }
 
 export function setClickEffectEnabled(enabled: boolean): void {
-	localStorage.setItem(
-		STORAGE_KEYS.clickEffectEnabled,
-		enabled ? "true" : "false",
-	);
+	setScopedBoolean(STORAGE_KEYS.clickEffectEnabled, enabled);
 	applyBooleanDataset("clickEffectEnabled", enabled);
 	dispatchSettingChange("clickEffectEnabled", enabled);
 }
@@ -378,14 +403,14 @@ export function getDefaultSakuraEnabled(): boolean {
 }
 
 export function getStoredSakuraEnabled(): boolean {
-	return parseBoolean(
-		localStorage.getItem(STORAGE_KEYS.sakuraEnabled),
+	return getStoredScopedBoolean(
+		STORAGE_KEYS.sakuraEnabled,
 		getDefaultSakuraEnabled(),
 	);
 }
 
 export function setSakuraEnabled(enabled: boolean): void {
-	localStorage.setItem(STORAGE_KEYS.sakuraEnabled, enabled ? "true" : "false");
+	setScopedBoolean(STORAGE_KEYS.sakuraEnabled, enabled);
 	applyBooleanDataset("sakuraEnabled", enabled);
 	dispatchSettingChange("sakuraEnabled", enabled);
 }
@@ -461,12 +486,10 @@ export function resetDisplaySettingGroup(group: DisplaySettingGroup): void {
 			);
 			break;
 		case "effects":
-			setLive2dEnabled(displaySettingsConfig.effects.live2d.defaultValue);
-			setClickEffectEnabled(
-				displaySettingsConfig.effects.clickEffect.defaultValue,
-			);
+			setLive2dEnabled(getDefaultLive2dEnabled());
+			setClickEffectEnabled(getDefaultClickEffectEnabled());
 			setWavesEnabled(displaySettingsConfig.effects.waves.defaultValue);
-			setSakuraEnabled(displaySettingsConfig.effects.sakura.defaultValue);
+			setSakuraEnabled(getDefaultSakuraEnabled());
 			setWallpaperCarouselEnabled(
 				displaySettingsConfig.effects.wallpaperCarousel.defaultValue,
 			);
