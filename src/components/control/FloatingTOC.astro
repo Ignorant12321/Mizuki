@@ -11,7 +11,11 @@ const floatingTOCPosition = siteConfig.floatingWidgets?.floatingTOC ?? {
 	desktop: { side: "left", offset: "-4rem", bottom: "10rem" },
 	mobile: { side: "left", offset: "1rem", bottom: "10rem" },
 };
-const floatingTOCStyle = `--floating-toc-left-desktop:${floatingTOCPosition.desktop.side === "left" ? floatingTOCPosition.desktop.offset : "auto"};--floating-toc-right-desktop:${floatingTOCPosition.desktop.side === "right" ? floatingTOCPosition.desktop.offset : "auto"};--floating-toc-bottom-desktop:${floatingTOCPosition.desktop.bottom};--floating-toc-shift-desktop:${floatingTOCPosition.desktop.side === "left" ? "5rem" : "-5rem"};--floating-toc-panel-left-desktop:${floatingTOCPosition.desktop.side === "left" ? "0" : "auto"};--floating-toc-panel-right-desktop:${floatingTOCPosition.desktop.side === "right" ? "0" : "auto"};--floating-toc-left-mobile:${floatingTOCPosition.mobile.side === "left" ? floatingTOCPosition.mobile.offset : "auto"};--floating-toc-right-mobile:${floatingTOCPosition.mobile.side === "right" ? floatingTOCPosition.mobile.offset : "auto"};--floating-toc-bottom-mobile:${floatingTOCPosition.mobile.bottom};--floating-toc-panel-left-mobile:${floatingTOCPosition.mobile.side === "left" ? "0" : "auto"};--floating-toc-panel-right-mobile:${floatingTOCPosition.mobile.side === "right" ? "0" : "auto"};`;
+const oppositeSide = (side: "left" | "right") =>
+	side === "left" ? "right" : "left";
+const desktopPanelSide = oppositeSide(floatingTOCPosition.desktop.side);
+const mobilePanelSide = oppositeSide(floatingTOCPosition.mobile.side);
+const floatingTOCStyle = `--floating-toc-left-desktop:${floatingTOCPosition.desktop.side === "left" ? floatingTOCPosition.desktop.offset : "auto"};--floating-toc-right-desktop:${floatingTOCPosition.desktop.side === "right" ? floatingTOCPosition.desktop.offset : "auto"};--floating-toc-bottom-desktop:${floatingTOCPosition.desktop.bottom};--floating-toc-shift-desktop:${floatingTOCPosition.desktop.side === "left" ? "5rem" : "-5rem"};--floating-toc-panel-left-desktop:${desktopPanelSide === "right" ? "calc(100% + 0.75rem)" : "auto"};--floating-toc-panel-right-desktop:${desktopPanelSide === "left" ? "calc(100% + 0.75rem)" : "auto"};--floating-toc-panel-enter-shift-desktop:${desktopPanelSide === "right" ? "-8px" : "8px"};--floating-toc-left-mobile:${floatingTOCPosition.mobile.side === "left" ? floatingTOCPosition.mobile.offset : "auto"};--floating-toc-right-mobile:${floatingTOCPosition.mobile.side === "right" ? floatingTOCPosition.mobile.offset : "auto"};--floating-toc-bottom-mobile:${floatingTOCPosition.mobile.bottom};--floating-toc-panel-left-mobile:${mobilePanelSide === "right" ? "calc(100% + 0.5rem)" : "auto"};--floating-toc-panel-right-mobile:${mobilePanelSide === "left" ? "calc(100% + 0.5rem)" : "auto"};--floating-toc-panel-enter-shift-mobile:${mobilePanelSide === "right" ? "-8px" : "8px"};`;
 ---
 
 <div
@@ -69,6 +73,9 @@ const floatingTOCStyle = `--floating-toc-left-desktop:${floatingTOCPosition.desk
 		--floating-toc-shift: var(--floating-toc-shift-desktop);
 		--floating-toc-panel-left: var(--floating-toc-panel-left-desktop);
 		--floating-toc-panel-right: var(--floating-toc-panel-right-desktop);
+		--floating-toc-panel-enter-shift: var(
+			--floating-toc-panel-enter-shift-desktop
+		);
 		position: fixed;
 		left: var(--floating-toc-left);
 		right: var(--floating-toc-right);
@@ -150,7 +157,7 @@ const floatingTOCStyle = `--floating-toc-left-desktop:${floatingTOCPosition.desk
 
 	.floating-toc-panel {
 		position: absolute;
-		bottom: 4.5rem;
+		bottom: 0;
 		left: var(--floating-toc-panel-left);
 		right: var(--floating-toc-panel-right);
 		width: 18rem;
@@ -170,7 +177,7 @@ const floatingTOCStyle = `--floating-toc-left-desktop:${floatingTOCPosition.desk
 		overflow: hidden;
 		opacity: 0;
 		visibility: hidden;
-		transform: translateY(10px) scale(0.95);
+		transform: translateX(var(--floating-toc-panel-enter-shift)) scale(0.96);
 		transition: all 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 		pointer-events: none;
 	}
@@ -250,6 +257,9 @@ const floatingTOCStyle = `--floating-toc-left-desktop:${floatingTOCPosition.desk
 			--floating-toc-bottom: var(--floating-toc-bottom-mobile);
 			--floating-toc-panel-left: var(--floating-toc-panel-left-mobile);
 			--floating-toc-panel-right: var(--floating-toc-panel-right-mobile);
+			--floating-toc-panel-enter-shift: var(
+				--floating-toc-panel-enter-shift-mobile
+			);
 			transform: none;
 			/* opacity: 0.6; */
 		}
@@ -260,9 +270,9 @@ const floatingTOCStyle = `--floating-toc-left-desktop:${floatingTOCPosition.desk
 		}
 
 		.floating-toc-panel {
-			width: 85vw;
+			width: calc(100vw - 6rem);
 			max-width: 20rem;
-			bottom: 4.5rem;
+			bottom: 0;
 		}
 	}
 
