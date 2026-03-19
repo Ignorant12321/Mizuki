@@ -123,6 +123,11 @@
 	let progressBar: HTMLElement;
 	let volumeBar: HTMLElement;
 	let lyricContainer: HTMLDivElement;
+	let playlistContentEl: HTMLDivElement | null = null;
+	let playlistContentHeight: string | null = null;
+	let playlistHeightTimer: ReturnType<typeof setTimeout> | null = null;
+	let playlistSwitchToken = 0;
+	const PLAYLIST_HEIGHT_TRANSITION_MS = 220;
 
 	let lyricLines: LyricLine[] = [];
 	let lyricIsTimed = false;
@@ -540,12 +545,43 @@
 	}
 
 	// 切换歌单操作
-	function switchPlaylist(index: number) {
+	async function switchPlaylist(index: number) {
 		if (currentListIndex === index) return;
+		const switchToken = ++playlistSwitchToken;
+		const startHeight = playlistContentEl?.offsetHeight ?? 0;
+		if (playlistContentEl) {
+			if (playlistHeightTimer) {
+				clearTimeout(playlistHeightTimer);
+				playlistHeightTimer = null;
+			}
+			playlistContentHeight = `${startHeight}px`;
+		}
+
 		currentListIndex = index;
 
 		// 仅仅加载新歌单数据更新UI，不再去管 audio 的 pause 和 play
-		loadPlaylistData(index);
+		await loadPlaylistData(index);
+		await tick();
+
+		if (!playlistContentEl || switchToken !== playlistSwitchToken) {
+			playlistContentHeight = null;
+			return;
+		}
+
+		const targetHeight = playlistContentEl.scrollHeight;
+		if (Math.abs(targetHeight - startHeight) < 1) {
+			playlistContentHeight = null;
+			return;
+		}
+
+		requestAnimationFrame(() => {
+			if (!playlistContentEl || switchToken !== playlistSwitchToken) return;
+			playlistContentHeight = `${targetHeight}px`;
+			playlistHeightTimer = setTimeout(() => {
+				playlistContentHeight = null;
+				playlistHeightTimer = null;
+			}, PLAYLIST_HEIGHT_TRANSITION_MS);
+		});
 	}
 
 	function togglePlay() {
@@ -920,6 +956,10 @@
 		if (hideTransitionTimer) {
 			clearTimeout(hideTransitionTimer);
 			hideTransitionTimer = null;
+		}
+		if (playlistHeightTimer) {
+			clearTimeout(playlistHeightTimer);
+			playlistHeightTimer = null;
 		}
 		if (loadErrorRetryTimer) {
 			clearTimeout(loadErrorRetryTimer);
@@ -1371,7 +1411,7 @@
 
 					{#if playlistsConfig.length > 1}
 						<div
-							class="custom-scrollbar flex items-center gap-3 overflow-x-auto w-full pb-1"
+							class="custom-scrollbar playlist-tabs-scroll flex items-center gap-3 overflow-x-scroll w-full pb-1"
 						>
 							{#each playlistsConfig as pConfig, pIndex}
 								<button
@@ -1387,7 +1427,9 @@
 				</div>
 
 				<div
-					class="custom-scrollbar playlist-content overflow-y-auto flex-1 p-2"
+					class="custom-scrollbar playlist-content overflow-y-scroll flex-1 min-h-0 p-2"
+					bind:this={playlistContentEl}
+					style:height={playlistContentHeight ?? undefined}
 				>
 					{#each playlist as song, index}
 						<div
@@ -1455,6 +1497,16 @@
 								>
 									{song.artist}
 								</div>
+								{#if index === currentIndex}
+									<div class="playlist-song-progress">
+										<div
+											class="playlist-song-progress-fill"
+											style="width: {duration > 0
+												? Math.min(100, (currentTime / duration) * 100)
+												: 0}%"
+										></div>
+									</div>
+								{/if}
 							</div>
 						</div>
 					{/each}
@@ -1676,15 +1728,17 @@
 			justify-content: center;
 			padding: 0.375rem 1rem;
 			line-height: 1.2;
-			background: linear-gradient(
-				160deg,
-				color-mix(in oklab, var(--primary) 9%, var(--card-bg)) 0%,
-				color-mix(in oklab, var(--primary) 3%, var(--card-bg)) 100%
-			);
-			border: 1px solid transparent;
-			box-shadow: 0 0 0 1px
-				color-mix(in oklab, var(--primary) 10%, transparent);
+			background: color-mix(in oklab, var(--card-bg) 95%, white 5%);
+			border: 1px solid color-mix(in oklab, var(--line-color) 68%, white 32%);
+			box-shadow:
+				-3px -3px 6px color-mix(in oklab, white 72%, var(--card-bg) 28%),
+				3px 3px 7px color-mix(in oklab, black 18%, var(--card-bg) 82%);
 			min-height: 2.25rem;
+			transition:
+				transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+				background 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+				box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+				border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 		}
 		.music-action-btn,
 		.playlist-close-btn {
@@ -1694,8 +1748,7 @@
 			color: var(--text-secondary);
 		}
 		.music-action-btn:hover,
-		.playlist-close-btn:hover,
-		.playlist-tab-btn:hover {
+		.playlist-close-btn:hover {
 			background: color-mix(
 				in oklab,
 				var(--primary) 10%,
@@ -1711,8 +1764,7 @@
 				0 6px 16px color-mix(in oklab, var(--primary) 20%, transparent);
 		}
 		.music-action-btn:active,
-		.playlist-close-btn:active,
-		.playlist-tab-btn:active {
+		.playlist-close-btn:active {
 			transform: scale(0.94);
 		}
 		.music-action-btn:disabled {
@@ -1730,8 +1782,7 @@
 			display: block;
 			line-height: 1;
 		}
-		.music-action-btn.control-active,
-		.playlist-tab-btn.tab-active {
+		.music-action-btn.control-active {
 			background: color-mix(
 				in oklab,
 				var(--primary) 16%,
@@ -1740,6 +1791,27 @@
 			border-color: color-mix(in oklab, var(--primary) 30%, transparent);
 			box-shadow: inset 0 0 0 1px
 				color-mix(in oklab, var(--primary) 22%, transparent);
+		}
+		.playlist-tab-btn:hover {
+			background: color-mix(in oklab, var(--card-bg) 84%, white 16%);
+			border-color: color-mix(in oklab, var(--line-color) 64%, var(--primary) 36%);
+			box-shadow:
+				-4px -4px 8px color-mix(in oklab, white 72%, var(--card-bg) 28%),
+				4px 4px 9px color-mix(in oklab, black 20%, var(--card-bg) 80%);
+		}
+		.playlist-tab-btn:active {
+			transform: scale(0.95);
+			box-shadow:
+				inset -2px -2px 5px color-mix(in oklab, white 62%, var(--card-bg) 38%),
+				inset 2px 2px 6px color-mix(in oklab, black 24%, var(--card-bg) 76%);
+		}
+		.playlist-tab-btn.tab-active {
+			background: color-mix(in oklab, var(--card-bg) 74%, var(--primary) 26%);
+			border-color: color-mix(in oklab, var(--line-color) 58%, var(--primary) 42%);
+			box-shadow:
+				inset -2px -2px 5px color-mix(in oklab, white 58%, var(--card-bg) 42%),
+				inset 2px 2px 6px color-mix(in oklab, black 28%, var(--card-bg) 72%);
+			color: var(--primary);
 		}
 		.music-track {
 			background: color-mix(in oklab, var(--primary) 9%, var(--line-color)) !important;
@@ -1863,6 +1935,64 @@
 			left: var(--music-player-playlist-left);
 			right: var(--music-player-playlist-right);
 			bottom: var(--music-player-playlist-bottom);
+		}
+		.playlist-tabs-scroll {
+			padding: 0.3rem 0.35rem 0.45rem;
+			margin: -0.3rem -0.35rem -0.15rem;
+			overflow-y: hidden;
+			scrollbar-gutter: stable both-edges;
+			scrollbar-width: thin;
+			scrollbar-color: color-mix(in oklab, var(--primary) 48%, var(--btn-regular-bg))
+				color-mix(in oklab, var(--line-color) 65%, transparent);
+		}
+		.playlist-tabs-scroll .playlist-tab-btn {
+			position: relative;
+		}
+		.playlist-tabs-scroll::-webkit-scrollbar {
+			height: 7px;
+		}
+		.playlist-tabs-scroll::-webkit-scrollbar-thumb {
+			background: color-mix(in oklab, var(--primary) 48%, var(--btn-regular-bg));
+			border-radius: 9999px;
+		}
+		.playlist-tabs-scroll::-webkit-scrollbar-track {
+			background: color-mix(in oklab, var(--line-color) 65%, transparent);
+			border-radius: 9999px;
+		}
+		.playlist-content {
+			transition: height 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+			will-change: height;
+			scrollbar-gutter: stable;
+			scrollbar-width: thin;
+			scrollbar-color: color-mix(in oklab, var(--primary) 45%, var(--btn-regular-bg))
+				color-mix(in oklab, var(--line-color) 60%, transparent);
+		}
+		.playlist-content::-webkit-scrollbar {
+			width: 6px;
+		}
+		.playlist-content::-webkit-scrollbar-thumb {
+			background: color-mix(in oklab, var(--primary) 45%, var(--btn-regular-bg));
+			border-radius: 9999px;
+		}
+		.playlist-content::-webkit-scrollbar-track {
+			background: transparent;
+		}
+		.playlist-song-progress {
+			height: 0.3rem;
+			margin-top: 0.25rem;
+			border-radius: 9999px;
+			overflow: hidden;
+			background: color-mix(in oklab, var(--line-color) 80%, transparent);
+		}
+		.playlist-song-progress-fill {
+			height: 100%;
+			border-radius: inherit;
+			background: linear-gradient(
+				90deg,
+				color-mix(in oklab, var(--primary) 72%, white 28%) 0%,
+				var(--primary) 100%
+			);
+			transition: width 0.15s linear;
 		}
 		@media (min-width: 769px) {
 			.music-player.expanded .playlist-panel {
