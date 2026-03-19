@@ -1653,6 +1653,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 .waves use {
     /* 确保填充色与页面背景同步更新 */
     will-change: fill;
+    transition: fill 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 波浪与背景同步切换优化 - 解决交界线闪烁 */
@@ -1666,8 +1667,8 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     opacity: 1;
     transform: translateY(0);
     transition:
-        opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-        transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+        opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #header-waves.waves-hidden {
@@ -1676,14 +1677,19 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     pointer-events: none;
 }
 
-/* 主题切换时的额外保护 */
-.theme-changing #header-waves,
-.theme-changing #header-waves svg,
-.theme-changing #header-waves use {
+/* 主题切换时的额外保护（与 is-theme-transitioning 类统一） */
+.is-theme-transitioning #header-waves,
+.is-theme-transitioning #header-waves svg,
+.is-theme-transitioning #header-waves use {
     /* 在主题切换期间禁用所有可能的渲染延迟 */
     will-change: auto;
     transform: translateZ(0);
     backface-visibility: hidden;
+}
+
+.is-theme-transitioning #header-waves use {
+    /* 主题切换期间强制与页面背景色一致，避免交界线断层 */
+    fill: var(--page-bg, var(--wave-fill)) !important;
 }
 
 /* 移动端水波纹特殊优化 */

@@ -746,7 +746,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 
 export const sakuraConfig: SakuraConfig = {
 	enable: true, // 默认关闭樱花特效
-	mobile: true, // 是否在移动端启用
+	mobile: false, // 是否在移动端启用
 	sakuraNum: 21, // 樱花数量
 	limitTimes: -1, // 樱花越界限制次数，-1为无限循环
 	size: {
@@ -775,7 +775,7 @@ export const sakuraConfig: SakuraConfig = {
 // 鼠标点击效果
 export const clickEffectConfig: ClickEffectConfig = {
 	enable: true, // 是否在桌面端启用点击效果
-	mobile: false, // 是否在移动端启用点击效果
+	mobile: true, // 是否在移动端启用点击效果
 	// whitelist: [], // 可选：仅在这些区域触发（设置后未命中区域不触发）
 	blacklist: ["#waifu"], // 黑名单，点击这些元素不会触发效果
 };

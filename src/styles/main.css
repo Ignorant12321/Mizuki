@@ -52,6 +52,7 @@
 html {
   @apply scroll-smooth;
   @apply text-black/80;
+  transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.dark {
     @apply text-white/80;
@@ -238,10 +239,8 @@ body::-webkit-scrollbar-corner {
 
   /* 波浪效果精确同步处理 - 仅在非 View Transitions 模式下 */
   .is-theme-transitioning:not(.use-view-transition) svg use {
-    /* 禁用过渡但保持动画 */
+    /* 保持非波浪 SVG 在主题切换时稳定，不参与复杂过渡 */
     transition: none;
-    /* 强制立即继承页面背景色 */
-    fill: currentColor;
   }
 
   /* 导航栏主题切换保护 - 仅在非 View Transitions 模式下禁用过渡 */

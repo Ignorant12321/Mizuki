@@ -159,49 +159,16 @@ export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
 		}
 	};
 
-	if (
-		needsThemeChange &&
-		document.startViewTransition &&
-		!window.matchMedia("(prefers-reduced-motion: reduce)").matches
-	) {
-		document.documentElement.classList.add(
-			"is-theme-transitioning",
-			"use-view-transition",
-		);
+	if (needsThemeChange) {
+		document.documentElement.classList.add("is-theme-transitioning");
+	}
 
-		const transition = document.startViewTransition(() => {
-			performThemeChange();
+	performThemeChange();
+
+	if (needsThemeChange) {
+		requestAnimationFrame(() => {
+			document.documentElement.classList.remove("is-theme-transitioning");
 		});
-
-		transition.finished
-			.then(() => {
-				queueMicrotask(() => {
-					document.documentElement.classList.remove(
-						"is-theme-transitioning",
-						"use-view-transition",
-					);
-				});
-			})
-			.catch(() => {
-				document.documentElement.classList.remove(
-					"is-theme-transitioning",
-					"use-view-transition",
-				);
-			});
-	} else {
-		if (needsThemeChange) {
-			document.documentElement.classList.add("is-theme-transitioning");
-		}
-
-		performThemeChange();
-
-		if (needsThemeChange) {
-			requestAnimationFrame(() => {
-				document.documentElement.classList.remove(
-					"is-theme-transitioning",
-				);
-			});
-		}
 	}
 }
 
