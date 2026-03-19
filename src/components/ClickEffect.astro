@@ -23,7 +23,8 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 		border-radius: 50%;
 		z-index: 9999;
 		will-change: transform, opacity;
-		animation: particle-explosion 0.48s cubic-bezier(0.18, 0.84, 0.32, 1) both;
+		animation: particle-explosion 0.48s cubic-bezier(0.18, 0.84, 0.32, 1)
+			both;
 		box-shadow: 0 0 4px rgba(255, 255, 255, 0.72);
 	}
 
@@ -118,15 +119,18 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 <script>
 	const CLICK_EFFECT_BOUND_KEY = "__mizukiClickEffectBound";
 	// 同时存在的最大粒子数，避免连续点击导致卡顿
-	const MAX_ACTIVE_PARTICLES = 84;
+	const MAX_ACTIVE_PARTICLES = 64;
 	// 原版视觉参数：环形粒子 + 随机粒子
 	const RING_PARTICLES = 8;
 	const EXTRA_PARTICLES = 2;
+	const MAX_PARTICLES_PER_CLICK = 8;
 	const BASE_DISTANCE = 18;
 	const PARTICLE_COLORS = 10;
 	const STAGGER_MS = 3;
+	const MIN_CLICK_INTERVAL_MS = 40;
 
 	let activeParticles = 0;
+	let lastEffectTimestamp = 0;
 
 	function createParticleElement(
 		x: number,
@@ -244,13 +248,24 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 	if (!(window as any)[CLICK_EFFECT_BOUND_KEY]) {
 		const handler = (e: MouseEvent) => {
 			if (!isEffectEnabled()) return;
+			if (e.button !== 0) return;
+
+			const now = performance.now();
+			if (now - lastEffectTimestamp < MIN_CLICK_INTERVAL_MS) return;
+			lastEffectTimestamp = now;
 
 			const target = getEventTargetElement(e);
 			if (!target) return;
 
-			if (whitelistSelector && !matchesSelectorTree(target, whitelistSelector))
+			if (
+				whitelistSelector &&
+				!matchesSelectorTree(target, whitelistSelector)
+			)
 				return;
-			if (blacklistSelector && matchesSelectorTree(target, blacklistSelector))
+			if (
+				blacklistSelector &&
+				matchesSelectorTree(target, blacklistSelector)
+			)
 				return;
 
 			const availableSlots = MAX_ACTIVE_PARTICLES - activeParticles;
@@ -258,6 +273,7 @@ const mobileEnabled = clickEffectConfig.mobile ?? false;
 
 			const toCreate = Math.min(
 				RING_PARTICLES + EXTRA_PARTICLES,
+				MAX_PARTICLES_PER_CLICK,
 				availableSlots,
 			);
 			const fragment = document.createDocumentFragment();

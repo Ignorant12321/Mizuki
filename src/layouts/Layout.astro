@@ -626,6 +626,9 @@ function disableAnimation() {
 	const PANEL_MANAGER_BOUND_KEY = "__mizukiPanelManagerBound";
 	const SWUP_SETUP_BOUND_KEY = "__mizukiLayoutSwupSetupBound";
 	const SWUP_ENABLE_SETUP_BOUND_KEY = "__mizukiLayoutSwupEnableBound";
+	const SCROLL_LISTENER_KEY = "__mizukiLayoutScrollListener";
+	const RESIZE_LISTENER_KEY = "__mizukiLayoutResizeListener";
+	const SCROLL_STATE_KEY = "__mizukiLayoutScrollState";
 
 	// 导入面板管理器
 	async function initializePanelManager() {
@@ -1014,16 +1017,24 @@ function disableAnimation() {
 		panel.style.zIndex = String(displaySettingsConfig.panel.zIndex);
 	}
 
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", () => {
-			applyAllStoredSettings();
-			applySakuraSetting();
-			syncDisplaySettingsPanelShell();
-		});
-	} else {
+	function applyPersistentUiState() {
 		applyAllStoredSettings();
 		applySakuraSetting();
 		syncDisplaySettingsPanelShell();
+	}
+
+	function initializePageEnhancements() {
+		initFancybox();
+		checkKatex();
+		initCustomScrollbar();
+	}
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", () => {
+			applyPersistentUiState();
+		});
+	} else {
+		applyPersistentUiState();
 	}
 
 	window.addEventListener(SETTING_CHANGE_EVENT, (event) => {
@@ -1214,14 +1225,10 @@ function disableAnimation() {
 		});
 
 		window.swup.hooks.on("content:replace", () => {
-			applyAllStoredSettings();
-			applySakuraSetting();
-			syncDisplaySettingsPanelShell();
-
-			// 初始化新页面的图片、公式、滚动条和TOC
-			initFancybox();
-			checkKatex();
-			initCustomScrollbar();
+			applyPersistentUiState();
+			initializePageEnhancements();
+			refreshScrollMetrics();
+			scheduleScrollUpdates();
 
 			// 检查当前页面是否为文章页面（有TOC元素）
 			const tocWrapper = document.getElementById("toc-wrapper");
@@ -1361,9 +1368,7 @@ function disableAnimation() {
 		);
 
 		window.swup.hooks.on("page:view", () => {
-			applyAllStoredSettings();
-			applySakuraSetting();
-			syncDisplaySettingsPanelShell();
+			applyPersistentUiState();
 
 			// hide the temp high element when the transition is done
 			const heightExtend = document.getElementById("page-height-extend");
@@ -1376,6 +1381,8 @@ function disableAnimation() {
 				top: 0,
 				behavior: "instant",
 			});
+			refreshScrollMetrics();
+			scheduleScrollUpdates();
 
 			// 同步主题状态 - 解决从首页进入文章页面时代码块渲染问题
 			const storedTheme = localStorage.getItem("theme") || DEFAULT_THEME;
@@ -1450,8 +1457,7 @@ function disableAnimation() {
 	};
 
 	if (window?.swup?.hooks) {
-		initFancybox();
-		checkKatex();
+		initializePageEnhancements();
 		setup();
 	} else {
 		if (!(window as any)[SWUP_ENABLE_SETUP_BOUND_KEY]) {
@@ -1461,103 +1467,22 @@ function disableAnimation() {
 		// 监听 DOM 加载 (确保首屏也能加载优化组件)
 		if (document.readyState === "loading") {
 			document.addEventListener("DOMContentLoaded", () => {
-				initFancybox();
-				checkKatex();
+				initializePageEnhancements();
 			});
 		} else {
-			initFancybox();
-			checkKatex();
+			initializePageEnhancements();
 		}
 	}
 
 	let backToTopBtn = document.getElementById("back-to-top-btn");
 	let toc = document.getElementById("toc-wrapper");
 	let navbar = document.getElementById("navbar-wrapper");
+	let contentStartThreshold = window.innerHeight * (BANNER_HEIGHT / 100) + 100;
+	let tocVisibilityThreshold = window.innerHeight * (BANNER_HEIGHT / 100);
+	let navbarVisibilityThreshold =
+		window.innerHeight * (BANNER_HEIGHT / 100) - 88;
 
-	// 节流函数
-	function throttle(func: Function, limit: number) {
-		let inThrottle: boolean;
-		return function (this: any) {
-			const args = arguments;
-			const context = this;
-			if (!inThrottle) {
-				func.apply(context, args);
-				inThrottle = true;
-				setTimeout(() => (inThrottle = false), limit);
-			}
-		};
-	}
-
-	function scrollFunction() {
-		const scrollTop = document.documentElement.scrollTop;
-		const bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
-
-		// 尝试获取内容区域的起始位置
-		const contentWrapper = document.getElementById("content-wrapper");
-		let showBackToTopThreshold = bannerHeight + 100; // 默认回退值
-
-		if (contentWrapper) {
-			const rect = contentWrapper.getBoundingClientRect();
-			// 当 content-wrapper 的顶部接近视口顶部时显示
-			// rect.top 是相对于视口的，当它小于视口高度的一半时，说明已经滚动到了内容区
-			// 或者更简单：scrollTop > contentWrapper.offsetTop
-			// 由于 offsetTop 是相对于 offsetParent 的，可能需要累加
-			// 这里我们使用 getBoundingClientRect + scrollTop 来获取绝对位置
-			const absoluteTop = rect.top + scrollTop;
-			// 只有当滚动超过内容区域起始位置一定距离后才显示
-			showBackToTopThreshold = absoluteTop + window.innerHeight / 4;
-		}
-
-		// 批量处理DOM操作
-		requestAnimationFrame(() => {
-			if (backToTopBtn) {
-				// 使用动态计算的阈值
-				if (scrollTop > showBackToTopThreshold) {
-					backToTopBtn.classList.remove("hide");
-				} else {
-					backToTopBtn.classList.add("hide");
-				}
-			}
-
-			if (bannerEnabled && toc) {
-				const isBannerMode =
-					document.body.classList.contains("enable-banner");
-				if (isBannerMode) {
-					if (scrollTop > bannerHeight) {
-						toc.classList.remove("toc-hide");
-					} else {
-						toc.classList.add("toc-hide");
-					}
-				} else {
-					// In Fullscreen or None mode, always show TOC
-					toc.classList.remove("toc-hide");
-				}
-			}
-
-			if (bannerEnabled && navbar) {
-				const isHome =
-					document.body.classList.contains("is-home") &&
-					window.innerWidth >= 1280;
-				const currentBannerHeight = isHome
-					? BANNER_HEIGHT_HOME
-					: BANNER_HEIGHT;
-
-				const threshold =
-					window.innerHeight * (currentBannerHeight / 100) - 88;
-				if (scrollTop >= threshold) {
-					navbar.classList.add("navbar-hidden");
-				} else {
-					navbar.classList.remove("navbar-hidden");
-				}
-			}
-		});
-	}
-
-	// 使用节流优化滚动性能
-	window.onscroll = throttle(scrollFunction, 16); // 约60fps
-
-	window.onresize = () => {
-		// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
+	function updateBannerHeightExtend() {
 		let offset = Math.floor(
 			window.innerHeight * (BANNER_HEIGHT_EXTEND / 100),
 		);
@@ -1566,12 +1491,123 @@ function disableAnimation() {
 			"--banner-height-extend",
 			`${offset}px`,
 		);
-	};
+	}
+
+	function refreshScrollTargets() {
+		backToTopBtn = document.getElementById("back-to-top-btn");
+		toc = document.getElementById("toc-wrapper");
+		navbar = document.getElementById("navbar-wrapper");
+	}
+
+	function refreshScrollMetrics() {
+		refreshScrollTargets();
+		const bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
+		const contentWrapper = document.getElementById("content-wrapper");
+		contentStartThreshold = bannerHeight + 100;
+		tocVisibilityThreshold = bannerHeight;
+
+		if (contentWrapper) {
+			const absoluteTop =
+				contentWrapper.getBoundingClientRect().top +
+				(window.scrollY || document.documentElement.scrollTop || 0);
+			contentStartThreshold = absoluteTop + window.innerHeight / 4;
+		}
+
+		const isHome =
+			document.body.classList.contains("is-home") &&
+			window.innerWidth >= 1280;
+		const currentBannerHeight = isHome ? BANNER_HEIGHT_HOME : BANNER_HEIGHT;
+		navbarVisibilityThreshold =
+			window.innerHeight * (currentBannerHeight / 100) - 88;
+	}
+
+	function runScrollUpdates() {
+		const scrollState =
+			((window as any)[SCROLL_STATE_KEY] ??= {
+				rafId: null,
+			});
+		scrollState.rafId = null;
+
+		const scrollTop =
+			window.scrollY || document.documentElement.scrollTop || 0;
+
+		if (backToTopBtn) {
+			backToTopBtn.classList.toggle(
+				"hide",
+				scrollTop <= contentStartThreshold,
+			);
+		}
+
+		if (bannerEnabled && toc) {
+			const isBannerMode = document.body.classList.contains("enable-banner");
+			if (isBannerMode) {
+				toc.classList.toggle("toc-hide", scrollTop <= tocVisibilityThreshold);
+			} else {
+				toc.classList.remove("toc-hide");
+			}
+		}
+
+		if (bannerEnabled && navbar) {
+			navbar.classList.toggle(
+				"navbar-hidden",
+				scrollTop >= navbarVisibilityThreshold,
+			);
+		}
+	}
+
+	function scheduleScrollUpdates() {
+		const scrollState =
+			((window as any)[SCROLL_STATE_KEY] ??= {
+				rafId: null,
+			});
+		if (scrollState.rafId !== null) return;
+		scrollState.rafId = requestAnimationFrame(runScrollUpdates);
+	}
+
+	function handleLayoutResize() {
+		updateBannerHeightExtend();
+		refreshScrollMetrics();
+		scheduleScrollUpdates();
+	}
+
+	function bindLayoutRuntimeListeners() {
+		const previousScrollListener = (window as any)[SCROLL_LISTENER_KEY];
+		if (previousScrollListener) {
+			window.removeEventListener("scroll", previousScrollListener);
+		}
+
+		const previousResizeListener = (window as any)[RESIZE_LISTENER_KEY];
+		if (previousResizeListener) {
+			window.removeEventListener("resize", previousResizeListener);
+			window.removeEventListener(
+				"orientationchange",
+				previousResizeListener,
+			);
+		}
+
+		(window as any)[SCROLL_LISTENER_KEY] = scheduleScrollUpdates;
+		(window as any)[RESIZE_LISTENER_KEY] = handleLayoutResize;
+
+		window.addEventListener("scroll", scheduleScrollUpdates, {
+			passive: true,
+		});
+		window.addEventListener("resize", handleLayoutResize, {
+			passive: true,
+		});
+		window.addEventListener("orientationchange", handleLayoutResize, {
+			passive: true,
+		});
+	}
+
+	bindLayoutRuntimeListeners();
+	handleLayoutResize();
 
 	// 页面加载完成后初始化banner和轮播图
 	if (document.readyState === "loading") {
 		document.addEventListener("DOMContentLoaded", async () => {
 			showBanner();
+			refreshScrollMetrics();
+			scheduleScrollUpdates();
 			// 初始化面板管理器
 			try {
 				await import("../utils/panel-manager.js");
@@ -1582,6 +1618,8 @@ function disableAnimation() {
 		});
 	} else {
 		showBanner();
+		refreshScrollMetrics();
+		scheduleScrollUpdates();
 		// 页面已经加载完成，立即初始化面板管理器
 		(async () => {
 			try {

@@ -193,6 +193,9 @@ export class SakuraManager {
 	private animationId: number | null = null;
 	private img: HTMLImageElement | null = null;
 	private isRunning = false;
+	private readonly boundHandleResize = this.handleResize.bind(this);
+	private readonly boundHandleVisibilityChange =
+		this.handleVisibilityChange.bind(this);
 
 	constructor(config: SakuraConfig) {
 		this.config = config;
@@ -237,7 +240,11 @@ export class SakuraManager {
 		this.ctx = this.canvas.getContext("2d");
 
 		// 监听窗口大小变化
-		window.addEventListener("resize", this.handleResize.bind(this));
+		window.addEventListener("resize", this.boundHandleResize);
+		document.addEventListener(
+			"visibilitychange",
+			this.boundHandleVisibilityChange,
+		);
 	}
 
 	// 创建樱花列表
@@ -285,10 +292,24 @@ export class SakuraManager {
 
 	// 开始动画
 	private startAnimation(): void {
-		if (!this.ctx || !this.canvas || !this.sakuraList) return;
+		if (
+			!this.ctx ||
+			!this.canvas ||
+			!this.sakuraList ||
+			document.hidden
+		)
+			return;
 
 		const animate = () => {
-			if (!this.ctx || !this.canvas || !this.sakuraList) return;
+			if (
+				!this.ctx ||
+				!this.canvas ||
+				!this.sakuraList ||
+				document.hidden
+			) {
+				this.animationId = null;
+				return;
+			}
 
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			this.sakuraList.update();
@@ -307,6 +328,21 @@ export class SakuraManager {
 		}
 	}
 
+	private handleVisibilityChange(): void {
+		if (!this.isRunning) return;
+		if (document.hidden) {
+			if (this.animationId !== null) {
+				cancelAnimationFrame(this.animationId);
+				this.animationId = null;
+			}
+			return;
+		}
+
+		if (this.animationId === null) {
+			this.startAnimation();
+		}
+	}
+
 	// 停止樱花特效
 	stop(): void {
 		if (this.animationId) {
@@ -319,7 +355,11 @@ export class SakuraManager {
 			this.canvas = null;
 		}
 
-		window.removeEventListener("resize", this.handleResize.bind(this));
+		window.removeEventListener("resize", this.boundHandleResize);
+		document.removeEventListener(
+			"visibilitychange",
+			this.boundHandleVisibilityChange,
+		);
 		this.isRunning = false;
 	}
 

@@ -12,6 +12,9 @@
  * - 使用 content-visibility 隐藏屏幕外元素
  */
 
+const THEME_OPTIMIZER_SINGLETON_KEY = "__mizukiThemeOptimizerInstance";
+const THEME_OPTIMIZER_SWUP_BOUND_KEY = "__mizukiThemeOptimizerSwupBound";
+
 class ThemeOptimizer {
 	constructor() {
 		// 代码块优化相关
@@ -25,6 +28,10 @@ class ThemeOptimizer {
 
 		// 性能优化相关
 		this.isOptimizing = false;
+		this.themeObserver = null;
+		this.transitionObserver = null;
+		this.swupRetryInterval = null;
+		this.swupRetryTimeout = null;
 		this.heavySelectors = [
 			".float-panel",
 			"#navbar",
@@ -64,9 +71,14 @@ class ThemeOptimizer {
 	// ==================== Swup 钩子设置 ====================
 
 	setupSwupHooks() {
+		if (window[THEME_OPTIMIZER_SWUP_BOUND_KEY]) {
+			return;
+		}
+
 		// 设置 Swup 钩子的函数
 		const setupHooks = () => {
 			if (window.swup) {
+				window[THEME_OPTIMIZER_SWUP_BOUND_KEY] = true;
 				// 监听 page:view 事件
 				window.swup.hooks.on("page:view", () => {
 					// 页面切换后重新初始化代码块优化
@@ -101,15 +113,18 @@ class ThemeOptimizer {
 			});
 
 			// 额外的延迟重试机制，确保捕获到 Swup
-			const retryInterval = setInterval(() => {
+			this.swupRetryInterval = setInterval(() => {
 				if (setupHooks()) {
-					clearInterval(retryInterval);
+					clearInterval(this.swupRetryInterval);
+					this.swupRetryInterval = null;
 				}
 			}, 100);
 
 			// 最多重试 20 次（2 秒）
-			setTimeout(() => {
-				clearInterval(retryInterval);
+			this.swupRetryTimeout = setTimeout(() => {
+				clearInterval(this.swupRetryInterval);
+				this.swupRetryInterval = null;
+				this.swupRetryTimeout = null;
 			}, 2000);
 		}
 	}
@@ -254,17 +269,13 @@ class ThemeOptimizer {
 
 		// 监听主题变化
 		this.setupThemeListener();
-
-		// 页面变化时重新观察
-		if (window.swup) {
-			window.swup.hooks.on("page:view", () => {
-				setTimeout(() => this.observeCodeBlocks(), 100);
-			});
-		}
 	}
 
 	observeCodeBlocks() {
 		this.visibleBlocks.clear();
+		if (this.codeBlockObserver) {
+			this.codeBlockObserver.disconnect();
+		}
 
 		requestAnimationFrame(() => {
 			const codeBlocks = document.querySelectorAll(".expressive-code");
@@ -283,7 +294,7 @@ class ThemeOptimizer {
 
 	setupThemeListener() {
 		// 监听 data-theme 属性变化
-		const themeObserver = new MutationObserver((mutations) => {
+		this.themeObserver = new MutationObserver((mutations) => {
 			for (const mutation of mutations) {
 				if (
 					mutation.type === "attributes" &&
@@ -297,7 +308,7 @@ class ThemeOptimizer {
 			}
 		});
 
-		themeObserver.observe(document.documentElement, {
+		this.themeObserver.observe(document.documentElement, {
 			attributes: true,
 			attributeFilter: ["data-theme"],
 		});
@@ -346,7 +357,7 @@ class ThemeOptimizer {
 
 	interceptThemeSwitch() {
 		// 监听 class 变化来拦截主题切换
-		const observer = new MutationObserver((mutations) => {
+		this.transitionObserver = new MutationObserver((mutations) => {
 			for (const mutation of mutations) {
 				if (
 					mutation.type === "attributes" &&
@@ -370,7 +381,7 @@ class ThemeOptimizer {
 			}
 		});
 
-		observer.observe(document.documentElement, {
+		this.transitionObserver.observe(document.documentElement, {
 			attributes: true,
 			attributeFilter: ["class"],
 		});
@@ -379,6 +390,11 @@ class ThemeOptimizer {
 	optimizeThemeSwitch(useViewTransition = false) {
 		this.isOptimizing = true;
 		this.useViewTransition = useViewTransition;
+		document.dispatchEvent(
+			new CustomEvent("mizuki:theme-transition", {
+				detail: { isTransitioning: true },
+			}),
+		);
 
 		// 如果使用 View Transitions，不需要额外的优化，让浏览器处理
 		if (useViewTransition) {
@@ -498,6 +514,11 @@ class ThemeOptimizer {
 
 	restoreAfterThemeSwitch(useViewTransition = false) {
 		this.isOptimizing = false;
+		document.dispatchEvent(
+			new CustomEvent("mizuki:theme-transition", {
+				detail: { isTransitioning: false },
+			}),
+		);
 
 		// 如果使用 View Transitions，直接清理即可
 		if (useViewTransition) {
@@ -542,12 +563,31 @@ class ThemeOptimizer {
 		if (this.codeBlockObserver) {
 			this.codeBlockObserver.disconnect();
 		}
+		if (this.themeObserver) {
+			this.themeObserver.disconnect();
+			this.themeObserver = null;
+		}
+		if (this.transitionObserver) {
+			this.transitionObserver.disconnect();
+			this.transitionObserver = null;
+		}
+		if (this.swupRetryInterval) {
+			clearInterval(this.swupRetryInterval);
+			this.swupRetryInterval = null;
+		}
+		if (this.swupRetryTimeout) {
+			clearTimeout(this.swupRetryTimeout);
+			this.swupRetryTimeout = null;
+		}
 		this.visibleBlocks.clear();
 	}
 }
 
-// 初始化优化器
-const themeOptimizer = new ThemeOptimizer();
+if (window[THEME_OPTIMIZER_SINGLETON_KEY]) {
+	window.themeOptimizer = window[THEME_OPTIMIZER_SINGLETON_KEY];
+} else {
+	window[THEME_OPTIMIZER_SINGLETON_KEY] = new ThemeOptimizer();
+	window.themeOptimizer = window[THEME_OPTIMIZER_SINGLETON_KEY];
+}
 
 // 导出到全局（统一API）
-window.themeOptimizer = themeOptimizer;

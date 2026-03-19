@@ -553,6 +553,7 @@
 		if (isPlaying) {
 			audio.pause();
 		} else {
+			resetLoadErrorRecovery();
 			audio.play().catch(() => {});
 		}
 	}
@@ -618,13 +619,17 @@
 
 	function previousSong() {
 		if (playlist.length <= 1) return;
+		resetLoadErrorRecovery();
 		const newIndex =
 			currentIndex > 0 ? currentIndex - 1 : playlist.length - 1;
 		playSong(newIndex);
 	}
 
-	function nextSong(autoPlay: boolean = true) {
+	function nextSong(autoPlay: boolean = true, manualReset = false) {
 		if (playlist.length <= 1) return;
+		if (manualReset) {
+			resetLoadErrorRecovery();
+		}
 
 		let newIndex: number;
 		if (isShuffled) {
@@ -648,6 +653,7 @@
 	}
 
 	function handlePlaylistClick(index: number) {
+		resetLoadErrorRecovery();
 		if (index === currentIndex) {
 			// 如果点的是当前歌曲，直接切换 播放/暂停 状态
 			togglePlay();
@@ -682,9 +688,47 @@
 	}
 
 	let autoplayFailed = false;
+	let interactionListenersBound = false;
+	let consecutiveLoadErrors = 0;
+	let loadErrorRetryTimer: ReturnType<typeof setTimeout> | null = null;
+	const MAX_CONSECUTIVE_LOAD_ERRORS = 3;
+
+	function resetLoadErrorRecovery() {
+		consecutiveLoadErrors = 0;
+		if (loadErrorRetryTimer) {
+			clearTimeout(loadErrorRetryTimer);
+			loadErrorRetryTimer = null;
+		}
+		showError = false;
+	}
+
+	function bindInteractionListeners() {
+		if (interactionListenersBound || typeof document === "undefined") return;
+		interactionEvents.forEach((event) => {
+			document.addEventListener(event, handleUserInteraction, {
+				capture: true,
+			});
+		});
+		interactionListenersBound = true;
+	}
+
+	function unbindInteractionListeners() {
+		if (!interactionListenersBound || typeof document === "undefined") return;
+		interactionEvents.forEach((event) => {
+			document.removeEventListener(event, handleUserInteraction, {
+				capture: true,
+			});
+		});
+		interactionListenersBound = false;
+	}
 
 	function handleLoadSuccess() {
 		isLoading = false;
+		consecutiveLoadErrors = 0;
+		if (loadErrorRetryTimer) {
+			clearTimeout(loadErrorRetryTimer);
+			loadErrorRetryTimer = null;
+		}
 		if (audio?.duration && audio.duration > 1) {
 			duration = Math.floor(audio.duration);
 			if (playlist[currentIndex])
@@ -695,10 +739,15 @@
 		if (willAutoPlay || isPlaying) {
 			const playPromise = audio.play();
 			if (playPromise !== undefined) {
+				playPromise.then(() => {
+					autoplayFailed = false;
+					unbindInteractionListeners();
+				});
 				playPromise.catch((error) => {
 					console.warn("自动播放被拦截，等待用户交互:", error);
 					autoplayFailed = true;
 					isPlaying = false;
+					bindInteractionListeners();
 				});
 			}
 		}
@@ -711,6 +760,7 @@
 				playPromise
 					.then(() => {
 						autoplayFailed = false;
+						unbindInteractionListeners();
 					})
 					.catch(() => {});
 			}
@@ -720,13 +770,30 @@
 	function handleLoadError(_event: Event) {
 		if (!currentSong.url) return;
 		isLoading = false;
-		showErrorMessage(i18n(Key.musicPlayerErrorSong));
+		consecutiveLoadErrors += 1;
 
 		const shouldContinue = isPlaying || willAutoPlay;
-		if (playlist.length > 1) {
-			setTimeout(() => nextSong(shouldContinue), 1000);
+		const reachedRetryLimit =
+			consecutiveLoadErrors >=
+			Math.min(MAX_CONSECUTIVE_LOAD_ERRORS, Math.max(1, playlist.length));
+
+		if (loadErrorRetryTimer) {
+			clearTimeout(loadErrorRetryTimer);
+			loadErrorRetryTimer = null;
+		}
+
+		if (playlist.length > 1 && !reachedRetryLimit) {
+			showErrorMessage(
+				`${i18n(Key.musicPlayerErrorSong)} (${consecutiveLoadErrors}/${Math.min(MAX_CONSECUTIVE_LOAD_ERRORS, Math.max(1, playlist.length))})`,
+			);
+			loadErrorRetryTimer = setTimeout(() => {
+				loadErrorRetryTimer = null;
+				nextSong(shouldContinue);
+			}, 1000);
 		} else {
-			showErrorMessage(i18n(Key.musicPlayerErrorEmpty));
+			isPlaying = false;
+			willAutoPlay = false;
+			showErrorMessage(i18n(Key.musicPlayerErrorSong));
 		}
 	}
 
@@ -838,11 +905,6 @@
 	const interactionEvents = ["click", "keydown", "touchstart"];
 	onMount(() => {
 		loadVolumeSettings();
-		interactionEvents.forEach((event) => {
-			document.addEventListener(event, handleUserInteraction, {
-				capture: true,
-			});
-		});
 
 		if (!musicPlayerConfig.enable) return;
 
@@ -859,13 +921,11 @@
 			clearTimeout(hideTransitionTimer);
 			hideTransitionTimer = null;
 		}
-		if (typeof document !== "undefined") {
-			interactionEvents.forEach((event) => {
-				document.removeEventListener(event, handleUserInteraction, {
-					capture: true,
-				});
-			});
+		if (loadErrorRetryTimer) {
+			clearTimeout(loadErrorRetryTimer);
+			loadErrorRetryTimer = null;
 		}
+		unbindInteractionListeners();
 	});
 </script>
 
@@ -874,14 +934,18 @@
 	src={getAssetPath(currentSong.url)}
 	bind:volume
 	bind:muted={isMuted}
-	on:play={() => (isPlaying = true)}
+	on:play={() => {
+		isPlaying = true;
+		autoplayFailed = false;
+		unbindInteractionListeners();
+	}}
 	on:pause={() => (isPlaying = false)}
 	on:timeupdate={handleTimeUpdate}
 	on:ended={handleAudioEnded}
 	on:error={handleLoadError}
 	on:loadeddata={handleLoadSuccess}
 	on:loadstart={handleLoadStart}
-	preload="auto"
+	preload={isPlaying || willAutoPlay ? "auto" : "metadata"}
 ></audio>
 
 <svelte:window
@@ -1199,7 +1263,7 @@
 				</button>
 				<button
 					class="music-action-btn w-10 h-10 rounded-lg"
-					on:click={() => nextSong()}
+					on:click={() => nextSong(true, true)}
 					disabled={playlist.length <= 1}
 				>
 					<Icon icon="material-symbols:skip-next" class="text-xl" />

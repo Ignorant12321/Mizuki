@@ -10,6 +10,7 @@
 	let live2dInitialized = false;
 	let live2dRetryCount = 0;
 	let initRetryTimer = null;
+	let bootstrapTimer = null;
 	let toolAutoHideTimer = null;
 	let isComponentMounted = false;
 	let waifuContainer;
@@ -213,23 +214,52 @@
 	// 等待 DOM 和外部脚本加载完成后再初始化 Live2D
 	function setupLive2dWheelGuard() {
 		if (typeof window === "undefined") return () => {};
-		const onWheelCapture = (event) => {
-			const target = event.target;
-			if (!(target instanceof Element)) return;
-			if (target.closest("#waifu") || target.closest("#waifu-toggle")) {
-				// 禁用 Live2D 区域的滚轮，避免误触缩放/库内手势
-				event.preventDefault();
-				event.stopPropagation();
-			}
+		const { waifuEl } = getLive2dElements();
+		const toggleEl = document.getElementById("waifu-toggle");
+		const guardedElements = [waifuEl, toggleEl].filter(Boolean);
+		if (guardedElements.length === 0) return () => {};
+
+		const onWheel = (event) => {
+			event.preventDefault();
+			event.stopPropagation();
 		};
-		document.addEventListener("wheel", onWheelCapture, {
-			capture: true,
-			passive: false,
-		});
-		return () => {
-			document.removeEventListener("wheel", onWheelCapture, {
-				capture: true,
+
+		guardedElements.forEach((element) => {
+			element.addEventListener("wheel", onWheel, {
+				passive: false,
 			});
+		});
+
+		return () => {
+			guardedElements.forEach((element) => {
+				element.removeEventListener("wheel", onWheel);
+			});
+		};
+	}
+
+	function setupTouchEndBridge() {
+		if (typeof window === "undefined") return () => {};
+		const { live2dEl } = getLive2dElements();
+		if (!(live2dEl instanceof HTMLElement)) return () => {};
+
+		const handleTouchEnd = (event) => {
+			const touch = event.changedTouches?.[0];
+			const clickEvent = new MouseEvent("click", {
+				bubbles: true,
+				cancelable: true,
+				view: window,
+				clientX: touch?.clientX ?? 0,
+				clientY: touch?.clientY ?? 0,
+			});
+			live2dEl.dispatchEvent(clickEvent);
+		};
+
+		live2dEl.addEventListener("touchend", handleTouchEnd, {
+			passive: true,
+		});
+
+		return () => {
+			live2dEl.removeEventListener("touchend", handleTouchEnd);
 		};
 	}
 
@@ -357,6 +387,10 @@
 					console.log("Live2D initialized successfully (Svelte)");
 					cleanupToggleReopenHandler();
 					cleanupToggleReopenHandler = () => {};
+					cleanupWheelGuard();
+					cleanupWheelGuard = setupLive2dWheelGuard();
+					cleanupTouchEndHandler();
+					cleanupTouchEndHandler = setupTouchEndBridge();
 					cleanupMobileToolToggle();
 					cleanupMobileToolToggle = setupToolAutoHide();
 
@@ -431,38 +465,23 @@
 
 		fixCrossOrigin();
 		loadLive2dAssets();
-		cleanupWheelGuard();
-		cleanupWheelGuard = setupLive2dWheelGuard();
+	}
 
-		const handleTouchEnd = (e) => {
-			const target = e.target;
-			if (target && target.id === "live2d") {
-				const touch = e.changedTouches[0];
-				const clientX = touch ? touch.clientX : 0;
-				const clientY = touch ? touch.clientY : 0;
-
-				setTimeout(() => {
-					const clickEvent = new MouseEvent("click", {
-						bubbles: true,
-						cancelable: true,
-						view: window,
-						clientX: clientX,
-						clientY: clientY,
-					});
-					target.dispatchEvent(clickEvent);
-				}, 50);
-			}
+	function queueBootstrapLive2dRuntime() {
+		if (live2dBootstrapped || bootstrapTimer) return;
+		const runBootstrap = () => {
+			bootstrapTimer = null;
+			bootstrapLive2dRuntime();
 		};
 
-		window.addEventListener("touchend", handleTouchEnd, {
-			capture: true,
-			passive: true,
-		});
-		cleanupTouchEndHandler = () => {
-			window.removeEventListener("touchend", handleTouchEnd, {
-				capture: true,
+		if ("requestIdleCallback" in window) {
+			bootstrapTimer = window.requestIdleCallback(runBootstrap, {
+				timeout: 1500,
 			});
-		};
+			return;
+		}
+
+		bootstrapTimer = window.setTimeout(runBootstrap, 400);
 	}
 
 	onMount(() => {
@@ -476,24 +495,32 @@
 			if (customEvent.detail.key !== "live2dEnabled") return;
 			const enabled = Boolean(customEvent.detail.value);
 			applyLive2dEnabledState(enabled);
-			if (enabled) bootstrapLive2dRuntime();
+			if (enabled) queueBootstrapLive2dRuntime();
 		};
 		window.addEventListener(SETTING_CHANGE_EVENT, onSettingChange);
 		const onSwupPageView = () => {
 			const enabled = getStoredLive2dEnabled();
 			applyLive2dEnabledState(enabled);
-			if (enabled) bootstrapLive2dRuntime();
+			if (enabled) queueBootstrapLive2dRuntime();
 		};
 		document.addEventListener("swup:page:view", onSwupPageView);
 		cleanupSettingChangeHandler = () => {
 			window.removeEventListener(SETTING_CHANGE_EVENT, onSettingChange);
 			document.removeEventListener("swup:page:view", onSwupPageView);
 		};
-		if (initialEnabled) bootstrapLive2dRuntime();
+		if (initialEnabled) queueBootstrapLive2dRuntime();
 	});
 
 	onDestroy(() => {
 		isComponentMounted = false;
+		if (bootstrapTimer) {
+			if ("cancelIdleCallback" in window) {
+				window.cancelIdleCallback(bootstrapTimer);
+			} else {
+				clearTimeout(bootstrapTimer);
+			}
+			bootstrapTimer = null;
+		}
 		if (initRetryTimer) {
 			clearTimeout(initRetryTimer);
 			initRetryTimer = null;

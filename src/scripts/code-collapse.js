@@ -1,9 +1,14 @@
+const CODE_BLOCK_COLLAPSER_SINGLETON_KEY = "__mizukiCodeBlockCollapser";
+const CODE_BLOCK_COLLAPSER_SWUP_BOUND_KEY =
+	"__mizukiCodeBlockCollapserSwupBound";
+
 class CodeBlockCollapser {
 	constructor() {
 		this.processedBlocks = new WeakSet();
 		this.observer = null;
 		this.isThemeChanging = false;
 		this.debug = false; // 设置为 true 启用调试日志
+		this.themeTransitionHandler = null;
 		this.init();
 	}
 
@@ -25,7 +30,7 @@ class CodeBlockCollapser {
 			this.setupCodeBlocks();
 		}
 		this.observePageChanges();
-		this.setupThemeChangeListener();
+		this.setupThemeTransitionSync();
 		this.setupThemeOptimizerSync();
 	}
 
@@ -79,61 +84,38 @@ class CodeBlockCollapser {
 		}
 	}
 
-	setupThemeChangeListener() {
-		// 监听主题切换，在切换期间暂停 observer 和优化性能
-		const themeObserver = new MutationObserver((mutations) => {
-			for (const mutation of mutations) {
-				if (
-					mutation.type === "attributes" &&
-					(mutation.attributeName === "class" ||
-						mutation.attributeName === "data-theme")
-				) {
-					const isTransitioning =
-						document.documentElement.classList.contains(
-							"is-theme-transitioning",
-						);
+	setupThemeTransitionSync() {
+		this.themeTransitionHandler = (event) => {
+			const isTransitioning = Boolean(event?.detail?.isTransitioning);
 
-					if (isTransitioning && !this.isThemeChanging) {
-						this.isThemeChanging = true;
-
-						// 断开 observer 以避免在主题切换时进行不必要的检查
-						if (this.observer) {
-							this.observer.disconnect();
-						}
-
-						// 性能优化：临时禁用代码块的动画和过渡
-						document
-							.querySelectorAll(".expressive-code")
-							.forEach((block) => {
-								block.style.transition = "none";
-							});
-					} else if (!isTransitioning && this.isThemeChanging) {
-						this.isThemeChanging = false;
-
-						// 等待主题切换完全结束后再恢复
-						requestAnimationFrame(() => {
-							// 恢复代码块的过渡效果
-							document
-								.querySelectorAll(".expressive-code")
-								.forEach((block) => {
-									block.style.transition = "";
-								});
-
-							// 重新连接 observer
-							setTimeout(() => {
-								this.observePageChanges();
-							}, 50);
-						});
-					}
-					break;
+			if (isTransitioning && !this.isThemeChanging) {
+				this.isThemeChanging = true;
+				if (this.observer) {
+					this.observer.disconnect();
 				}
+				document.querySelectorAll(".expressive-code").forEach((block) => {
+					block.style.transition = "none";
+				});
+				return;
 			}
-		});
 
-		themeObserver.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ["class", "data-theme"],
-		});
+			if (!isTransitioning && this.isThemeChanging) {
+				this.isThemeChanging = false;
+				requestAnimationFrame(() => {
+					document.querySelectorAll(".expressive-code").forEach((block) => {
+						block.style.transition = "";
+					});
+					setTimeout(() => {
+						this.observePageChanges();
+					}, 50);
+				});
+			}
+		};
+
+		document.addEventListener(
+			"mizuki:theme-transition",
+			this.themeTransitionHandler,
+		);
 	}
 
 	setupCodeBlocks() {
@@ -286,6 +268,13 @@ class CodeBlockCollapser {
 			this.observer.disconnect();
 			this.observer = null;
 		}
+		if (this.themeTransitionHandler) {
+			document.removeEventListener(
+				"mizuki:theme-transition",
+				this.themeTransitionHandler,
+			);
+			this.themeTransitionHandler = null;
+		}
 		this.processedBlocks = new WeakSet();
 	}
 
@@ -309,14 +298,23 @@ class CodeBlockCollapser {
 	}
 }
 
-const codeBlockCollapser = new CodeBlockCollapser();
+if (!window[CODE_BLOCK_COLLAPSER_SINGLETON_KEY]) {
+	window[CODE_BLOCK_COLLAPSER_SINGLETON_KEY] = new CodeBlockCollapser();
+}
+
+const codeBlockCollapser = window[CODE_BLOCK_COLLAPSER_SINGLETON_KEY];
 
 window.CodeBlockCollapser = CodeBlockCollapser;
 window.codeBlockCollapser = codeBlockCollapser;
 
 // 设置 Swup 钩子的函数
 function setupSwupHooks() {
+	if (window[CODE_BLOCK_COLLAPSER_SWUP_BOUND_KEY]) {
+		return true;
+	}
+
 	if (window.swup) {
+		window[CODE_BLOCK_COLLAPSER_SWUP_BOUND_KEY] = true;
 		codeBlockCollapser.log("Setting up Swup hooks");
 
 		// 监听 page:view 事件
