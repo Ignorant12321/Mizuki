@@ -14,7 +14,5 @@ import "./list-page-handler.js";
 		cardSelector: ".igNav-card",
 		copySuccessTextId: "igNavs-copy-success-text",
 		mutationWatchIds: ["igNav-search"],
-		defaultCopySuccessText: "已复制",
 	});
 })();
-

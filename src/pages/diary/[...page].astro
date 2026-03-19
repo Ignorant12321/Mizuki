@@ -11,7 +11,11 @@ import CenterTitle from "@components/CenterTitle.astro";
 import Pagination from "../../components/control/Pagination.astro";
 // 1. 导出 getStaticPaths
 export async function getStaticPaths({ paginate }: any) {
-	const PAGE_SIZE = siteConfig.pagination?.diaryPageSize ?? 3;
+	// 日记分页大小仅由 pagination.diaryPageSize 控制
+	const rawPageSize = Number(siteConfig.pagination?.diaryPageSize ?? 3);
+	const PAGE_SIZE = Number.isFinite(rawPageSize)
+		? Math.max(1, Math.floor(rawPageSize))
+		: 3;
 
 	if (!siteConfig.featurePages.diary) {
 		return [];

@@ -91,7 +91,7 @@ export const en: Translation = {
 	[Key.diarySubtitle]: "Share life, anytime, anywhere",
 	[Key.diaryCount]: "diary entries",
 	[Key.diaryReply]: "Reply",
-	[Key.diaryTips]: "Only show the latest 30 diary entries",
+	[Key.diaryTips]: "Murmurs, meant for myself.",
 	[Key.diaryMinutesAgo]: "minutes ago",
 	[Key.diaryHoursAgo]: "hours ago",
 	[Key.diaryDaysAgo]: "days ago",

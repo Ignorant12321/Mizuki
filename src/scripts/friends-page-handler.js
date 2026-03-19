@@ -14,6 +14,5 @@ import "./list-page-handler.js";
 		cardSelector: ".friend-card",
 		copySuccessTextId: "friends-copy-success-text",
 		mutationWatchIds: ["friend-search"],
-		defaultCopySuccessText: "已复制",
 	});
 })();

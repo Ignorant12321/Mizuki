@@ -159,15 +159,13 @@ export const siteConfig: SiteConfig = {
 		allowSwitch: true,
 	},
 
-	// 首页分页配置
-	homePage: {
-		postPageSize: 1,
-	},
-
-	// 通用分页配置（首页/日记 + 不同端显示数量）
+	// 统一分页配置
+	// - homePageSize: 首页每页文章数
+	// - diaryPageSize: 日记页每页条目数
+	// - mobileVisiblePages / desktopVisiblePages: 仅控制分页条显示的页码数量，不影响每页数据量
 	pagination: {
-		homePageSize: 1,
-		diaryPageSize: 1,
+		homePageSize: 5,
+		diaryPageSize: 3,
 		mobileVisiblePages: 3,
 		desktopVisiblePages: 5,
 	},

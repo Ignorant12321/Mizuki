@@ -191,10 +191,6 @@ export type SiteConfig = {
 		allowSwitch: boolean; // 是否允许用户切换布局
 	};
 
-	homePage?: {
-		postPageSize?: number; // number of posts per page on homepage
-	};
-
 	pagination?: {
 		homePageSize?: number; // 首页每页文章数
 		diaryPageSize?: number; // 日记每页条目数

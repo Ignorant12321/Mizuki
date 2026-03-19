@@ -4,6 +4,8 @@ import Markdown from "@components/misc/Markdown.astro";
 import { getShuffledIgNavsList, tagPriority } from "../data/Ig-nav";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import CenterTitle from "@/components/CenterTitle.astro";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
 
 const title = "津渡";
 // const watermark = "NAVIGATION";
@@ -17,7 +19,7 @@ const igNavsFilterAll = "全部";
 const igNavsVisit = "访问";
 const igNavsCopyLink = "复制链接";
 const igNavsNoResults = "未找到匹配的链接";
-const igNavsCopySuccess = "已复制";
+const igNavsCopySuccess = i18n(I18nKey.friendsCopySuccess);
 
 if (!igNavsPost) {
 	throw new Error("igNavs page content not found");

@@ -12,7 +12,8 @@
 		var cardSelector = config.cardSelector;
 		var copySuccessTextId = config.copySuccessTextId;
 		var mutationWatchIds = config.mutationWatchIds || [];
-		var defaultCopySuccessText = config.defaultCopySuccessText || "已复制";
+		// Fallback text only used when template does not provide copySuccessTextId.
+		var defaultCopySuccessText = config.defaultCopySuccessText || "Copied";
 
 		if (!stateKey || !searchInputId || !gridId || !cardSelector) {
 			console.error("[" + pageName + " Global] Missing required config");

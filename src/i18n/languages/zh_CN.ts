@@ -88,7 +88,7 @@ export const zh_CN: Translation = {
 	[Key.diarySubtitle]: "随时随地，分享生活",
 	[Key.diaryCount]: "条短文",
 	[Key.diaryReply]: "回复",
-	[Key.diaryTips]: "只展示最近30条日记",
+	[Key.diaryTips]: "碎碎念，予己听。",
 	[Key.diaryMinutesAgo]: "分钟前",
 	[Key.diaryHoursAgo]: "小时前",
 	[Key.diaryDaysAgo]: "天前",

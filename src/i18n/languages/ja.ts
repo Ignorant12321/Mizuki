@@ -91,7 +91,7 @@ export const ja: Translation = {
 	[Key.diarySubtitle]: "いつでも、どこでも生活を共有",
 	[Key.diaryCount]: "件の日記のエントリー",
 	[Key.diaryReply]: "返信",
-	[Key.diaryTips]: "最新の30件の日記のエントリーのみを表示",
+	[Key.diaryTips]: "つぶやき、己に聞かせる。",
 	[Key.diaryMinutesAgo]: "分前",
 	[Key.diaryHoursAgo]: "時間前",
 	[Key.diaryDaysAgo]: "日前",
