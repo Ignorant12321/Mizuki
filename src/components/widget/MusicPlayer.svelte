@@ -26,7 +26,9 @@
 		offset: string;
 	};
 
-	function getHorizontalInsetVars(position: FloatingWidgetHorizontalPosition) {
+	function getHorizontalInsetVars(
+		position: FloatingWidgetHorizontalPosition,
+	) {
 		return {
 			left: position.side === "left" ? position.offset : "auto",
 			right: position.side === "right" ? position.offset : "auto",
@@ -123,11 +125,6 @@
 	let progressBar: HTMLElement;
 	let volumeBar: HTMLElement;
 	let lyricContainer: HTMLDivElement;
-	let playlistContentEl: HTMLDivElement | null = null;
-	let playlistContentHeight: string | null = null;
-	let playlistHeightTimer: ReturnType<typeof setTimeout> | null = null;
-	let playlistSwitchToken = 0;
-	const PLAYLIST_HEIGHT_TRANSITION_MS = 220;
 
 	let lyricLines: LyricLine[] = [];
 	let lyricIsTimed = false;
@@ -144,38 +141,44 @@
 			cover: "/assets/music/cover/勾指起誓 - 洛天依、ilem.jpg",
 			url: "/assets/music/url/勾指起誓 - 洛天依、ilem.mp3",
 			duration: 240,
+			lyricUrl: "/assets/music/lyric/勾指起誓 - 洛天依、ilem.lrc",
 		},
 		{
 			id: 2,
 			title: "霜雪千年 (cover 洛天依乐正绫)",
 			artist: "真栗",
-			cover: "assets/music/cover/霜雪千年 (cover 洛天依乐正绫) - 真栗.jpg",
-			url: "assets/music/url/霜雪千年 (cover 洛天依乐正绫) - 真栗.mp3",
+			cover: "/assets/music/cover/霜雪千年 (cover 洛天依乐正绫) - 真栗.jpg",
+			url: "/assets/music/url/霜雪千年 (cover 洛天依乐正绫) - 真栗.mp3",
 			duration: 180,
+			lyricUrl:
+				"/assets/music/lyric/霜雪千年 (cover 洛天依乐正绫) - 真栗.lrc",
 		},
 		{
 			id: 3,
 			title: "权御天下",
 			artist: "洛天依",
-			cover: "assets/music/cover/权御天下 - 洛天依.jpg",
-			url: "assets/music/url/权御天下 - 洛天依.mp3",
+			cover: "/assets/music/cover/权御天下 - 洛天依.jpg",
+			url: "/assets/music/url/权御天下 - 洛天依.mp3",
 			duration: 200,
+			lyricUrl: "/assets/music/lyric/权御天下 - 洛天依.lrc",
 		},
 		{
 			id: 4,
 			title: "达拉崩吧 (Live)",
 			artist: "周深",
-			cover: "assets/music/cover/达拉崩吧 (Live) - 周深.jpg",
-			url: "assets/music/url/达拉崩吧 (Live) - 周深.mp3",
+			cover: "/assets/music/cover/达拉崩吧 (Live) - 周深.jpg",
+			url: "/assets/music/url/达拉崩吧 (Live) - 周深.mp3",
 			duration: 200,
+			lyricUrl: "/assets/music/lyric/达拉崩吧 (Live) - 周深.lrc",
 		},
 		{
 			id: 5,
 			title: "蝴蝶",
 			artist: "洛天依",
-			cover: "assets/music/cover/蝴蝶 - 洛天依.jpg",
-			url: "assets/music/url/蝴蝶 - 洛天依.mp3",
+			cover: "/assets/music/cover/蝴蝶 - 洛天依.jpg",
+			url: "/assets/music/url/蝴蝶 - 洛天依.mp3",
 			duration: 200,
+			lyricUrl: "/assets/music/lyric/蝴蝶 - 洛天依.lrc",
 		},
 	];
 
@@ -224,7 +227,9 @@
 		return false;
 	}
 
-	function extractSongLyricFields(song: any): Pick<Song, "lyric" | "lyricUrl"> {
+	function extractSongLyricFields(
+		song: any,
+	): Pick<Song, "lyric" | "lyricUrl"> {
 		const candidates: string[] = [];
 		const pushCandidate = (value: unknown) => {
 			if (typeof value !== "string") return;
@@ -244,7 +249,10 @@
 		let lyric: string | undefined;
 		let lyricUrl: string | undefined;
 		for (const candidate of candidates) {
-			if (!lyric && (hasLyricTimestamp(candidate) || candidate.includes("\n"))) {
+			if (
+				!lyric &&
+				(hasLyricTimestamp(candidate) || candidate.includes("\n"))
+			) {
 				lyric = candidate;
 				continue;
 			}
@@ -341,7 +349,10 @@
 
 	async function resolveSongLyricText(song: Song): Promise<string> {
 		if (song.lyric) {
-			if (isLikelyLyricUrl(song.lyric) && !hasLyricTimestamp(song.lyric)) {
+			if (
+				isLikelyLyricUrl(song.lyric) &&
+				!hasLyricTimestamp(song.lyric)
+			) {
 				const remoteLyric = await fetchLyricByUrl(song.lyric);
 				if (remoteLyric) return remoteLyric;
 			} else {
@@ -545,43 +556,12 @@
 	}
 
 	// 切换歌单操作
-	async function switchPlaylist(index: number) {
+	function switchPlaylist(index: number) {
 		if (currentListIndex === index) return;
-		const switchToken = ++playlistSwitchToken;
-		const startHeight = playlistContentEl?.offsetHeight ?? 0;
-		if (playlistContentEl) {
-			if (playlistHeightTimer) {
-				clearTimeout(playlistHeightTimer);
-				playlistHeightTimer = null;
-			}
-			playlistContentHeight = `${startHeight}px`;
-		}
-
 		currentListIndex = index;
 
 		// 仅仅加载新歌单数据更新UI，不再去管 audio 的 pause 和 play
-		await loadPlaylistData(index);
-		await tick();
-
-		if (!playlistContentEl || switchToken !== playlistSwitchToken) {
-			playlistContentHeight = null;
-			return;
-		}
-
-		const targetHeight = playlistContentEl.scrollHeight;
-		if (Math.abs(targetHeight - startHeight) < 1) {
-			playlistContentHeight = null;
-			return;
-		}
-
-		requestAnimationFrame(() => {
-			if (!playlistContentEl || switchToken !== playlistSwitchToken) return;
-			playlistContentHeight = `${targetHeight}px`;
-			playlistHeightTimer = setTimeout(() => {
-				playlistContentHeight = null;
-				playlistHeightTimer = null;
-			}, PLAYLIST_HEIGHT_TRANSITION_MS);
-		});
+		loadPlaylistData(index);
 	}
 
 	function togglePlay() {
@@ -739,7 +719,8 @@
 	}
 
 	function bindInteractionListeners() {
-		if (interactionListenersBound || typeof document === "undefined") return;
+		if (interactionListenersBound || typeof document === "undefined")
+			return;
 		interactionEvents.forEach((event) => {
 			document.addEventListener(event, handleUserInteraction, {
 				capture: true,
@@ -749,7 +730,8 @@
 	}
 
 	function unbindInteractionListeners() {
-		if (!interactionListenersBound || typeof document === "undefined") return;
+		if (!interactionListenersBound || typeof document === "undefined")
+			return;
 		interactionEvents.forEach((event) => {
 			document.removeEventListener(event, handleUserInteraction, {
 				capture: true,
@@ -957,10 +939,6 @@
 			clearTimeout(hideTransitionTimer);
 			hideTransitionTimer = null;
 		}
-		if (playlistHeightTimer) {
-			clearTimeout(playlistHeightTimer);
-			playlistHeightTimer = null;
-		}
 		if (loadErrorRetryTimer) {
 			clearTimeout(loadErrorRetryTimer);
 			loadErrorRetryTimer = null;
@@ -995,525 +973,585 @@
 
 {#if musicPlayerConfig.enable}
 	<div class="music-player-anchor" style={musicPlayerPositionStyle}>
-	{#if showError}
-		<div class="music-player-error z-60 max-w-sm">
-			<div
-				class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-up"
-			>
-				<Icon icon="material-symbols:error" class="text-xl shrink-0" />
-				<span class="text-sm flex-1">{errorMessage}</span>
-				<button
-					on:click={hideError}
-					class="text-white/80 hover:text-white transition-colors"
-				>
-					<Icon icon="material-symbols:close" class="text-lg" />
-				</button>
-			</div>
-		</div>
-	{/if}
-
-	<div
-		class="music-player fixed z-50 transition-all duration-300 ease-in-out"
-		class:expanded={isExpanded}
-		class:hidden-mode={isHidden}
-	>
-		<div
-			class="orb-player w-12 h-12 rounded-full cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
-			class:opacity-0={!isHidden}
-			class:scale-0={!isHidden}
-			class:pointer-events-none={!isHidden}
-			on:click={toggleHidden}
-			on:keydown={(e) => {
-				if (e.key === "Enter" || e.key === " ") {
-					e.preventDefault();
-					toggleHidden();
-				}
-			}}
-			role="button"
-			tabindex="0"
-			aria-label={i18n(Key.musicPlayerShow)}
-		>
-			{#if isLoading}
-				<span class="orb-spinner" aria-hidden="true"></span>
-			{:else if isPlaying}
-				<div class="orb-content flex items-end space-x-[2px] h-[16px]">
-					<div class="w-[2px] orb-bar rounded-sm music-bar bar-1"></div>
-					<div class="w-[2px] orb-bar rounded-sm music-bar bar-2"></div>
-					<div class="w-[2px] orb-bar rounded-sm music-bar bar-3"></div>
-					<div class="w-[2px] orb-bar rounded-sm music-bar bar-4"></div>
-					<div class="w-[2px] orb-bar rounded-sm music-bar bar-5"></div>
-				</div>
-			{:else}
-				<Icon
-					icon="material-symbols:music-note"
-					class="orb-icon text-lg"
-				/>
-			{/if}
-		</div>
-		<div
-			class="mini-player music-surface card-base bg-(--float-panel-bg) shadow-xl rounded-2xl p-3 transition-all duration-500 ease-in-out"
-			class:opacity-0={isExpanded || isHidden}
-			class:scale-95={isExpanded || isHidden}
-			class:pointer-events-none={isExpanded || isHidden}
-		>
-			<div class="flex items-center gap-3">
+		{#if showError}
+			<div class="music-player-error z-60 max-w-sm">
 				<div
-					class="cover-container music-cover relative w-12 h-12 rounded-full overflow-hidden cursor-pointer"
-					class:spinning={isPlaying && !isLoading}
-					on:click={togglePlay}
-					on:keydown={(e) => {
-						if (e.key === "Enter" || e.key === " ") {
-							e.preventDefault();
-							togglePlay();
-						}
-					}}
-					role="button"
-					tabindex="0"
-					aria-label={isPlaying
-						? i18n(Key.musicPlayerPause)
-						: i18n(Key.musicPlayerPlay)}
+					class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-up"
 				>
-					<div class="cover-disc" class:spinning={isPlaying && !isLoading}>
-						<div class="cover-label">
-							<img
-								src={getAssetPath(currentSong.cover)}
-								alt={i18n(Key.musicPlayerCover)}
-								class="cover-art w-full h-full object-cover transition-transform duration-300"
-								class:animate-pulse={isLoading}
-							/>
+					<Icon
+						icon="material-symbols:error"
+						class="text-xl shrink-0"
+					/>
+					<span class="text-sm flex-1">{errorMessage}</span>
+					<button
+						on:click={hideError}
+						class="text-white/80 hover:text-white transition-colors"
+					>
+						<Icon icon="material-symbols:close" class="text-lg" />
+					</button>
+				</div>
+			</div>
+		{/if}
+
+		<div
+			class="music-player fixed z-50 transition-all duration-300 ease-in-out"
+			class:expanded={isExpanded}
+			class:hidden-mode={isHidden}
+		>
+			<div
+				class="orb-player w-12 h-12 rounded-full cursor-pointer transition-all duration-500 ease-in-out flex items-center justify-center hover:scale-110 active:scale-95"
+				class:opacity-0={!isHidden}
+				class:scale-0={!isHidden}
+				class:pointer-events-none={!isHidden}
+				on:click={toggleHidden}
+				on:keydown={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						toggleHidden();
+					}
+				}}
+				role="button"
+				tabindex="0"
+				aria-label={i18n(Key.musicPlayerShow)}
+			>
+				{#if isLoading}
+					<span class="orb-spinner" aria-hidden="true"></span>
+				{:else if isPlaying}
+					<div
+						class="orb-content flex items-end space-x-[2px] h-[16px]"
+					>
+						<div
+							class="w-[2px] orb-bar rounded-sm music-bar bar-1"
+						></div>
+						<div
+							class="w-[2px] orb-bar rounded-sm music-bar bar-2"
+						></div>
+						<div
+							class="w-[2px] orb-bar rounded-sm music-bar bar-3"
+						></div>
+						<div
+							class="w-[2px] orb-bar rounded-sm music-bar bar-4"
+						></div>
+						<div
+							class="w-[2px] orb-bar rounded-sm music-bar bar-5"
+						></div>
+					</div>
+				{:else}
+					<Icon
+						icon="material-symbols:music-note"
+						class="orb-icon text-lg"
+					/>
+				{/if}
+			</div>
+			<div
+				class="mini-player music-surface card-base bg-(--float-panel-bg) shadow-xl rounded-2xl p-3 transition-all duration-500 ease-in-out"
+				class:opacity-0={isExpanded || isHidden}
+				class:scale-95={isExpanded || isHidden}
+				class:pointer-events-none={isExpanded || isHidden}
+			>
+				<div class="flex items-center gap-3">
+					<div
+						class="cover-container music-cover relative w-12 h-12 rounded-full overflow-hidden cursor-pointer"
+						class:spinning={isPlaying && !isLoading}
+						on:click={togglePlay}
+						on:keydown={(e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								togglePlay();
+							}
+						}}
+						role="button"
+						tabindex="0"
+						aria-label={isPlaying
+							? i18n(Key.musicPlayerPause)
+							: i18n(Key.musicPlayerPlay)}
+					>
+						<div
+							class="cover-disc"
+							class:spinning={isPlaying && !isLoading}
+						>
+							<div class="cover-label">
+								<img
+									src={getAssetPath(currentSong.cover)}
+									alt={i18n(Key.musicPlayerCover)}
+									class="cover-art w-full h-full object-cover transition-transform duration-300"
+									class:animate-pulse={isLoading}
+								/>
+							</div>
+							<span class="cover-hole" aria-hidden="true"></span>
 						</div>
-						<span class="cover-hole" aria-hidden="true"></span>
+						<div
+							class="cover-hover-mask absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+						>
+							{#if isLoading}
+								<Icon
+									icon="eos-icons:loading"
+									class="text-white text-xl"
+								/>
+							{:else if isPlaying}
+								<Icon
+									icon="material-symbols:pause"
+									class="text-white text-xl"
+								/>
+							{:else}
+								<Icon
+									icon="material-symbols:play-arrow"
+									class="text-white text-xl"
+								/>
+							{/if}
+						</div>
 					</div>
 					<div
-						class="cover-hover-mask absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+						class="flex-1 min-w-0 cursor-pointer"
+						on:click={toggleExpanded}
+						on:keydown={(e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								toggleExpanded();
+							}
+						}}
+						role="button"
+						tabindex="0"
+						aria-label={i18n(Key.musicPlayerExpand)}
 					>
-						{#if isLoading}
+						<div class="text-sm font-medium text-90 truncate">
+							{currentSong.title}
+						</div>
+						<div class="text-xs text-50 truncate">
+							{currentSong.artist}
+						</div>
+					</div>
+					<div class="flex items-center gap-1">
+						<button
+							class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
+							on:click|stopPropagation={toggleHidden}
+							title={i18n(Key.musicPlayerHide)}
+						>
 							<Icon
-								icon="eos-icons:loading"
-								class="text-white text-xl"
+								icon="material-symbols:visibility-off"
+								class="text-lg"
 							/>
-						{:else if isPlaying}
+						</button>
+						<button
+							class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
+							on:click|stopPropagation={toggleExpanded}
+						>
 							<Icon
-								icon="material-symbols:pause"
-								class="text-white text-xl"
+								icon="material-symbols:expand-less"
+								class="text-lg"
 							/>
+						</button>
+					</div>
+				</div>
+			</div>
+			<div
+				class="expanded-player music-surface card-base bg-(--float-panel-bg) shadow-xl rounded-2xl p-4 transition-all duration-500 ease-in-out"
+				class:opacity-0={!isExpanded}
+				class:scale-95={!isExpanded}
+				class:pointer-events-none={!isExpanded}
+			>
+				<div class="flex items-center gap-4 mb-4">
+					<div
+						class="cover-container music-cover relative w-16 h-16 rounded-full overflow-hidden shrink-0"
+						class:spinning={isPlaying && !isLoading}
+					>
+						<div
+							class="cover-disc"
+							class:spinning={isPlaying && !isLoading}
+						>
+							<div class="cover-label">
+								<img
+									src={getAssetPath(currentSong.cover)}
+									alt={i18n(Key.musicPlayerCover)}
+									class="cover-art w-full h-full object-cover transition-transform duration-300"
+									class:animate-pulse={isLoading}
+								/>
+							</div>
+							<span class="cover-hole" aria-hidden="true"></span>
+						</div>
+					</div>
+					<div class="flex-1 min-w-0">
+						<div
+							class="song-title text-lg font-bold text-90 truncate mb-1"
+						>
+							{currentSong.title}
+						</div>
+						<div class="song-artist text-sm text-50 truncate">
+							{currentSong.artist}
+						</div>
+					</div>
+					<div class="flex items-center gap-1">
+						<button
+							class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
+							on:click={toggleHidden}
+							title={i18n(Key.musicPlayerHide)}
+						>
+							<Icon
+								icon="material-symbols:visibility-off"
+								class="text-lg"
+							/>
+						</button>
+						<button
+							class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
+							class:control-active={showPlaylist}
+							on:click={togglePlaylist}
+							title={i18n(Key.musicPlayerPlaylist)}
+						>
+							<Icon
+								icon="material-symbols:queue-music"
+								class="text-lg"
+							/>
+						</button>
+					</div>
+				</div>
+				<div class="progress-section mb-4">
+					<div class="progress-row flex items-center gap-2">
+						<div
+							class="progress-bar music-track flex-1 h-2 bg-(--btn-regular-bg) rounded-full cursor-pointer"
+							bind:this={progressBar}
+							on:click={setProgress}
+							on:keydown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									e.preventDefault();
+									const percent = 0.5;
+									const newTime = percent * duration;
+									if (audio) {
+										audio.currentTime = newTime;
+										currentTime = newTime;
+									}
+								}
+							}}
+							role="slider"
+							tabindex="0"
+							aria-label={i18n(Key.musicPlayerProgress)}
+							aria-valuemin="0"
+							aria-valuemax="100"
+							aria-valuenow={duration > 0
+								? (currentTime / duration) * 100
+								: 0}
+						>
+							<div
+								class="music-track-fill h-full bg-(--primary) rounded-full transition-all duration-100"
+								style="width: {duration > 0
+									? (currentTime / duration) * 100
+									: 0}%"
+							></div>
+						</div>
+						<div
+							class="progress-time shrink-0 text-xs text-30 tabular-nums"
+						>
+							{formatTime(currentTime)} / {formatTime(duration)}
+						</div>
+					</div>
+				</div>
+				<div class="lyrics-section mb-4">
+					<div
+						class="lyrics-panel custom-scrollbar"
+						bind:this={lyricContainer}
+					>
+						{#if lyricLoading}
+							<p class="lyrics-placeholder">歌词加载中...</p>
+						{:else if lyricLines.length === 0}
+							<p class="lyrics-placeholder">暂无歌词</p>
 						{:else}
-							<Icon
-								icon="material-symbols:play-arrow"
-								class="text-white text-xl"
-							/>
+							<div class="lyrics-spacer" aria-hidden="true"></div>
+							{#each lyricLines as line, lyricIndex}
+								<p
+									class="lyric-line"
+									class:active={lyricIsTimed &&
+										lyricIndex === currentLyricIndex}
+									data-lyric-index={lyricIndex}
+								>
+									{line.text}
+								</p>
+							{/each}
+							<div class="lyrics-spacer" aria-hidden="true"></div>
 						{/if}
 					</div>
 				</div>
 				<div
-					class="flex-1 min-w-0 cursor-pointer"
-					on:click={toggleExpanded}
-					on:keydown={(e) => {
-						if (e.key === "Enter" || e.key === " ") {
-							e.preventDefault();
-							toggleExpanded();
-						}
-					}}
-					role="button"
-					tabindex="0"
-					aria-label={i18n(Key.musicPlayerExpand)}
+					class="controls flex items-center justify-center gap-2 mb-4"
 				>
-					<div class="text-sm font-medium text-90 truncate">
-						{currentSong.title}
-					</div>
-					<div class="text-xs text-50 truncate">
-						{currentSong.artist}
-					</div>
-				</div>
-				<div class="flex items-center gap-1">
 					<button
-						class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
-						on:click|stopPropagation={toggleHidden}
-						title={i18n(Key.musicPlayerHide)}
+						class="music-action-btn w-10 h-10 rounded-lg"
+						class:control-active={isShuffled}
+						on:click={toggleShuffle}
+						disabled={playlist.length <= 1}
+					>
+						<Icon icon="material-symbols:shuffle" class="text-lg" />
+					</button>
+					<button
+						class="music-action-btn w-10 h-10 rounded-lg"
+						on:click={previousSong}
+						disabled={playlist.length <= 1}
 					>
 						<Icon
-							icon="material-symbols:visibility-off"
-							class="text-lg"
+							icon="material-symbols:skip-previous"
+							class="text-xl"
 						/>
 					</button>
 					<button
-						class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
-						on:click|stopPropagation={toggleExpanded}
+						class="play-main-btn w-12 h-12 rounded-full flex items-center justify-center"
+						class:opacity-50={isLoading}
+						disabled={isLoading}
+						on:click={togglePlay}
 					>
-						<Icon
-							icon="material-symbols:expand-less"
-							class="text-lg"
-						/>
-					</button>
-				</div>
-			</div>
-		</div>
-		<div
-			class="expanded-player music-surface card-base bg-(--float-panel-bg) shadow-xl rounded-2xl p-4 transition-all duration-500 ease-in-out"
-			class:opacity-0={!isExpanded}
-			class:scale-95={!isExpanded}
-			class:pointer-events-none={!isExpanded}
-		>
-			<div class="flex items-center gap-4 mb-4">
-				<div
-					class="cover-container music-cover relative w-16 h-16 rounded-full overflow-hidden shrink-0"
-					class:spinning={isPlaying && !isLoading}
-				>
-					<div class="cover-disc" class:spinning={isPlaying && !isLoading}>
-						<div class="cover-label">
-							<img
-								src={getAssetPath(currentSong.cover)}
-								alt={i18n(Key.musicPlayerCover)}
-								class="cover-art w-full h-full object-cover transition-transform duration-300"
-								class:animate-pulse={isLoading}
+						{#if isLoading}
+							<Icon icon="eos-icons:loading" class="text-xl" />
+						{:else if isPlaying}
+							<Icon
+								icon="material-symbols:pause"
+								class="text-xl"
 							/>
-						</div>
-						<span class="cover-hole" aria-hidden="true"></span>
-					</div>
-				</div>
-				<div class="flex-1 min-w-0">
-					<div
-						class="song-title text-lg font-bold text-90 truncate mb-1"
-					>
-						{currentSong.title}
-					</div>
-					<div class="song-artist text-sm text-50 truncate">
-						{currentSong.artist}
-					</div>
-				</div>
-				<div class="flex items-center gap-1">
+						{:else}
+							<Icon
+								icon="material-symbols:play-arrow"
+								class="text-xl"
+							/>
+						{/if}
+					</button>
 					<button
-						class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
-						on:click={toggleHidden}
-						title={i18n(Key.musicPlayerHide)}
+						class="music-action-btn w-10 h-10 rounded-lg"
+						on:click={() => nextSong(true, true)}
+						disabled={playlist.length <= 1}
 					>
 						<Icon
-							icon="material-symbols:visibility-off"
-							class="text-lg"
+							icon="material-symbols:skip-next"
+							class="text-xl"
 						/>
 					</button>
 					<button
-						class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
-						class:control-active={showPlaylist}
-						on:click={togglePlaylist}
-						title={i18n(Key.musicPlayerPlaylist)}
+						class="music-action-btn w-10 h-10 rounded-lg"
+						class:control-active={isRepeating > 0}
+						on:click={toggleRepeat}
 					>
-						<Icon
-							icon="material-symbols:queue-music"
-							class="text-lg"
-						/>
+						{#if isRepeating === 1}
+							<Icon
+								icon="material-symbols:repeat-one"
+								class="text-lg"
+							/>
+						{:else if isRepeating === 2}
+							<Icon
+								icon="material-symbols:repeat"
+								class="text-lg"
+							/>
+						{:else}
+							<Icon
+								icon="material-symbols:repeat"
+								class="text-lg opacity-50"
+							/>
+						{/if}
 					</button>
 				</div>
-			</div>
-			<div class="progress-section mb-4">
-				<div class="progress-row flex items-center gap-2">
+				<div class="bottom-controls flex items-center gap-2">
+					<button
+						class="music-action-btn w-8 h-8 rounded-lg"
+						on:click={toggleMute}
+					>
+						{#if isMuted || volume === 0}
+							<Icon
+								icon="material-symbols:volume-off"
+								class="text-lg"
+							/>
+						{:else if volume < 0.5}
+							<Icon
+								icon="material-symbols:volume-down"
+								class="text-lg"
+							/>
+						{:else}
+							<Icon
+								icon="material-symbols:volume-up"
+								class="text-lg"
+							/>
+						{/if}
+					</button>
 					<div
-						class="progress-bar music-track flex-1 h-2 bg-(--btn-regular-bg) rounded-full cursor-pointer"
-						bind:this={progressBar}
-						on:click={setProgress}
+						class="music-track flex-1 h-2 bg-(--btn-regular-bg) rounded-full cursor-pointer touch-none"
+						bind:this={volumeBar}
+						on:pointerdown={startVolumeDrag}
 						on:keydown={(e) => {
 							if (e.key === "Enter" || e.key === " ") {
 								e.preventDefault();
-								const percent = 0.5;
-								const newTime = percent * duration;
-								if (audio) {
-									audio.currentTime = newTime;
-									currentTime = newTime;
-								}
+								if (e.key === "Enter") toggleMute();
 							}
 						}}
 						role="slider"
 						tabindex="0"
-						aria-label={i18n(Key.musicPlayerProgress)}
+						aria-label={i18n(Key.musicPlayerVolume)}
 						aria-valuemin="0"
 						aria-valuemax="100"
-						aria-valuenow={duration > 0
-							? (currentTime / duration) * 100
-							: 0}
+						aria-valuenow={volume * 100}
 					>
 						<div
-							class="music-track-fill h-full bg-(--primary) rounded-full transition-all duration-100"
-							style="width: {duration > 0
-								? (currentTime / duration) * 100
-								: 0}%"
+							class="music-track-fill h-full bg-(--primary) rounded-full transition-all"
+							class:duration-100={!isVolumeDragging}
+							class:duration-0={isVolumeDragging}
+							style="width: {volume * 100}%"
 						></div>
 					</div>
-					<div class="progress-time shrink-0 text-xs text-30 tabular-nums">
-						{formatTime(currentTime)} / {formatTime(duration)}
-					</div>
+					<button
+						class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
+						on:click={toggleExpanded}
+						title={i18n(Key.musicPlayerCollapse)}
+					>
+						<Icon
+							icon="material-symbols:expand-more"
+							class="text-lg"
+						/>
+					</button>
 				</div>
 			</div>
-			<div class="lyrics-section mb-4">
-				<div class="lyrics-panel custom-scrollbar" bind:this={lyricContainer}>
-					{#if lyricLoading}
-						<p class="lyrics-placeholder">歌词加载中...</p>
-					{:else if lyricLines.length === 0}
-						<p class="lyrics-placeholder">暂无歌词</p>
-					{:else}
-						<div class="lyrics-spacer" aria-hidden="true"></div>
-						{#each lyricLines as line, lyricIndex}
-							<p
-								class="lyric-line"
-								class:active={lyricIsTimed &&
-									lyricIndex === currentLyricIndex}
-								data-lyric-index={lyricIndex}
-							>
-								{line.text}
-							</p>
-						{/each}
-						<div class="lyrics-spacer" aria-hidden="true"></div>
-					{/if}
-				</div>
-			</div>
-			<div class="controls flex items-center justify-center gap-2 mb-4">
-				<button
-					class="music-action-btn w-10 h-10 rounded-lg"
-					class:control-active={isShuffled}
-					on:click={toggleShuffle}
-					disabled={playlist.length <= 1}
-				>
-					<Icon icon="material-symbols:shuffle" class="text-lg" />
-				</button>
-				<button
-					class="music-action-btn w-10 h-10 rounded-lg"
-					on:click={previousSong}
-					disabled={playlist.length <= 1}
-				>
-					<Icon
-						icon="material-symbols:skip-previous"
-						class="text-xl"
-					/>
-				</button>
-				<button
-					class="play-main-btn w-12 h-12 rounded-full flex items-center justify-center"
-					class:opacity-50={isLoading}
-					disabled={isLoading}
-					on:click={togglePlay}
-				>
-					{#if isLoading}
-						<Icon icon="eos-icons:loading" class="text-xl" />
-					{:else if isPlaying}
-						<Icon icon="material-symbols:pause" class="text-xl" />
-					{:else}
-						<Icon
-							icon="material-symbols:play-arrow"
-							class="text-xl"
-						/>
-					{/if}
-				</button>
-				<button
-					class="music-action-btn w-10 h-10 rounded-lg"
-					on:click={() => nextSong(true, true)}
-					disabled={playlist.length <= 1}
-				>
-					<Icon icon="material-symbols:skip-next" class="text-xl" />
-				</button>
-				<button
-					class="music-action-btn w-10 h-10 rounded-lg"
-					class:control-active={isRepeating > 0}
-					on:click={toggleRepeat}
-				>
-					{#if isRepeating === 1}
-						<Icon
-							icon="material-symbols:repeat-one"
-							class="text-lg"
-						/>
-					{:else if isRepeating === 2}
-						<Icon icon="material-symbols:repeat" class="text-lg" />
-					{:else}
-						<Icon
-							icon="material-symbols:repeat"
-							class="text-lg opacity-50"
-						/>
-					{/if}
-				</button>
-			</div>
-			<div class="bottom-controls flex items-center gap-2">
-				<button
-					class="music-action-btn w-8 h-8 rounded-lg"
-					on:click={toggleMute}
-				>
-					{#if isMuted || volume === 0}
-						<Icon
-							icon="material-symbols:volume-off"
-							class="text-lg"
-						/>
-					{:else if volume < 0.5}
-						<Icon
-							icon="material-symbols:volume-down"
-							class="text-lg"
-						/>
-					{:else}
-						<Icon
-							icon="material-symbols:volume-up"
-							class="text-lg"
-						/>
-					{/if}
-				</button>
+			{#if showPlaylist}
 				<div
-					class="music-track flex-1 h-2 bg-(--btn-regular-bg) rounded-full cursor-pointer touch-none"
-					bind:this={volumeBar}
-					on:pointerdown={startVolumeDrag}
-					on:keydown={(e) => {
-						if (e.key === "Enter" || e.key === " ") {
-							e.preventDefault();
-							if (e.key === "Enter") toggleMute();
-						}
-					}}
-					role="slider"
-					tabindex="0"
-					aria-label={i18n(Key.musicPlayerVolume)}
-					aria-valuemin="0"
-					aria-valuemax="100"
-					aria-valuenow={volume * 100}
+					class="playlist-panel music-surface float-panel w-[22rem] max-h-[32rem] overflow-hidden z-50 flex flex-col rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-(--card-bg) border border-(--line-divider)/50"
+					in:slide={{ duration: 300, axis: "y" }}
+					out:slide={{ duration: 200, axis: "y" }}
 				>
 					<div
-						class="music-track-fill h-full bg-(--primary) rounded-full transition-all"
-						class:duration-100={!isVolumeDragging}
-						class:duration-0={isVolumeDragging}
-						style="width: {volume * 100}%"
-					></div>
-				</div>
-				<button
-					class="music-action-btn w-8 h-8 rounded-lg flex items-center justify-center"
-					on:click={toggleExpanded}
-					title={i18n(Key.musicPlayerCollapse)}
-				>
-					<Icon icon="material-symbols:expand-more" class="text-lg" />
-				</button>
-			</div>
-		</div>
-		{#if showPlaylist}
-			<div
-				class="playlist-panel music-surface float-panel w-[22rem] max-h-[32rem] overflow-hidden z-50 flex flex-col rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-(--card-bg) border border-(--line-divider)/50"
-				in:slide={{ duration: 300, axis: "y" }}
-				out:slide={{ duration: 200, axis: "y" }}
-			>
-				<div
-					class="flex flex-col pt-6 px-6 pb-3 border-b border-(--line-divider)/40 gap-4 shrink-0"
-				>
-					<div class="flex items-center justify-between w-full">
-						<h3
-							class="text-[1.35rem] font-bold text-90 tracking-wide"
-						>
-							{i18n(Key.musicPlayerPlaylist)}
-						</h3>
-						<button
-							class="playlist-close-btn w-8 h-8 rounded-full flex items-center justify-center text-50 hover:text-90 hover:bg-(--btn-regular-bg) transition-colors"
-							on:click={togglePlaylist}
-						>
-							<Icon
-								icon="material-symbols:close-rounded"
-								class="text-[1.35rem]"
-							/>
-						</button>
+						class="flex flex-col pt-6 px-6 pb-3 border-b border-(--line-divider)/40 gap-4 shrink-0"
+					>
+						<div class="flex items-center justify-between w-full">
+							<h3
+								class="text-[1.35rem] font-bold text-90 tracking-wide"
+							>
+								{i18n(Key.musicPlayerPlaylist)}
+							</h3>
+							<button
+								class="playlist-close-btn w-8 h-8 rounded-full flex items-center justify-center text-50 hover:text-90 hover:bg-(--btn-regular-bg) transition-colors"
+								on:click={togglePlaylist}
+							>
+								<Icon
+									icon="material-symbols:close-rounded"
+									class="text-[1.35rem]"
+								/>
+							</button>
+						</div>
+
+						{#if playlistsConfig.length > 1}
+							<div
+								class="custom-scrollbar playlist-tabs-scroll flex items-center gap-3 overflow-x-scroll w-full pb-1"
+							>
+								{#each playlistsConfig as pConfig, pIndex}
+									<button
+										class="playlist-tab-btn shrink-0 px-4 py-1.5 text-[13px] font-medium rounded-full transition-all duration-300"
+										class:tab-active={currentListIndex ===
+											pIndex}
+										on:click={() => switchPlaylist(pIndex)}
+									>
+										{pConfig.name}
+									</button>
+								{/each}
+							</div>
+						{/if}
 					</div>
 
-					{#if playlistsConfig.length > 1}
-						<div
-							class="custom-scrollbar playlist-tabs-scroll flex items-center gap-3 overflow-x-scroll w-full pb-1"
-						>
-							{#each playlistsConfig as pConfig, pIndex}
-								<button
-									class="playlist-tab-btn shrink-0 px-4 py-1.5 text-[13px] font-medium rounded-full transition-all duration-300"
-									class:tab-active={currentListIndex === pIndex}
-									on:click={() => switchPlaylist(pIndex)}
-								>
-									{pConfig.name}
-								</button>
-							{/each}
-						</div>
-					{/if}
-				</div>
-
-				<div
-					class="custom-scrollbar playlist-content overflow-y-scroll flex-1 min-h-0 p-2"
-					bind:this={playlistContentEl}
-					style:height={playlistContentHeight ?? undefined}
-				>
-					{#each playlist as song, index}
-						<div
-							class="playlist-item playlist-item-base flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all duration-200"
-							class:item-active={index === currentIndex}
-							on:click={() => handlePlaylistClick(index)}
-							on:keydown={(e) => {
-								if (e.key === "Enter" || e.key === " ") {
-									e.preventDefault();
-									handlePlaylistClick(index);
-								}
-							}}
-							role="button"
-							tabindex="0"
-							aria-label="播放 {song.title} - {song.artist}"
-						>
+					<div
+						class="custom-scrollbar playlist-content overflow-y-scroll flex-1 min-h-0 p-2"
+					>
+						{#key currentListIndex}
 							<div
-								class="w-5 flex items-center justify-center shrink-0"
+								class="playlist-list-inner"
+								in:slide|local={{ duration: 220, axis: "y" }}
+								out:slide|local={{ duration: 180, axis: "y" }}
 							>
-								{#if index === currentIndex && isPlaying}
-									<Icon
-										icon="material-symbols:graphic-eq"
-										class="text-(--primary) text-xl animate-pulse"
-									/>
-								{:else if index === currentIndex}
-									<Icon
-										icon="material-symbols:graphic-eq"
-										class="text-(--primary) text-xl opacity-50"
-									/>
-								{:else}
-									<span
-										class="text-[15px] font-medium text-40"
-										>{index + 1}</span
+								{#each playlist as song, index}
+									<div
+										class="playlist-item playlist-item-base flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all duration-200"
+										class:item-active={index ===
+											currentIndex}
+										on:click={() =>
+											handlePlaylistClick(index)}
+										on:keydown={(e) => {
+											if (
+												e.key === "Enter" ||
+												e.key === " "
+											) {
+												e.preventDefault();
+												handlePlaylistClick(index);
+											}
+										}}
+										role="button"
+										tabindex="0"
+										aria-label="播放 {song.title} - {song.artist}"
 									>
-								{/if}
-							</div>
-
-							<div
-								class="w-[2.75rem] h-[2.75rem] rounded-lg overflow-hidden shrink-0 shadow-sm border border-black/5 dark:border-white/5 bg-(--btn-regular-bg)"
-							>
-								<img
-									src={getAssetPath(song.cover)}
-									alt={song.title}
-									loading="lazy"
-									class="w-full h-full object-cover"
-								/>
-							</div>
-
-							<div
-								class="flex-1 min-w-0 flex flex-col justify-center gap-[2px]"
-							>
-								<div
-									class="text-[15px] font-medium truncate transition-colors {index ===
-									currentIndex
-										? 'text-(--primary)'
-										: 'text-90'}"
-								>
-									{song.title}
-								</div>
-								<div
-									class="text-[13px] truncate transition-colors {index ===
-									currentIndex
-										? 'text-(--primary)/80'
-										: 'text-50'}"
-								>
-									{song.artist}
-								</div>
-								{#if index === currentIndex}
-									<div class="playlist-song-progress">
 										<div
-											class="playlist-song-progress-fill"
-											style="width: {duration > 0
-												? Math.min(100, (currentTime / duration) * 100)
-												: 0}%"
-										></div>
+											class="w-5 flex items-center justify-center shrink-0"
+										>
+											{#if index === currentIndex && isPlaying}
+												<Icon
+													icon="material-symbols:graphic-eq"
+													class="text-(--primary) text-xl animate-pulse"
+												/>
+											{:else if index === currentIndex}
+												<Icon
+													icon="material-symbols:graphic-eq"
+													class="text-(--primary) text-xl opacity-50"
+												/>
+											{:else}
+												<span
+													class="text-[15px] font-medium text-40"
+													>{index + 1}</span
+												>
+											{/if}
+										</div>
+
+										<div
+											class="w-[2.75rem] h-[2.75rem] rounded-lg overflow-hidden shrink-0 shadow-sm border border-black/5 dark:border-white/5 bg-(--btn-regular-bg)"
+										>
+											<img
+												src={getAssetPath(song.cover)}
+												alt={song.title}
+												loading="lazy"
+												class="w-full h-full object-cover"
+											/>
+										</div>
+
+										<div
+											class="flex-1 min-w-0 flex flex-col justify-center gap-[2px]"
+										>
+											<div
+												class="text-[15px] font-medium truncate transition-colors {index ===
+												currentIndex
+													? 'text-(--primary)'
+													: 'text-90'}"
+											>
+												{song.title}
+											</div>
+											<div
+												class="text-[13px] truncate transition-colors {index ===
+												currentIndex
+													? 'text-(--primary)/80'
+													: 'text-50'}"
+											>
+												{song.artist}
+											</div>
+											{#if index === currentIndex}
+												<div
+													class="playlist-song-progress"
+												>
+													<div
+														class="playlist-song-progress-fill"
+														style="width: {duration >
+														0
+															? Math.min(
+																	100,
+																	(currentTime /
+																		duration) *
+																		100,
+																)
+															: 0}%"
+													></div>
+												</div>
+											{/if}
+										</div>
 									</div>
-								{/if}
+								{/each}
 							</div>
-						</div>
-					{/each}
+						{/key}
+					</div>
 				</div>
-			</div>
-		{/if}
-	</div>
+			{/if}
+		</div>
 	</div>
 
 	<style>
@@ -1522,9 +1560,15 @@
 			--music-player-left: var(--music-player-left-desktop);
 			--music-player-right: var(--music-player-right-desktop);
 			--music-player-bottom: var(--music-player-bottom-desktop);
-			--music-player-content-left: var(--music-player-content-left-desktop);
-			--music-player-content-right: var(--music-player-content-right-desktop);
-			--music-player-expanded-left: var(--music-player-expanded-left-mobile);
+			--music-player-content-left: var(
+				--music-player-content-left-desktop
+			);
+			--music-player-content-right: var(
+				--music-player-content-right-desktop
+			);
+			--music-player-expanded-left: var(
+				--music-player-expanded-left-mobile
+			);
 			--music-player-expanded-right: var(
 				--music-player-expanded-right-mobile
 			);
@@ -1591,7 +1635,8 @@
 			width: 1.05rem;
 			height: 1.05rem;
 			border-radius: 9999px;
-			border: 2px solid color-mix(in oklab, var(--primary) 28%, transparent);
+			border: 2px solid
+				color-mix(in oklab, var(--primary) 28%, transparent);
 			border-top-color: var(--primary);
 			filter: drop-shadow(
 				0 1px 0 color-mix(in oklab, var(--card-bg) 70%, transparent)
@@ -1729,7 +1774,8 @@
 			padding: 0.375rem 1rem;
 			line-height: 1.2;
 			background: color-mix(in oklab, var(--card-bg) 95%, white 5%);
-			border: 1px solid color-mix(in oklab, var(--line-color) 68%, white 32%);
+			border: 1px solid
+				color-mix(in oklab, var(--line-color) 68%, white 32%);
 			box-shadow:
 				-3px -3px 6px color-mix(in oklab, white 72%, var(--card-bg) 28%),
 				3px 3px 7px color-mix(in oklab, black 18%, var(--card-bg) 82%);
@@ -1754,11 +1800,7 @@
 				var(--primary) 10%,
 				var(--btn-regular-bg)
 			);
-			border-color: color-mix(
-				in oklab,
-				var(--primary) 20%,
-				transparent
-			);
+			border-color: color-mix(in oklab, var(--primary) 20%, transparent);
 			box-shadow:
 				0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent),
 				0 6px 16px color-mix(in oklab, var(--primary) 20%, transparent);
@@ -1794,7 +1836,11 @@
 		}
 		.playlist-tab-btn:hover {
 			background: color-mix(in oklab, var(--card-bg) 84%, white 16%);
-			border-color: color-mix(in oklab, var(--line-color) 64%, var(--primary) 36%);
+			border-color: color-mix(
+				in oklab,
+				var(--line-color) 64%,
+				var(--primary) 36%
+			);
 			box-shadow:
 				-4px -4px 8px color-mix(in oklab, white 72%, var(--card-bg) 28%),
 				4px 4px 9px color-mix(in oklab, black 20%, var(--card-bg) 80%);
@@ -1802,23 +1848,44 @@
 		.playlist-tab-btn:active {
 			transform: scale(0.95);
 			box-shadow:
-				inset -2px -2px 5px color-mix(in oklab, white 62%, var(--card-bg) 38%),
-				inset 2px 2px 6px color-mix(in oklab, black 24%, var(--card-bg) 76%);
+				inset -2px -2px 5px
+					color-mix(in oklab, white 62%, var(--card-bg) 38%),
+				inset 2px 2px 6px
+					color-mix(in oklab, black 24%, var(--card-bg) 76%);
 		}
 		.playlist-tab-btn.tab-active {
-			background: color-mix(in oklab, var(--card-bg) 74%, var(--primary) 26%);
-			border-color: color-mix(in oklab, var(--line-color) 58%, var(--primary) 42%);
+			background: color-mix(
+				in oklab,
+				var(--card-bg) 74%,
+				var(--primary) 26%
+			);
+			border-color: color-mix(
+				in oklab,
+				var(--line-color) 58%,
+				var(--primary) 42%
+			);
 			box-shadow:
-				inset -2px -2px 5px color-mix(in oklab, white 58%, var(--card-bg) 42%),
-				inset 2px 2px 6px color-mix(in oklab, black 28%, var(--card-bg) 72%);
+				inset -2px -2px 5px
+					color-mix(in oklab, white 58%, var(--card-bg) 42%),
+				inset 2px 2px 6px
+					color-mix(in oklab, black 28%, var(--card-bg) 72%);
 			color: var(--primary);
 		}
 		.music-track {
-			background: color-mix(in oklab, var(--primary) 9%, var(--line-color)) !important;
-			border: 1px solid color-mix(in oklab, var(--primary) 16%, transparent);
+			background: color-mix(
+				in oklab,
+				var(--primary) 9%,
+				var(--line-color)
+			) !important;
+			border: 1px solid
+				color-mix(in oklab, var(--primary) 16%, transparent);
 		}
 		.music-track-fill {
-			background: color-mix(in oklab, var(--primary) 88%, white 12%) !important;
+			background: color-mix(
+				in oklab,
+				var(--primary) 88%,
+				white 12%
+			) !important;
 		}
 		.lyrics-panel {
 			max-height: 8rem;
@@ -1826,7 +1893,8 @@
 			padding: 0.625rem 0.75rem;
 			border-radius: 0.875rem;
 			background: color-mix(in oklab, var(--primary) 5%, var(--card-bg));
-			border: 1px solid color-mix(in oklab, var(--primary) 14%, transparent);
+			border: 1px solid
+				color-mix(in oklab, var(--primary) 14%, transparent);
 			scroll-behavior: smooth;
 		}
 		.lyrics-spacer {
@@ -1942,7 +2010,11 @@
 			overflow-y: hidden;
 			scrollbar-gutter: stable both-edges;
 			scrollbar-width: thin;
-			scrollbar-color: color-mix(in oklab, var(--primary) 48%, var(--btn-regular-bg))
+			scrollbar-color: color-mix(
+					in oklab,
+					var(--primary) 48%,
+					var(--btn-regular-bg)
+				)
 				color-mix(in oklab, var(--line-color) 65%, transparent);
 		}
 		.playlist-tabs-scroll .playlist-tab-btn {
@@ -1952,7 +2024,11 @@
 			height: 7px;
 		}
 		.playlist-tabs-scroll::-webkit-scrollbar-thumb {
-			background: color-mix(in oklab, var(--primary) 48%, var(--btn-regular-bg));
+			background: color-mix(
+				in oklab,
+				var(--primary) 48%,
+				var(--btn-regular-bg)
+			);
 			border-radius: 9999px;
 		}
 		.playlist-tabs-scroll::-webkit-scrollbar-track {
@@ -1960,18 +2036,30 @@
 			border-radius: 9999px;
 		}
 		.playlist-content {
-			transition: height 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-			will-change: height;
 			scrollbar-gutter: stable;
 			scrollbar-width: thin;
-			scrollbar-color: color-mix(in oklab, var(--primary) 45%, var(--btn-regular-bg))
+			scrollbar-color: color-mix(
+					in oklab,
+					var(--primary) 45%,
+					var(--btn-regular-bg)
+				)
 				color-mix(in oklab, var(--line-color) 60%, transparent);
+		}
+		.playlist-list-inner {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			transform-origin: top;
 		}
 		.playlist-content::-webkit-scrollbar {
 			width: 6px;
 		}
 		.playlist-content::-webkit-scrollbar-thumb {
-			background: color-mix(in oklab, var(--primary) 45%, var(--btn-regular-bg));
+			background: color-mix(
+				in oklab,
+				var(--primary) 45%,
+				var(--btn-regular-bg)
+			);
 			border-radius: 9999px;
 		}
 		.playlist-content::-webkit-scrollbar-track {
@@ -2006,9 +2094,15 @@
 				--music-player-left: var(--music-player-left-mobile);
 				--music-player-right: var(--music-player-right-mobile);
 				--music-player-bottom: var(--music-player-bottom-mobile);
-				--music-player-content-left: var(--music-player-content-left-mobile);
-				--music-player-content-right: var(--music-player-content-right-mobile);
-				--music-player-expanded-left: var(--music-player-expanded-left-mobile);
+				--music-player-content-left: var(
+					--music-player-content-left-mobile
+				);
+				--music-player-content-right: var(
+					--music-player-content-right-mobile
+				);
+				--music-player-expanded-left: var(
+					--music-player-expanded-left-mobile
+				);
 				--music-player-expanded-right: var(
 					--music-player-expanded-right-mobile
 				);
@@ -2189,7 +2283,8 @@
 				color-mix(in oklab, black 12%, transparent) 1.25px 2.75px
 			);
 			opacity: 0.42;
-			box-shadow: inset 0 0 0 1px color-mix(in oklab, white 12%, transparent);
+			box-shadow: inset 0 0 0 1px
+				color-mix(in oklab, white 12%, transparent);
 			z-index: 1;
 		}
 		.music-cover .cover-disc::after {
@@ -2251,10 +2346,15 @@
 		}
 		.music-cover:hover {
 			transform: translateY(-1px) scale(1.02);
-			border-color: color-mix(in oklab, var(--primary) 24%, var(--line-color));
+			border-color: color-mix(
+				in oklab,
+				var(--primary) 24%,
+				var(--line-color)
+			);
 			box-shadow:
 				0 8px 18px color-mix(in oklab, black 34%, transparent),
-				inset 0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent),
+				inset 0 0 0 1px
+					color-mix(in oklab, var(--primary) 12%, transparent),
 				inset 0 0 18px color-mix(in oklab, black 32%, transparent);
 		}
 		.music-cover:active {

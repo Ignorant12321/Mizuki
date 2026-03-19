@@ -94,8 +94,8 @@ export const siteConfig: SiteConfig = {
 		fixed: false, // 对访问者隐藏主题色选择器
 	},
 	ui: {
-		hidePageScrollbar: true, // 隐藏页面主滚动条（html/body）
-		hideTopProgressBar: true, // 隐藏顶部页面切换进度条
+		hidePageScrollbar: false, // 隐藏页面主滚动条（html/body）
+		hideTopProgressBar: false, // 隐藏顶部页面切换进度条
 	},
 
 	// 特色页面开关配置（关闭未使用的页面有助于提升 SEO，关闭后请记得在 navbarConfig 中移除对应链接）
@@ -166,8 +166,8 @@ export const siteConfig: SiteConfig = {
 
 	// 通用分页配置（首页/日记 + 不同端显示数量）
 	pagination: {
-		homePageSize: 5,
-		diaryPageSize: 3,
+		homePageSize: 1,
+		diaryPageSize: 1,
 		mobileVisiblePages: 3,
 		desktopVisiblePages: 5,
 	},
@@ -573,7 +573,7 @@ export const announcementConfig: AnnouncementConfig = {
 
 // 音乐播放器配置（支持 meting / local 两种模式）
 export const musicPlayerConfig: MusicPlayerConfig = {
-	enable: true,
+	enable: false,
 	mode: "meting",
 	meting_api:
 		"https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r",
@@ -601,80 +601,8 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 			id: "17699636947",
 		},
 		{
-			name: "本地音乐",
+			name: "local",
 			mode: "local",
-			audioList: [
-				{
-					id: 1,
-					title: "勾指起誓",
-					artist: "洛天依、ilem",
-					cover: "/assets/music/cover/勾指起誓 - 洛天依、ilem.jpg",
-					url: "/assets/music/url/勾指起誓 - 洛天依、ilem.mp3",
-					duration: 240,
-					lyricUrl: "/assets/music/lyric/勾指起誓 - 洛天依、ilem.lrc",
-				},
-				{
-					id: 2,
-					title: "霜雪千年 (cover 洛天依乐正绫)",
-					artist: "真栗",
-					cover: "/assets/music/cover/霜雪千年 (cover 洛天依乐正绫) - 真栗.jpg",
-					url: "/assets/music/url/霜雪千年 (cover 洛天依乐正绫) - 真栗.mp3",
-					duration: 180,
-					lyricUrl:
-						"/assets/music/lyric/霜雪千年 (cover 洛天依乐正绫) - 真栗.lrc",
-				},
-				{
-					id: 3,
-					title: "权御天下",
-					artist: "洛天依",
-					cover: "/assets/music/cover/权御天下 - 洛天依.jpg",
-					url: "/assets/music/url/权御天下 - 洛天依.mp3",
-					duration: 200,
-					lyricUrl: "/assets/music/lyric/权御天下 - 洛天依.lrc",
-				},
-				{
-					id: 4,
-					title: "达拉崩吧 (Live)",
-					artist: "周深",
-					cover: "/assets/music/cover/达拉崩吧 (Live) - 周深.jpg",
-					url: "/assets/music/url/达拉崩吧 (Live) - 周深.mp3",
-					duration: 200,
-					lyricUrl: "/assets/music/lyric/达拉崩吧 (Live) - 周深.lrc",
-				},
-				{
-					id: 5,
-					title: "蝴蝶",
-					artist: "洛天依",
-					cover: "/assets/music/cover/蝴蝶 - 洛天依.jpg",
-					url: "/assets/music/url/蝴蝶 - 洛天依.mp3",
-					duration: 200,
-					lyricUrl: "/assets/music/lyric/蝴蝶 - 洛天依.lrc",
-				},
-			],
-		},
-		{
-			name: "洛天依",
-			server: "netease",
-			type: "playlist",
-			id: "17699694803",
-		},
-		{
-			name: "洛天依",
-			server: "netease",
-			type: "playlist",
-			id: "17699694803",
-		},
-		{
-			name: "洛天依",
-			server: "netease",
-			type: "playlist",
-			id: "17699694803",
-		},
-		{
-			name: "洛天依",
-			server: "netease",
-			type: "playlist",
-			id: "1",
 		},
 	],
 };
@@ -836,7 +764,7 @@ export const clickEffectConfig: ClickEffectConfig = {
 
 // Live2D Widget 主插件配置
 export const live2dConfig: Live2DConfig = {
-	enable: true,
+	enable: false,
 	mobile: true,
 	drag: false,
 	modelId: 1,
