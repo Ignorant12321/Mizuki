@@ -7,6 +7,7 @@
 
   :is(h1, h2, h3, h4, h5, h6) {
     scroll-margin-top: 1.5rem;
+    position: relative;
 
     .anchor {
       @apply transition -m-0.5 ms-[0.2ch] p-0.5 select-none opacity-0 no-underline;
@@ -85,6 +86,9 @@
       @apply content-none;
     }
   }
+
+  /* --- 图片与题注 --- */
+  /* image align styles moved to markdown-image-align.css */
 
   /* --- 表格样式 --- */
   .table-wrapper {

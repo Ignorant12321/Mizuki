@@ -1,0 +1,100 @@
+@reference "tailwindcss";
+
+.custom-md[data-heading-numbering="zh_CN"],
+.custom-md[data-heading-numbering="zh_TW"],
+.custom-md[data-heading-numbering="ja"],
+.custom-md[data-heading-numbering="en"] {
+  /* 标题编号前缀样式变量（支持热更新） */
+  --md-heading-prefix-color: var(--primary);
+  --md-heading-prefix-font-family: inherit;
+  --md-heading-prefix-weight: 600;
+  --md-heading-prefix-size: 1em;
+  --md-heading-prefix-gap: 0.35rem;
+  --md-heading-prefix-letter-spacing: 0;
+  --md-heading-prefix-align: left;
+  --md-heading-prefix-min-width: auto;
+  --md-heading-h2-prefix: "第";
+  --md-heading-h2-suffix: "章、";
+  --md-heading-h2-separator: " ";
+  --md-heading-h3-separator: " ";
+
+  counter-reset: md-h2;
+
+  h2,
+  h3 {
+    color: var(--primary);
+  }
+
+  h2::before,
+  h3::before {
+    color: var(--md-heading-prefix-color);
+    font-family: var(--md-heading-prefix-font-family);
+    font-weight: var(--md-heading-prefix-weight);
+    font-size: var(--md-heading-prefix-size);
+    margin-inline-end: var(--md-heading-prefix-gap);
+    letter-spacing: var(--md-heading-prefix-letter-spacing);
+    text-align: var(--md-heading-prefix-align);
+    min-width: var(--md-heading-prefix-min-width);
+    display: inline-block;
+    vertical-align: baseline;
+  }
+
+  h2 {
+    counter-increment: md-h2;
+    counter-reset: md-h3;
+    --md-heading-prefix-weight: 650;
+    --md-heading-prefix-size: 0.9em;
+    --md-heading-prefix-gap: 0.45rem;
+  }
+
+  h2::before {
+    content: var(--md-heading-h2-prefix) counter(md-h2, cjk-ideographic) var(--md-heading-h2-suffix) var(--md-heading-h2-separator);
+  }
+
+  h3 {
+    counter-increment: md-h3;
+    --md-heading-prefix-weight: 600;
+    --md-heading-prefix-size: 0.85em;
+    --md-heading-prefix-gap: 0.4rem;
+  }
+
+  h3::before {
+    content: counter(md-h2) "." counter(md-h3) var(--md-heading-h3-separator);
+  }
+}
+
+.custom-md[data-heading-numbering="zh_CN"] {
+  --md-heading-h2-prefix: "";
+  --md-heading-h2-suffix: "、";
+}
+
+.custom-md[data-heading-numbering="zh_TW"] {
+  --md-heading-h2-prefix: "第";
+  --md-heading-h2-suffix: "章、";
+}
+
+.custom-md[data-heading-numbering="ja"] {
+  --md-heading-h2-prefix: "第";
+  --md-heading-h2-suffix: "章、";
+}
+
+.custom-md[data-heading-numbering="en"] {
+  --md-heading-h2-prefix: "Chapter ";
+  --md-heading-h2-suffix: ".";
+}
+
+.custom-md[data-heading-numbering="zh_CN"] h2::before {
+  content: var(--md-heading-h2-prefix) counter(md-h2, simp-chinese-informal) var(--md-heading-h2-suffix) var(--md-heading-h2-separator);
+}
+
+.custom-md[data-heading-numbering="zh_TW"] h2::before {
+  content: var(--md-heading-h2-prefix) counter(md-h2, trad-chinese-formal) var(--md-heading-h2-suffix) var(--md-heading-h2-separator);
+}
+
+.custom-md[data-heading-numbering="ja"] h2::before {
+  content: var(--md-heading-h2-prefix) counter(md-h2, japanese-informal) var(--md-heading-h2-suffix) var(--md-heading-h2-separator);
+}
+
+.custom-md[data-heading-numbering="en"] h2::before {
+  content: var(--md-heading-h2-prefix) counter(md-h2) var(--md-heading-h2-suffix) var(--md-heading-h2-separator);
+}

@@ -16,7 +16,7 @@ import remarkDirective from "remark-directive";
 import remarkGithubAdmonitionsToDirectives from "remark-github-admonitions-to-directives";
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
-import { siteConfig } from "./src/config.ts";
+import { markdownConfig, siteConfig } from "./src/config.ts";
 import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.js";
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
 import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.mjs";
@@ -132,7 +132,6 @@ export default defineConfig({
 			rehypeSlug,
 			rehypeWrapTable,
 			rehypeMermaid,
-			rehypeImageWidth,
 			[
 				rehypeComponents,
 				{
@@ -165,6 +164,7 @@ export default defineConfig({
 					},
 				},
 			],
+			[rehypeImageWidth, markdownConfig?.imageEnhance],
 		],
 	},
 	vite: {

@@ -1,13 +1,27 @@
 ---
 // 只加载基础的等宽字体，减少加载时间
 import "@fontsource-variable/jetbrains-mono";
+import { markdownConfig } from "@/config";
+import "../../styles/markdown.css";
+import "../../styles/markdown-heading-numbering.css";
+import "../../styles/markdown-image-align.css";
 
 interface Props {
 	class: string;
 }
 const className = Astro.props.class;
+const headingNumbering = markdownConfig.headingNumbering;
+const headingNumberingVariant = headingNumbering?.variant ?? "none";
+const imageAlign = markdownConfig.imageEnhance?.align ?? "center";
+const imageCaptionVisible = markdownConfig.imageEnhance?.visible ?? true;
 ---
-<div data-pagefind-body class={`prose dark:prose-invert prose-base max-w-none! custom-md ${className}`}>
+<div
+	data-pagefind-body
+	data-heading-numbering={headingNumberingVariant}
+	data-image-align={imageAlign}
+	data-image-caption-visible={String(imageCaptionVisible)}
+	class={`prose dark:prose-invert prose-base max-w-none! custom-md ${className}`}
+>
     <!--<div class="prose dark:prose-invert max-w-none custom-md">-->
     <!--<div class="max-w-none custom-md">-->
     <slot/>

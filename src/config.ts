@@ -18,6 +18,7 @@ import type {
 	SiteConfig,
 	ExternalLinkConfirmConfig,
 	FloatingWidgetsConfig,
+	MarkdownRenderConfig,
 } from "./types/config";
 import { LinkPreset } from "./types/config";
 
@@ -25,7 +26,7 @@ import { LinkPreset } from "./types/config";
 // 本文件集中管理站点的全部可配置项，按“基础站点 -> 功能模块 -> 派生配置”顺序组织。
 
 // 定义站点语言
-const SITE_LANG = "zh_CN"; // 语言代码，例如：'en', 'zh_CN', 'ja' 等。
+const SITE_LANG = "zh_CN"; // 语言代码，例如：'en', 'zh_CN','', 'ja' 等。
 const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UTC+8
 
 // 悬浮组件位置与交互参数（返回顶部、目录、音乐播放器、Live2D 等）
@@ -76,6 +77,30 @@ const floatingWidgetsConfig: FloatingWidgetsConfig = {
 			idleOffsetY: "20px", // 非悬浮时下沉一点（更“矮”）
 			hoverOffsetY: "10px", // 悬浮时回到正常高度
 		},
+	},
+};
+
+// Markdown 渲染增强配置
+// -----------------------------------------------------------------------------
+// 生效方式：
+// 1) 基础样式在 `src/styles/markdown.css`，编号样式单独放在 `src/styles/markdown-heading-numbering.css`。
+// 2) headingNumbering 默认 variant 为 `zh_CN`；改成 `none` 即关闭。
+// 3) imageEnhance 使用 align / visible 控制样式，text 控制题注模板文本。
+//
+// 图片增强（GitHub 原始逻辑 + CSS）：
+// - 宽度语法：在 alt 中写 ` w-60%`（注意前面有空格）
+// - 题注文本来源：Markdown 图片的 alt（即 [] 内文本）
+// - text 支持模板占位符：{alt}（可选 {index}）
+// - 显示/隐藏与对齐由 `src/styles/markdown-image-align.css` 控制（支持热更新）
+export const markdownConfig: MarkdownRenderConfig = {
+	headingNumbering: {
+		// 默认：none；可选：none / zh_CN / zh_TW / ja / en
+		variant: "zh_CN",
+	},
+	imageEnhance: {
+		align: "center",
+		visible: true,
+		text: "Image-{alt}",
 	},
 };
 
@@ -194,30 +219,22 @@ export const siteConfig: SiteConfig = {
 			desktop: [
 				"/assets/desktop-banner/1d.webp",
 				"/assets/desktop-banner/2d.webp",
-				"/assets/desktop-banner/3d.webp",
-				"/assets/desktop-banner/4d.webp",
 				"/assets/desktop-banner/5d.webp",
 				"/assets/desktop-banner/6d.webp",
 				"/assets/desktop-banner/7d.webp",
 				"/assets/desktop-banner/8d.webp",
 				"/assets/desktop-banner/9d.webp",
-				"/assets/desktop-banner/10d.webp",
 				"/assets/desktop-banner/11d.webp",
-				"/assets/desktop-banner/12d.webp",
 			], // 桌面横幅图片
 			mobile: [
 				"/assets/mobile-banner/1m.webp",
 				"/assets/mobile-banner/2m.webp",
-				"/assets/mobile-banner/3m.webp",
-				"/assets/mobile-banner/4m.webp",
 				"/assets/mobile-banner/5m.webp",
 				"/assets/mobile-banner/6m.webp",
 				"/assets/mobile-banner/7m.webp",
 				"/assets/mobile-banner/8m.webp",
 				"/assets/mobile-banner/9m.webp",
-				"/assets/mobile-banner/10m.webp",
 				"/assets/mobile-banner/11m.webp",
-				"/assets/mobile-banner/12m.webp",
 			], // 移动横幅图片
 		}, // 使用本地横幅图片
 
@@ -304,14 +321,14 @@ export const siteConfig: SiteConfig = {
 			fontFamily: "ZenMaruGothic-Medium",
 			fontWeight: "400",
 			localFonts: ["ZenMaruGothic-Medium.ttf"],
-			enableCompress: true, // 启用字体子集优化，减少字体文件大小
+			enableCompress: false, // 启用字体子集优化，减少字体文件大小
 		},
 		cjkFont: {
 			// 中日韩字体 - 作为回退字体
 			fontFamily: "萝莉体 第二版",
 			fontWeight: "500",
 			localFonts: ["萝莉体 第二版.ttf"],
-			enableCompress: true, // 启用字体子集优化，减少字体文件大小
+			enableCompress: false, // 启用字体子集优化，减少字体文件大小
 		},
 	},
 	showLastModified: true, // 控制“上次编辑”卡片显示的开关
@@ -322,30 +339,22 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 		desktop: [
 			"/assets/desktop-banner/1d.webp",
 			"/assets/desktop-banner/2d.webp",
-			"/assets/desktop-banner/3d.webp",
-			"/assets/desktop-banner/4d.webp",
 			"/assets/desktop-banner/5d.webp",
 			"/assets/desktop-banner/6d.webp",
 			"/assets/desktop-banner/7d.webp",
 			"/assets/desktop-banner/8d.webp",
 			"/assets/desktop-banner/9d.webp",
-			"/assets/desktop-banner/10d.webp",
 			"/assets/desktop-banner/11d.webp",
-			"/assets/desktop-banner/12d.webp",
 		], // 桌面横幅图片
 		mobile: [
 			"/assets/mobile-banner/1m.webp",
 			"/assets/mobile-banner/2m.webp",
-			"/assets/mobile-banner/3m.webp",
-			"/assets/mobile-banner/4m.webp",
 			"/assets/mobile-banner/5m.webp",
 			"/assets/mobile-banner/6m.webp",
 			"/assets/mobile-banner/7m.webp",
 			"/assets/mobile-banner/8m.webp",
 			"/assets/mobile-banner/9m.webp",
-			"/assets/mobile-banner/10m.webp",
 			"/assets/mobile-banner/11m.webp",
-			"/assets/mobile-banner/12m.webp",
 		], // 移动横幅图片
 	}, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
@@ -783,38 +792,54 @@ export const live2dConfig: Live2DConfig = {
 	],
 };
 
-// 将可能为字符串或字符串数组的配置统一转换为字符串数组
-function toImageList(source: unknown): string[] {
-	if (typeof source === "string") return source ? [source] : [];
-	if (Array.isArray(source)) {
-		return source.filter(
-			(item): item is string => typeof item === "string",
-		);
-	}
-	return [];
-}
+const bannerSource = siteConfig.banner.src;
+const bannerDesktopSource =
+	typeof bannerSource === "object" &&
+	bannerSource !== null &&
+	!Array.isArray(bannerSource)
+		? bannerSource.desktop
+		: undefined;
+const bannerMobileSource =
+	typeof bannerSource === "object" &&
+	bannerSource !== null &&
+	!Array.isArray(bannerSource)
+		? bannerSource.mobile
+		: undefined;
+const bannerHasMultipleImages = Array.isArray(bannerSource)
+	? bannerSource.length > 1
+	: typeof bannerSource === "object" && bannerSource !== null
+		? (Array.isArray(bannerDesktopSource) &&
+				bannerDesktopSource.length > 1) ||
+			(Array.isArray(bannerMobileSource) && bannerMobileSource.length > 1)
+		: false;
 
-// 判断配置源中是否存在“可轮播”的多图来源
-function hasMultipleImages(source: unknown): boolean {
-	if (!source) return false;
-	if (typeof source === "string") return false;
-	if (Array.isArray(source)) return toImageList(source).length > 1;
-
-	if (typeof source === "object") {
-		const srcObject = source as { desktop?: unknown; mobile?: unknown };
-		const desktop = toImageList(srcObject.desktop);
-		const mobile = toImageList(srcObject.mobile);
-		return desktop.length > 1 || mobile.length > 1;
-	}
-
-	return false;
-}
+const fullscreenSource = fullscreenWallpaperConfig.src;
+const fullscreenDesktopSource =
+	typeof fullscreenSource === "object" &&
+	fullscreenSource !== null &&
+	!Array.isArray(fullscreenSource)
+		? fullscreenSource.desktop
+		: undefined;
+const fullscreenMobileSource =
+	typeof fullscreenSource === "object" &&
+	fullscreenSource !== null &&
+	!Array.isArray(fullscreenSource)
+		? fullscreenSource.mobile
+		: undefined;
+const fullscreenHasMultipleImages = Array.isArray(fullscreenSource)
+	? fullscreenSource.length > 1
+	: typeof fullscreenSource === "object" && fullscreenSource !== null
+		? (Array.isArray(fullscreenDesktopSource) &&
+				fullscreenDesktopSource.length > 1) ||
+			(Array.isArray(fullscreenMobileSource) &&
+				fullscreenMobileSource.length > 1)
+		: false;
 
 // 壁纸轮播是否具备可用数据源（图片 API 或本地多图）
 const hasPotentialWallpaperCarouselSources =
 	siteConfig.banner.imageApi?.enable === true ||
-	hasMultipleImages(siteConfig.banner.src) ||
-	hasMultipleImages(fullscreenWallpaperConfig.src);
+	bannerHasMultipleImages ||
+	fullscreenHasMultipleImages;
 
 // 显示设置面板配置：通过读取上方主配置生成默认值，避免重复维护
 export const displaySettingsConfig: DisplaySettingsConfig = {

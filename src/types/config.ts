@@ -16,6 +16,30 @@ type FloatingWidgetHorizontalPosition = {
 	side: FloatingWidgetSide;
 	offset: string;
 };
+export type MarkdownHeadingNumberingVariant =
+	| "none"
+	| "zh_CN"
+	| "zh_TW"
+	| "ja"
+	| "en";
+
+export type MarkdownHeadingNumberingConfig = {
+	variant?: MarkdownHeadingNumberingVariant;
+};
+
+export type MarkdownImageEnhanceConfig = {
+	// 图片对齐方式
+	align?: "left" | "center" | "right";
+	// 是否显示题注
+	visible?: boolean;
+	// 题注模板，例如：Image-{alt}
+	text?: string;
+};
+
+export type MarkdownRenderConfig = {
+	headingNumbering?: MarkdownHeadingNumberingConfig;
+	imageEnhance?: MarkdownImageEnhanceConfig;
+};
 
 export type DisplaySettingsSliderConfig = {
 	enable: boolean;
