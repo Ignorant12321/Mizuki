@@ -1,1 +1,75 @@
-这里是HTML注入示例，你可以在这个文件中添加自定义的HTML内容
+<div
+	class="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-5 text-xs md:text-sm"
+>
+	<div class="flex items-center justify-center">
+		<div class="inline-block w-[16px] h-[16px] shrink-0 mr-1">
+			<img
+				src="/images/registration/备案图标.png"
+				class="w-full h-full object-contain"
+				alt="备案图标"
+				width="16"
+				height="16"
+				decoding="async"
+				loading="lazy"
+			/>
+		</div>
+		<a
+			data-record="psb"
+			class="text-[var(--primary)] hover:underline"
+			href="https://beian.mps.gov.cn/#/query/webSearch?code=44070502000700"
+			target="_blank"
+			rel="noopener noreferrer"
+			aria-label="打开公安备案查询页面：粤公网安备44070502000700号"
+		>
+			粤公网安备44070502000700号
+		</a>
+	</div>
+	<a
+		class="text-[var(--primary)] hover:underline"
+		href="https://beian.miit.gov.cn/#/Integrated/index"
+		target="_blank"
+		rel="noopener noreferrer"
+		aria-label="打开工信部ICP备案查询页面：桂ICP备2026001541号"
+	>
+		桂ICP备2026001541号
+	</a>
+</div>
+
+<script>
+	// 使用立即执行函数 (IIFE) 隔离作用域，防止变量全局污染和重复声明报错
+	(function () {
+		const currentDomain = window.location.hostname;
+		const psbRecordOverrides = [
+			{
+				match: function (domain) {
+					return (
+						domain === "218501.xyz" ||
+						domain.endsWith(".218501.xyz") ||
+						domain === "www.218501.xyz"
+					);
+				},
+				href: "https://beian.mps.gov.cn/#/query/webSearch?code=44070502000693",
+				text: "粤公网安备44070502000693号",
+			},
+		];
+
+		const matchedRecord = psbRecordOverrides.find(function (record) {
+			return record.match(currentDomain);
+		});
+
+		if (matchedRecord) {
+			const psbElements = document.querySelectorAll(
+				'[data-record="psb"]',
+			);
+
+			psbElements.forEach(function (psbElement) {
+				psbElement.href = matchedRecord.href;
+				psbElement.innerText = matchedRecord.text;
+				psbElement.setAttribute(
+					"aria-label",
+					"打开公安备案查询页面：" + matchedRecord.text,
+				);
+			});
+		}
+	})();
+</script>
