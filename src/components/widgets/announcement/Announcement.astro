@@ -2,103 +2,814 @@
 import { Icon } from "astro-icon/components";
 
 import { announcementConfig } from "../../../config";
+import { announcements } from "../../../data/announcement-data";
 import I18nKey from "../../../i18n/i18nKey";
 import { i18n } from "../../../i18n/translation";
+import type { AnnouncementItem } from "../../../types/config";
 import WidgetLayout from "../common/WidgetLayout.astro";
 
-const config = announcementConfig;
+const defaults = {
+	latest: { text: "暂无新公告", icon: "fa7-solid:check" },
+	history: { text: "暂无历史记录", icon: "fa7-solid:box-open" },
+};
 
-interface Props {
-	class?: string;
-	style?: string;
-}
+const userPlaceholder = announcementConfig.placeholder || {};
+const finalPlaceholder = {
+	latest: { ...defaults.latest, ...(userPlaceholder.latest || {}) },
+	history: { ...defaults.history, ...(userPlaceholder.history || {}) },
+};
+
+const data: AnnouncementItem[] = announcements;
+const globalClosable = announcementConfig.closable !== false;
+const configItemsPerPage = announcementConfig.itemsPerPage || 3;
+const fixedListHeight = Math.max(180, configItemsPerPage * 170);
 const className = Astro.props.class;
 const style = Astro.props.style;
+
+// 用于隔离同页多个公告实例（例如移动端与桌面端同时渲染）
+const uid = Math.random().toString(36).slice(2, 8);
 ---
 
-<!-- 组件显示现在由sidebarLayoutConfig统一控制，无需检查config.enable -->
 <WidgetLayout
-	name={config.title || i18n(I18nKey.announcement)}
-	id="announcement"
+	name={announcementConfig.title || i18n(I18nKey.announcement)}
+	id={`announcement-${uid}`}
 	class={className}
 	style={style}
 >
-	<div>
-		<!-- 公告栏内容 -->
-		<div
-			class="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-3"
-		>
-			{config.content}
-		</div>
-
-		<!-- 可选链接和关闭按钮 -->
-		<div class="flex items-center justify-between gap-3">
-			<div>
-				{
-					config.link && config.link.enable !== false && (
-						<a
-							href={config.link.url}
-							target={config.link.external ? "_blank" : "_self"}
-							rel={
-								config.link.external
-									? "noopener noreferrer"
-									: undefined
-							}
-							class="btn-regular rounded-lg px-3 py-1.5 text-sm font-medium active:scale-95 transition-transform"
+	<div class="announcement-widget" data-announcement-widget="true">
+		{
+			globalClosable && (
+				<div class="absolute top-4 right-5 z-10">
+					<button
+						id={`history-toggle-btn-${uid}`}
+						class="announcement-history-btn flex items-center gap-1.5 px-2 py-1 rounded-md text-neutral-400 hover:text-(--primary) hover:bg-(--btn-regular-bg) transition-colors cursor-pointer select-none"
+						aria-label="Toggle History"
+					>
+						<span
+							id={`history-btn-text-${uid}`}
+							class="text-xs font-medium"
 						>
-							{config.link.text}
-						</a>
-					)
-				}
+							历史
+						</span>
+						<span class="relative inline-flex h-4 w-4 items-center justify-center">
+							<Icon
+								id={`history-icon-${uid}`}
+								name="fa7-solid:clock-rotate-left"
+								class="text-sm"
+							/>
+							<Icon
+								id={`back-icon-${uid}`}
+								name="material-symbols:keyboard-return-rounded"
+								class="text-sm hidden"
+							/>
+						</span>
+					</button>
+				</div>
+			)
+		}
+
+		<div
+			id={`announcement-list-container-${uid}`}
+			class="announcement-list-container relative flex flex-col min-h-[160px]"
+			style={`--announcement-fixed-height: ${fixedListHeight}px;`}
+		>
+			<div
+				id={`announcement-list-${uid}`}
+				class="announcement-list flex flex-col gap-3 pt-1 w-full relative z-10"
+			>
 			</div>
 
-			{
-				config.closable && (
-					<button
-						class="btn-regular rounded-lg h-8 w-8 text-sm hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-						onclick="closeAnnouncement()"
-						aria-label={i18n(I18nKey.announcementClose)}
-					>
-						<Icon name="fa7-solid:xmark" class="text-sm" />
-					</button>
-				)
-			}
+			<div
+				id={`placeholder-empty-${uid}`}
+				class="absolute inset-0 hidden flex-col items-center justify-center text-center select-none z-0"
+			>
+				<div
+					class="h-12 w-12 bg-(--card-bg) rounded-full flex items-center justify-center mb-3 text-neutral-400 shadow-sm border border-neutral-100 dark:border-none"
+				>
+					<Icon name={finalPlaceholder.latest.icon} class="text-xl" />
+				</div>
+				<p
+					class="text-sm text-neutral-500 dark:text-neutral-400 font-medium"
+				>
+					{finalPlaceholder.latest.text}
+				</p>
+			</div>
+
+			<div
+				id={`placeholder-history-${uid}`}
+				class="absolute inset-0 hidden flex-col items-center justify-center text-center select-none z-0"
+			>
+				<div
+					class="h-12 w-12 bg-(--card-bg) rounded-full flex items-center justify-center mb-3 text-neutral-400 shadow-sm border border-neutral-100 dark:border-none"
+				>
+					<Icon
+						name={finalPlaceholder.history.icon}
+						class="text-xl"
+					/>
+				</div>
+				<p
+					class="text-sm text-neutral-500 dark:text-neutral-400 font-medium"
+				>
+					{finalPlaceholder.history.text}
+				</p>
+			</div>
+		</div>
+
+		<div
+			id={`pagination-controls-${uid}`}
+			class="announcement-pagination flex justify-between items-center mt-3 pt-3 border-t border-dashed border-neutral-200 dark:border-neutral-700/50"
+		>
+			<div class="flex items-center gap-1">
+				<button
+					id={`first-page-${uid}`}
+					class="p-1.5 rounded-md hover:bg-(--card-bg) text-neutral-400 hover:text-(--primary) disabled:opacity-30 disabled:pointer-events-none transition"
+					aria-label="First Page"
+				>
+					<Icon name="fa7-solid:angles-left" class="text-xs" />
+				</button>
+				<button
+					id={`prev-page-${uid}`}
+					class="p-1.5 rounded-md hover:bg-(--card-bg) text-neutral-400 hover:text-(--primary) disabled:opacity-30 disabled:pointer-events-none transition"
+					aria-label="Previous Page"
+				>
+					<Icon name="fa7-solid:chevron-left" class="text-xs" />
+				</button>
+			</div>
+
+			<div class="flex items-center gap-2 text-xs text-neutral-500">
+				<input
+					type="number"
+					id={`page-input-${uid}`}
+					value="1"
+					min="1"
+					class="w-10 h-6 text-center border border-neutral-200 dark:border-neutral-700 rounded bg-transparent focus:border-(--primary) focus:text-(--primary) focus:outline-none transition-colors"
+				/>
+				<span class="text-neutral-400">/</span>
+				<span id={`total-pages-text-${uid}`}>1</span>
+			</div>
+
+			<div class="flex items-center gap-1">
+				<button
+					id={`next-page-${uid}`}
+					class="p-1.5 rounded-md hover:bg-(--card-bg) text-neutral-400 hover:text-(--primary) disabled:opacity-30 disabled:pointer-events-none transition"
+					aria-label="Next Page"
+				>
+					<Icon name="fa7-solid:chevron-right" class="text-xs" />
+				</button>
+				<button
+					id={`last-page-${uid}`}
+					class="p-1.5 rounded-md hover:bg-(--card-bg) text-neutral-400 hover:text-(--primary) disabled:opacity-30 disabled:pointer-events-none transition"
+					aria-label="Last Page"
+				>
+					<Icon name="fa7-solid:angles-right" class="text-xs" />
+				</button>
+			</div>
 		</div>
 	</div>
 </WidgetLayout>
 
-<script>
-	function closeAnnouncement() {
-		// 通过data-id属性找到整个widget-layout元素
-		const widgetLayouts = document.querySelectorAll(
-			'widget-layout[data-id="announcement"]',
-		);
-		if (widgetLayouts.length > 0) {
-			widgetLayouts.forEach((widget) => {
-				// 隐藏整个widget-layout元素
-				(widget as HTMLElement).style.display = "none";
+<script
+	is:inline
+	define:vars={{
+		runtimeData: data,
+		itemsPerPage: configItemsPerPage,
+		globalClosable: globalClosable,
+		uid: uid,
+	}}
+>
+	(() => {
+		const allData = runtimeData;
+		const PAGE_SIZE = itemsPerPage;
+		const STORAGE_KEY = "closed_announcement_ids";
+		const RESTORED_KEY = "restored_announcement_ids";
+
+		let currentPage = 1;
+		let isHistoryMode = false;
+		const refs = {
+			listContainer: document.getElementById(
+				`announcement-list-container-${uid}`,
+			),
+			list: document.getElementById(`announcement-list-${uid}`),
+			placeholderEmpty: document.getElementById(
+				`placeholder-empty-${uid}`,
+			),
+			placeholderHistory: document.getElementById(
+				`placeholder-history-${uid}`,
+			),
+			historyBtn: document.getElementById(`history-toggle-btn-${uid}`),
+			historyBtnText: document.getElementById(`history-btn-text-${uid}`),
+			historyIcon: document.getElementById(`history-icon-${uid}`),
+			backIcon: document.getElementById(`back-icon-${uid}`),
+			firstBtn: document.getElementById(`first-page-${uid}`),
+			prevBtn: document.getElementById(`prev-page-${uid}`),
+			nextBtn: document.getElementById(`next-page-${uid}`),
+			lastBtn: document.getElementById(`last-page-${uid}`),
+			pageInput: document.getElementById(`page-input-${uid}`),
+			totalPagesText: document.getElementById(`total-pages-text-${uid}`),
+		};
+
+		function getClosedIds() {
+			if (!globalClosable) return [];
+			try {
+				return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+			} catch {
+				return [];
+			}
+		}
+
+		function saveClosedIds(ids) {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+		}
+
+		function getRestoredIds() {
+			if (!globalClosable) return [];
+			try {
+				return JSON.parse(localStorage.getItem(RESTORED_KEY)) || [];
+			} catch {
+				return [];
+			}
+		}
+
+		function saveRestoredIds(ids) {
+			localStorage.setItem(RESTORED_KEY, JSON.stringify(ids));
+		}
+
+		function animateListSwitch(callback, duration = 160) {
+			if (!refs.listContainer) {
+				callback();
+				return;
+			}
+
+			refs.listContainer.classList.remove("is-switching-in");
+			refs.listContainer.classList.add("is-switching-out");
+			setTimeout(() => {
+				callback();
+				requestAnimationFrame(() => {
+					refs.listContainer?.classList.remove("is-switching-out");
+					refs.listContainer?.classList.add("is-switching-in");
+					setTimeout(
+						() => {
+							refs.listContainer?.classList.remove(
+								"is-switching-in",
+							);
+						},
+						Math.max(120, duration),
+					);
+				});
+			}, duration);
+		}
+
+		function isItemExpired(item) {
+			if (item.expired === true) return true;
+			if (!item.expireDate) return false;
+			const expTime = new Date(item.expireDate).getTime();
+			return !Number.isNaN(expTime) && Date.now() > expTime;
+		}
+
+		function sortAnnouncements(data) {
+			return [...data].sort((a, b) => {
+				const pinnedA = a.pinned ? 1 : 0;
+				const pinnedB = b.pinned ? 1 : 0;
+				if (pinnedA !== pinnedB) return pinnedB - pinnedA;
+
+				const orderA = typeof a.order === "number" ? a.order : 0;
+				const orderB = typeof b.order === "number" ? b.order : 0;
+				if (orderA !== orderB) return orderB - orderA;
+
+				const dateA = a.date ? new Date(a.date).getTime() : 0;
+				const dateB = b.date ? new Date(b.date).getTime() : 0;
+				return dateB - dateA;
 			});
-			// 保存关闭状态到localStorage
-			localStorage.setItem("announcementClosed", "true");
+		}
+
+		function getDisplayData() {
+			const closedIds = getClosedIds();
+			const restoredIds = getRestoredIds();
+
+			const filtered = allData.filter((item) => {
+				const expired = isItemExpired(item);
+
+				if (!globalClosable) {
+					return !expired;
+				}
+
+				if (expired) {
+					const isRestored = restoredIds.includes(item.id);
+					return isHistoryMode ? !isRestored : isRestored;
+				}
+
+				const isClosed = closedIds.includes(item.id);
+				return isHistoryMode ? isClosed : !isClosed;
+			});
+
+			return sortAnnouncements(filtered);
+		}
+
+		function toggleAnnouncementStatus(id) {
+			if (!globalClosable) return;
+			const el = refs.list?.querySelector(
+				`.announcement-item[data-id="${id}"]`,
+			);
+
+			function finalizeToggle() {
+				const item = allData.find((x) => x.id === id);
+				const expired = item ? isItemExpired(item) : false;
+
+				if (expired) {
+					const restoredIds = getRestoredIds();
+					const index = restoredIds.indexOf(id);
+					if (index > -1) restoredIds.splice(index, 1);
+					else restoredIds.push(id);
+					saveRestoredIds(restoredIds);
+				} else {
+					const closedIds = getClosedIds();
+					const index = closedIds.indexOf(id);
+					if (index > -1) closedIds.splice(index, 1);
+					else closedIds.push(id);
+					saveClosedIds(closedIds);
+				}
+
+				const newData = getDisplayData();
+				const totalPages = Math.ceil(newData.length / PAGE_SIZE);
+				if (currentPage > totalPages && totalPages > 0)
+					currentPage = totalPages;
+				if (currentPage < 1) currentPage = 1;
+				render({ animateItems: true, staggerMs: 18, fastEnter: true });
+			}
+
+			if (el) {
+				const itemHeight = el.getBoundingClientRect().height;
+				el.style.setProperty(
+					"--announcement-exit-height",
+					`${Math.max(itemHeight, 1)}px`,
+				);
+				requestAnimationFrame(() => {
+					el.classList.add("item-exit");
+				});
+				let done = false;
+				const finish = () => {
+					if (done) return;
+					done = true;
+					el.removeEventListener("animationend", onEnd);
+					finalizeToggle();
+				};
+				const onEnd = (event) => {
+					if (event.target !== el) return;
+					finish();
+				};
+				el.addEventListener("animationend", onEnd, { once: true });
+
+				const styles = getComputedStyle(el);
+				const durationRaw = styles.animationDuration || "0s";
+				const delayRaw = styles.animationDelay || "0s";
+				const parseMs = (value) =>
+					value
+						.split(",")
+						.map((part) => part.trim())
+						.reduce((max, part) => {
+							const num = parseFloat(part);
+							if (Number.isNaN(num)) return max;
+							return Math.max(
+								max,
+								part.endsWith("ms") ? num : num * 1000,
+							);
+						}, 0);
+
+				const totalMs = parseMs(durationRaw) + parseMs(delayRaw);
+				if (totalMs <= 16) {
+					finish();
+				} else {
+					setTimeout(finish, totalMs + 40);
+				}
+				return;
+			}
+
+			finalizeToggle();
+		}
+
+		function toggleMode() {
+			if (!globalClosable) return;
+			animateListSwitch(() => {
+				isHistoryMode = !isHistoryMode;
+				currentPage = 1;
+
+				const btnText = refs.historyBtnText;
+				const historyBtn = refs.historyBtn;
+				const historyIcon = refs.historyIcon;
+				const backIcon = refs.backIcon;
+
+				if (btnText) {
+					btnText.innerText = isHistoryMode ? "返回" : "历史";
+				}
+				if (historyIcon && backIcon) {
+					historyIcon.classList.toggle("hidden", isHistoryMode);
+					backIcon.classList.toggle("hidden", !isHistoryMode);
+				}
+				if (historyBtn) {
+					historyBtn.classList.toggle(
+						"text-(--primary)",
+						isHistoryMode,
+					);
+					historyBtn.classList.toggle(
+						"bg-(--btn-regular-bg)",
+						isHistoryMode,
+					);
+					historyBtn.classList.toggle(
+						"is-history-active",
+						isHistoryMode,
+					);
+				}
+
+				render();
+			}, 180);
+		}
+
+		function handleInputPage(e) {
+			const data = getDisplayData();
+			const totalPages = Math.ceil(data.length / PAGE_SIZE) || 1;
+			let val = parseInt(e.target.value, 10);
+			if (Number.isNaN(val) || val < 1) val = 1;
+			if (val > totalPages) val = totalPages;
+			changePage(val);
+		}
+
+		function changePage(newPage) {
+			animateListSwitch(() => {
+				currentPage = newPage;
+				render();
+			}, 130);
+		}
+
+		function showPlaceholder(toShow, toHide) {
+			if (toHide) {
+				toHide.classList.add("hidden");
+				toHide.style.opacity = "0";
+			}
+			if (toShow) {
+				toShow.classList.remove("hidden");
+				toShow.classList.add("flex");
+				setTimeout(() => {
+					toShow.style.opacity = "1";
+				}, 10);
+			}
+		}
+
+		function hidePlaceholder(el) {
+			if (el) {
+				el.classList.add("hidden");
+				el.style.opacity = "0";
+			}
+		}
+
+		function render(options = {}) {
+			const {
+				animateItems = true,
+				staggerMs = 50,
+				fastEnter = false,
+			} = options;
+			const container = refs.list;
+			const placeholderEmpty = refs.placeholderEmpty;
+			const placeholderHistory = refs.placeholderHistory;
+			if (!container) return;
+
+			const displayData = getDisplayData();
+			const totalItems = displayData.length;
+			const totalPages =
+				totalItems > 0 ? Math.ceil(totalItems / PAGE_SIZE) : 1;
+
+			if (totalItems === 0) {
+				container.innerHTML = "";
+				if (!globalClosable) {
+					showPlaceholder(placeholderEmpty, placeholderHistory);
+				} else if (isHistoryMode) {
+					showPlaceholder(placeholderHistory, placeholderEmpty);
+				} else {
+					showPlaceholder(placeholderEmpty, placeholderHistory);
+				}
+			} else {
+				hidePlaceholder(placeholderEmpty);
+				hidePlaceholder(placeholderHistory);
+			}
+
+			if (currentPage > totalPages) currentPage = totalPages;
+			if (currentPage < 1) currentPage = 1;
+
+			const startIndex = (currentPage - 1) * PAGE_SIZE;
+			const pageItems = displayData.slice(
+				startIndex,
+				startIndex + PAGE_SIZE,
+			);
+
+			let html = "";
+			pageItems.forEach((item, idx) => {
+				const delay = animateItems ? idx * staggerMs : 0;
+				const itemClass = animateItems
+					? `announcement-item item-enter${fastEnter ? " item-enter-fast" : ""}`
+					: "announcement-item";
+				const expired = isItemExpired(item);
+				const actionIcon = isHistoryMode
+					? `<path fill="currentColor" d="M480 256c0 123.4-100.5 223.9-223.9 223.9c-49.7 0-96.1-16.2-134.5-44c-12.8-9.3-15.6-27.1-6.3-39.9s27.1-15.6 39.9-6.3c29.7 21.5 65.6 34.1 104.9 34.1c96.5 0 174.9-78.4 174.9-174.9S356.5 73 260 73c-64.8 0-122 35.8-152.6 89.2l61.8 0c15.8 0 28.6 12.8 28.6 28.6s-12.8 28.6-28.6 28.6l-123.8 0c-15.8 0-28.6-12.8-28.6-28.6l0-123.8c0-15.8 12.8-28.6 28.6-28.6s28.6 12.8 28.6 28.6l0 52.8C103.5 45.4 178 8 260.1 8C397 8 508 119 508 256z"/>`
+					: `<path fill="currentColor" d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>`;
+				const actionTitle = isHistoryMode ? "还原" : "关闭";
+
+				const showCloseBtn =
+					isHistoryMode || item.closable !== false || expired;
+				const closeBtnHtml = showCloseBtn
+					? `<button class="announcement-item-action text-neutral-400 hover:text-(--primary) hover:bg-(--btn-regular-bg) rounded-md transition-all p-1 shrink-0 ml-3" data-action="toggle-announcement" data-id="${item.id}" title="${actionTitle}"><svg viewBox="0 0 512 512" class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg">${actionIcon}</svg></button>`
+					: "";
+
+				const iconHtml = item.icon
+					? `<span class="mr-2 shrink-0 text-sm text-(--primary)">${item.icon}</span>`
+					: "";
+
+				const linkHtml =
+					item.link && item.link.enable
+						? `<a href="${item.link.url}" target="${item.link.external ? "_blank" : "_self"}" ${item.link.external ? 'rel="noopener noreferrer"' : ""} class="announcement-item-link text-xs font-medium text-(--primary) hover:opacity-80 transition-opacity flex items-center gap-1 bg-(--btn-regular-bg) px-2 py-0.5 rounded-full">${item.link.text}<svg viewBox="0 0 320 512" class="h-2 w-2" fill="currentColor"><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></a>`
+						: "";
+
+				const dateHtml = item.date
+					? `<div class="flex items-center gap-1.5 text-xs text-neutral-400"><svg viewBox="0 0 512 512" class="h-2.5 w-2.5 opacity-70" fill="currentColor"><path d="M464 256A208 208 0 1 1 48 256a208 208 0 0 1 416 0zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></svg><span>${item.date}</span></div>`
+					: "<span></span>";
+
+				const expiredBadge = expired
+					? `<span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800/50 shrink-0 font-normal">已过期</span>`
+					: "";
+
+				html += `
+					<div class="${itemClass} relative flex flex-col bg-(--card-bg) rounded-xl p-3 border border-neutral-200 dark:border-neutral-700/50 shadow-sm overflow-hidden" data-id="${item.id}" style="animation-delay: ${delay}ms">
+						<div class="flex items-start justify-between mb-2">
+							<div class="flex items-start flex-1 min-w-0">
+								${iconHtml}
+								<div class="font-bold text-sm text-neutral-800 dark:text-neutral-200 leading-tight wrap-break-word pt-px flex items-center flex-wrap">
+									${item.title}
+									${expiredBadge}
+								</div>
+							</div>
+							${closeBtnHtml}
+						</div>
+						<div class="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-3 wrap-break-word ml-1">${item.content}</div>
+						<div class="flex justify-between items-center mt-auto pt-2 border-t border-dashed border-neutral-200 dark:border-neutral-700/50">
+							${dateHtml}
+							${linkHtml}
+						</div>
+					</div>
+				`;
+			});
+
+			container.innerHTML = html;
+
+			const firstBtn = refs.firstBtn;
+			const prevBtn = refs.prevBtn;
+			const nextBtn = refs.nextBtn;
+			const lastBtn = refs.lastBtn;
+			const inputEl = refs.pageInput;
+			const totalPagesText = refs.totalPagesText;
+			if (
+				!firstBtn ||
+				!prevBtn ||
+				!nextBtn ||
+				!lastBtn ||
+				!inputEl ||
+				!totalPagesText
+			)
+				return;
+
+			const isFirst = currentPage === 1;
+			const isLast = currentPage === totalPages;
+
+			firstBtn.disabled = isFirst;
+			prevBtn.disabled = isFirst;
+			nextBtn.disabled = isLast;
+			lastBtn.disabled = isLast;
+
+			inputEl.value = String(currentPage);
+			inputEl.max = String(totalPages);
+			totalPagesText.innerText = String(totalPages);
+		}
+
+		document.addEventListener("DOMContentLoaded", () => {
+			refs.historyBtn?.addEventListener("click", toggleMode);
+			refs.firstBtn?.addEventListener("click", () => changePage(1));
+			refs.prevBtn?.addEventListener("click", () =>
+				changePage(currentPage - 1),
+			);
+			refs.nextBtn?.addEventListener("click", () =>
+				changePage(currentPage + 1),
+			);
+			refs.lastBtn?.addEventListener("click", () => {
+				const totalPages =
+					Math.ceil(getDisplayData().length / PAGE_SIZE) || 1;
+				changePage(totalPages);
+			});
+			refs.pageInput?.addEventListener("change", handleInputPage);
+			refs.pageInput?.addEventListener("keydown", (e) => {
+				if (e.key === "Enter") handleInputPage(e);
+			});
+			refs.list?.addEventListener("click", (event) => {
+				const btn = event.target.closest(
+					"[data-action='toggle-announcement']",
+				);
+				if (!btn) return;
+				const id = btn.getAttribute("data-id");
+				if (!id) return;
+				toggleAnnouncementStatus(id);
+			});
+			render();
+		});
+	})();
+</script>
+
+<style>
+	.announcement-widget {
+		--ann-dur-fast: 180ms;
+		--ann-dur-base: 260ms;
+		--ann-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.announcement-history-btn {
+		transition:
+			color var(--ann-dur-fast) ease,
+			background-color var(--ann-dur-fast) ease,
+			transform var(--ann-dur-fast) var(--ann-ease),
+			box-shadow var(--ann-dur-fast) ease;
+	}
+
+	.announcement-history-btn:hover {
+		transform: translateY(-1px);
+	}
+
+	.announcement-history-btn:active {
+		transform: translateY(0) scale(0.98);
+	}
+
+	.announcement-history-btn.is-history-active {
+		box-shadow: 0 6px 16px rgba(56, 189, 248, 0.2);
+	}
+
+	.announcement-list-container {
+		height: var(--announcement-fixed-height);
+		min-height: var(--announcement-fixed-height);
+		max-height: var(--announcement-fixed-height);
+		overflow: hidden;
+		transition:
+			opacity var(--ann-dur-base) var(--ann-ease),
+			transform var(--ann-dur-base) var(--ann-ease);
+	}
+
+	.announcement-list {
+		height: 100%;
+		overflow-y: auto;
+		padding-right: 0.125rem;
+	}
+
+	.announcement-list-container.is-switching-out {
+		opacity: 0;
+		transform: translateY(8px) scale(0.995);
+	}
+
+	.announcement-list-container.is-switching-in {
+		animation: listFadeIn 0.2s var(--ann-ease) both;
+	}
+
+	.announcement-item {
+		transition:
+			transform var(--ann-dur-fast) var(--ann-ease),
+			box-shadow var(--ann-dur-fast) ease,
+			border-color var(--ann-dur-fast) ease;
+	}
+
+	.announcement-item:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+	}
+
+	.announcement-item-action {
+		transition:
+			transform var(--ann-dur-fast) var(--ann-ease),
+			color var(--ann-dur-fast) ease,
+			background-color var(--ann-dur-fast) ease;
+	}
+
+	.announcement-item-action:hover {
+		transform: rotate(-8deg) scale(1.04);
+	}
+
+	.announcement-item-action:active {
+		transform: scale(0.92);
+	}
+
+	.announcement-pagination button {
+		transition:
+			transform var(--ann-dur-fast) var(--ann-ease),
+			background-color var(--ann-dur-fast) ease,
+			color var(--ann-dur-fast) ease,
+			opacity var(--ann-dur-fast) ease;
+	}
+
+	.announcement-pagination button:not(:disabled):hover {
+		transform: translateY(-1px);
+	}
+
+	.announcement-pagination button:not(:disabled):active {
+		transform: translateY(0) scale(0.94);
+	}
+
+	.announcement-pagination input {
+		transition:
+			border-color var(--ann-dur-fast) ease,
+			color var(--ann-dur-fast) ease,
+			box-shadow var(--ann-dur-fast) ease;
+	}
+
+	.announcement-pagination input:focus {
+		box-shadow: 0 0 0 2px
+			color-mix(in oklab, var(--primary) 25%, transparent);
+	}
+
+	@keyframes slideInUp {
+		from {
+			opacity: 0;
+			transform: translateY(10px) scale(0.99);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
 		}
 	}
 
-	// 页面加载时检查是否已关闭
-	document.addEventListener("DOMContentLoaded", function () {
-		const widgetLayouts = document.querySelectorAll(
-			'widget-layout[data-id="announcement"]',
-		);
-
-		if (
-			widgetLayouts.length > 0 &&
-			localStorage.getItem("announcementClosed") === "true"
-		) {
-			widgetLayouts.forEach((widget) => {
-				(widget as HTMLElement).style.display = "none";
-			});
+	@keyframes listFadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(6px) scale(0.998);
 		}
-	});
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
 
-	// 使公告栏函数全局可用
-	window.closeAnnouncement = closeAnnouncement;
-</script>
+	@keyframes collapseExit {
+		0% {
+			opacity: 1;
+			max-height: var(--announcement-exit-height, 220px);
+			transform: scale(1);
+			margin-bottom: 0.75rem;
+		}
+		40% {
+			opacity: 0;
+			transform: translateY(-3px) scale(0.97);
+		}
+		100% {
+			opacity: 0;
+			max-height: 0;
+			margin-bottom: 0;
+			padding-top: 0;
+			padding-bottom: 0;
+			border-width: 0;
+			transform: scale(0.9);
+		}
+	}
+
+	.item-enter {
+		animation: slideInUp 0.46s var(--ann-ease) forwards;
+		opacity: 0;
+		will-change: opacity, transform;
+	}
+
+	.item-enter-fast {
+		animation-duration: 0.24s;
+		animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1);
+	}
+
+	.item-exit {
+		animation: collapseExit 0.3s ease-in-out forwards;
+		pointer-events: none;
+		transform-origin: center top;
+		overflow: hidden;
+	}
+
+	input[type="number"]::-webkit-outer-spin-button,
+	input[type="number"]::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	input[type="number"] {
+		-moz-appearance: textfield;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.announcement-list-container,
+		.announcement-item,
+		.announcement-history-btn,
+		.announcement-pagination button,
+		.announcement-item-action,
+		.item-enter,
+		.item-exit {
+			animation: none !important;
+			transition: none !important;
+			transform: none !important;
+			filter: none !important;
+		}
+	}
+</style>

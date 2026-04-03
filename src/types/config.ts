@@ -333,19 +333,43 @@ export interface ExpressiveCodeConfig {
 	hideDuringThemeTransition?: boolean; // 是否在主题切换时隐藏代码块
 }
 
+export interface AnnouncementLink {
+	enable: boolean; // 是否启用链接
+	text: string; // 链接文字
+	url: string; // 链接地址
+	external?: boolean; // 是否外部链接
+}
+
+export interface AnnouncementPlaceholderItem {
+	text: string; // 空状态文案
+	icon: string; // 空状态图标
+}
+
+export interface AnnouncementPlaceholderConfig {
+	latest?: AnnouncementPlaceholderItem; // 当前公告列表为空时显示
+	history?: AnnouncementPlaceholderItem; // 历史记录为空时显示
+}
+
+export interface AnnouncementItem {
+	id: string; // 公告唯一标识，用于本地关闭/恢复状态持久化
+	title: string; // 公告标题
+	content: string; // 公告内容，支持 HTML 字符串
+	icon?: string; // 公告图标（可为 emoji / icon 文本 / svg 字符串）
+	date?: string; // 公告日期（建议格式：YYYY-MM-DD）
+	pinned?: boolean; // 是否置顶（置顶公告优先排序）
+	order?: number; // 同级排序权重，值越大越靠前
+	closable?: boolean; // 当前公告是否允许手动关闭
+	expired?: boolean; // 是否标记为已过期（过期后默认进入历史）
+	expireDate?: string; // 到期时间（超过该时间自动视为过期）
+	link?: AnnouncementLink; // 公告跳转链接配置
+}
+
 export interface AnnouncementConfig {
 	// enable属性已移除，现在通过sidebarLayoutConfig统一控制
 	title?: string; // 公告栏标题
-	content: string; // 公告栏内容
-	icon?: string; // 公告栏图标
-	type?: "info" | "warning" | "success" | "error"; // 公告类型
+	placeholder?: AnnouncementPlaceholderConfig; // 空状态占位配置
 	closable?: boolean; // 是否可关闭
-	link?: {
-		enable: boolean; // 是否启用链接
-		text: string; // 链接文字
-		url: string; // 链接地址
-		external?: boolean; // 是否外部链接
-	};
+	itemsPerPage?: number; // 每页显示的公告数量
 }
 
 export interface MusicPlayerConfig {

@@ -508,21 +508,23 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   }
 
   /* 公告栏特殊样式调整 */
-  #main-grid[data-layout-mode="grid"] #sidebar widget-layout[data-id="announcement"] .flex.items-center.justify-between > div:first-child {
+  #main-grid[data-layout-mode="grid"] #sidebar widget-layout[data-id^="announcement-"] .announcement-widget {
     width: 100% !important;
     flex: 1 !important;
+    min-width: 0 !important;
   }
 
   /* 公告栏拉伸链接按钮 */
-  #main-grid[data-layout-mode="grid"] #sidebar widget-layout[data-id="announcement"] a {
+  #main-grid[data-layout-mode="grid"] #sidebar widget-layout[data-id^="announcement-"] .announcement-item-link {
     display: block !important;
-    width: 100% !important;
+    max-width: 100% !important;
     text-align: center !important;
   }
 
-  /* 公告栏隐藏关闭按钮 */
-  #main-grid[data-layout-mode="grid"] #sidebar widget-layout[data-id="announcement"] button[onclick="closeAnnouncement()"] {
-    display: none !important;
+  /* 公告栏分页控件防止溢出 */
+  #main-grid[data-layout-mode="grid"] #sidebar widget-layout[data-id^="announcement-"] .announcement-pagination {
+    gap: 0.35rem !important;
+    flex-wrap: wrap !important;
   }
 }
 
