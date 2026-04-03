@@ -4,6 +4,7 @@ html,
 #twikoo-container,
 .twikoo,
 .centerTitle *,
+.pageheader *,
 .f-counter,
 .fancybox__slide {
   cursor: url("/assets/cursor/default.cur"), auto;

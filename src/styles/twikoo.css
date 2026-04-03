@@ -1,13 +1,13 @@
+@reference "tailwindcss";
+
 :root {
   --tk-text: black;
-  --code-block-text: #333; /* 调整为深色但在浅色背景下仍然舒适的值 */
+  --code-block-text: #333;
 }
-
-@reference "tailwindcss";
 
 html.dark {
   --tk-text: #d1d5db;
-  --code-block-text: #d1d5db; /* 在深色模式下使用更亮的颜色 */
+  --code-block-text: #d1d5db;
 }
 
 .tk-comments {
@@ -23,10 +23,10 @@ html.dark {
 /* Text Area */
 .tk-row {
   .tk-col {
-    @apply flex-col-reverse;
+    /* @apply flex-col-reverse; */
     .tk-input {
       textarea {
-        @apply rounded-(--radius-large) py-4 px-6 !min-h-[150px] focus:border-(--primary);
+        @apply rounded-(--radius-large) py-4 px-6 min-h-[150px]! focus:border-(--primary);
       }
     }
   }
@@ -36,13 +36,12 @@ html.dark {
 .tk-meta-input {
   @apply relative mt-3;
   div {
-    @apply min-h-10;
     .el-input-group__prepend {
-      @apply !bg-inherit rounded-l-lg;
+      @apply bg-inherit! rounded-l-lg;
       min-height: inherit;
     }
     input {
-      @apply px-4 rounded-r-lg focus:!border-(--primary);
+      @apply px-4 rounded-r-lg focus:border-(--primary)!;
       min-height: inherit;
     }
   }
@@ -50,16 +49,16 @@ html.dark {
 
 /* Button */
 .tk-row.actions {
-  @apply w-full !ml-0 !mt-0;
+  @apply w-full ml-0! mt-0!;
   .__markdown {
-    @apply !hidden;
+    @apply hidden!;
   }
   .tk-preview,
   .tk-send,
   .tk-cancel {
     @apply border-none rounded-lg px-3 py-0 h-8
-       !bg-(--btn-regular-bg-active) disabled:!bg-(--btn-regular-bg)
-      !text-(--btn-content) disabled:!text-[#ffffffa1];
+       bg-(--btn-regular-bg-active)! disabled:bg-(--btn-regular-bg)!
+      text-(--btn-content)! disabled:text-[#ffffffa1]!;
   }
 }
 
@@ -71,9 +70,19 @@ html.dark {
 }
 
 .tk-comment {
-  @apply border-[1px] border-[rgba(144,147,153,0.31)] p-4 rounded-2xl hover:shadow-md transition-all;
-  .tk-action-icon svg {
-    @apply fill-(--primary);
+  @apply border-[1px] border-(--line-divider) p-4 rounded-2xl transition-all duration-300;
+  background: linear-gradient(135deg, var(--card-bg) 0%, rgba(var(--primary), 0.02) 100%);
+  .tk-action-icon {
+    @apply text-(--primary)!;
+    svg {
+      @apply fill-(--primary) hover:scale-110 transition-transform duration-200;
+    }
+  }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    @apply border-(--primary);
+    z-index: 2;
   }
 }
 
@@ -121,20 +130,13 @@ html.dark {
 }
 
 /* Replies */
-.tk-replies {
-  .tk-comment {
-    @apply bg-(--page-bg);
-    .tk-content {
-      > span:first-of-type {
-        @apply text-xs;
-      }
-    }
-  }
+.tk-replies .tk-comment {
+  @apply border-l-4 border-l-(--btn-regular-bg)/30 p-3 hover:border-(--primary) transition-all duration-300;
 }
 
 .twikoo .code-block {
   pre {
-    @apply !rounded-xl;
+    @apply rounded-xl!;
   }
 
   /* Code block fall back */
@@ -160,7 +162,7 @@ Make the emoji component display correctly when there are too many emoji packs
   overflow: visible;
 }
 
-/* 防止 Twikoo 操作时的意外滚动 */
+/* Interaction */
 .tk-action-icon,
 .tk-owo,
 .tk-submit,
@@ -173,20 +175,67 @@ Make the emoji component display correctly when there are too many emoji packs
   transition: all 0.2s ease;
 }
 
-/* 确保点击区域足够大 */
 .tk-action {
   min-height: 24px;
   display: flex;
   align-items: center;
 }
 
-/* 防止表单提交时的意外跳转 */
 .tk-submit-wrapper {
   position: relative;
 }
 
-/* 管理面板样式优化 */
 .tk-admin-panel {
   position: relative;
   z-index: 100;
+}
+
+#twikoo .el-textarea__inner {
+  background-color: white;
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: right center;
+}
+
+/* Hide website field if needed */
+/* .tk-meta-input .el-input:nth-child(3) {
+  display: none !important;
+} */
+
+/* Avatar alignment */
+.tk-submit {
+  position: relative !important;
+  margin-top: 0rem !important;
+}
+
+.tk-submit .tk-avatar {
+  display: block !important;
+  position: absolute !important;
+  margin-top: 0.4rem;
+}
+@media (max-width: 768px) {
+  .tk-submit .tk-avatar {
+    margin-top: 0.6rem;
+  }
+}
+
+.tk-meta-input {
+  margin-left: 3rem !important;
+}
+
+/* Action row spacing */
+.tk-row.actions {
+  margin-top: 1rem !important;
+  width: 100% !important;
+}
+
+/* Divider between editor and comment list */
+.tk-comments-title {
+  border-top: 1px dashed var(--tk-border-color, #eaeaea);
+  padding-top: 0.5rem !important;
+}
+
+/* Sort links */
+.tk-sort-item {
+  color: var(--primary) !important;
 }

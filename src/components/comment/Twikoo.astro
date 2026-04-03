@@ -1,5 +1,7 @@
 ---
 import { commentConfig } from "@/config";
+import { PageHeader } from "@/components/features/page-header";
+import "@/styles/twikoo.css";
 
 interface Props {
 	path: string;
@@ -12,9 +14,17 @@ const config = {
 };
 ---
 
-<div id="twikoo-container" class="twikoo-container">
-	<div id="tcomment"></div>
-</div>
+<section id="twikoo-container" class="twikoo-container">
+	<PageHeader
+		class="pageheader mb-5"
+		title="繁星回音"
+		subtitle="STARRY ECHOES"
+		watermark="ECHOES"
+	/>
+	<div id="tcomment">
+		<div class="twikoo-loading">评论组件正在准备中...</div>
+	</div>
+</section>
 
 <script is:inline define:vars={{ config }}>
 	(function () {
@@ -75,11 +85,14 @@ const config = {
 					return;
 				}
 
-				commentEl.innerHTML = "";
+				commentEl.innerHTML =
+					'<div class="twikoo-loading">评论组件加载中...</div>';
 				const dynamicConfig = createTwikooConfig();
 				await twikoo.init(dynamicConfig);
 			} catch (error) {
 				console.error("[Twikoo] 初始化失败:", error);
+				commentEl.innerHTML =
+					'<div class="twikoo-error">评论初始化失败，请刷新后重试。</div>';
 			}
 		}
 
@@ -154,5 +167,17 @@ const config = {
 <style>
 	.twikoo-container {
 		min-height: 200px;
+	}
+
+	.twikoo-loading,
+	.twikoo-error {
+		padding: 0.875rem 0.25rem;
+		font-size: 0.875rem;
+		line-height: 1.4;
+		color: color-mix(in oklch, var(--card-content) 70%, transparent);
+	}
+
+	.twikoo-error {
+		color: color-mix(in oklch, var(--primary) 75%, #c53b3b);
 	}
 </style>
