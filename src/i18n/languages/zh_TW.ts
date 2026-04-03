@@ -80,6 +80,7 @@ export const zh_TW: Translation = {
 	[Key.animeEmptyBangumi]: "請檢查 Bangumi 設定或網路連線",
 	[Key.animeEmptyBilibili]: "請檢查 Bilibili 設定或網路連線",
 	[Key.animeEmptyLocal]: "請在 src/data/anime.ts 檔案中新增番劇資訊",
+	[Key.animeFilterNoResultsDesc]: "該狀態下暫無任何番劇記錄",
 	[Key.animeConfigBilibili]:
 		"請在 src/config.ts 檔案中設定您的 Bilibili vmid",
 	[Key.animeConfigBangumi]:
@@ -253,6 +254,8 @@ export const zh_TW: Translation = {
 
 	// 其他
 	[Key.noData]: "暫無資料",
+	[Key.filterEmptyTitle]: "這裡空空如也",
+	[Key.filterEmptyDescription]: "暫時沒有符合條件的記錄",
 
 	// 密碼保護
 	[Key.passwordProtected]: "密碼保護",

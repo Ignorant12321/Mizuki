@@ -14,11 +14,17 @@
 			var tabs = container.querySelectorAll(".filter-tabs-item");
 			var filterAttr = tabs[0] ? tabs[0].dataset.filterAttr : null;
 			if (!filterAttr) return;
+			var noResultsSelector = container.dataset.filterEmpty || "#no-results";
 
 			var dataSelector = "[data-" + filterAttr + "]";
 			var parent = container.closest(".card-base") || document;
 			var items = parent.querySelectorAll(dataSelector);
-			var noResults = parent.querySelector("#no-results");
+			var noResults = null;
+			try {
+				noResults = parent.querySelector(noResultsSelector);
+			} catch (_error) {
+				noResults = parent.querySelector("#no-results");
+			}
 
 			if (items.length === 0) return;
 

@@ -7,9 +7,14 @@ export function initFilterHandler() {
 		const filterTags = document.querySelectorAll(".anime-filter-tag");
 		const sentinel = document.getElementById("infinite-scroll-sentinel");
 		const listContainer = document.getElementById("anime-list-container");
+		const noResults = document.getElementById("no-results");
 		const lazyStore = document.getElementById(
 			"anime-lazy-store",
 		) as HTMLTemplateElement | null;
+
+		if (!listContainer) {
+			return;
+		}
 
 		window.animeFilterEventListeners.forEach((listener) => {
 			const [element, type, handler] = listener;
@@ -42,14 +47,15 @@ export function initFilterHandler() {
 				if (sentinel) {
 					sentinel.style.display = "none";
 				}
-				const initialHidden =
-					listContainer!.querySelectorAll(".initial-hidden");
+				const initialHidden = listContainer.querySelectorAll(
+					".initial-hidden",
+				);
 				initialHidden.forEach((el) => {
 					el.classList.remove("hidden", "initial-hidden");
 				});
 
 				const status = this.getAttribute("data-status");
-				const animeItems = Array.from(listContainer!.children).filter(
+				const animeItems = Array.from(listContainer.children).filter(
 					(item) => item.hasAttribute("data-anime-status"),
 				);
 				const itemsToHide: HTMLElement[] = [];
@@ -75,6 +81,29 @@ export function initFilterHandler() {
 						}
 					}
 				});
+
+				const visibleCount = itemsToKeep.length + itemsToShow.length;
+				if (noResults) {
+					noResults.classList.toggle("hidden", visibleCount > 0);
+				}
+				listContainer.classList.toggle("hidden", visibleCount === 0);
+
+				if (visibleCount === 0) {
+					itemsToHide.forEach((item) => {
+						item.classList.add("anime-hidden");
+						item.classList.remove(
+							"anime-fade-out",
+							"anime-fade-in",
+							"anime-fade-in-active",
+						);
+						item.style.transition = "";
+						item.style.transform = "";
+						item.style.opacity = "";
+						item.style.willChange = "";
+						item.style.transitionDelay = "";
+					});
+					return;
+				}
 
 				const firstPositions = new Map<
 					HTMLElement,

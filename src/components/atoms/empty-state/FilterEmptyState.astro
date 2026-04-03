@@ -1,0 +1,62 @@
+---
+import I18nKey from "../../../i18n/i18nKey";
+import { i18n } from "../../../i18n/translation";
+
+interface Props {
+	icon?: string;
+	title?: string;
+	description?: string;
+	compact?: boolean;
+}
+
+const {
+	icon = "",
+	title = i18n(I18nKey.filterEmptyTitle),
+	description = i18n(I18nKey.filterEmptyDescription),
+	compact = true,
+} = Astro.props;
+const useDefaultIcon = icon.trim() === "";
+const useIconifyIcon = !useDefaultIcon && icon.includes(":");
+---
+
+<div
+	class:list={[
+		"filter-empty-state text-center",
+		compact ? "py-10" : "py-16",
+	]}
+	data-filter-empty
+>
+	{
+		useDefaultIcon ? (
+			<svg
+				class="mx-auto mb-4 h-16 w-16 text-black/20 dark:text-white/20"
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+				></path>
+			</svg>
+		) : useIconifyIcon ? (
+			<div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--btn-regular-bg)] text-black/25 dark:text-white/25">
+				<iconify-icon icon={icon} width="46" height="46"></iconify-icon>
+			</div>
+		) : (
+			<div class="mb-4 text-[3.2rem] leading-none">{icon}</div>
+		)
+	}
+	<div class="text-xl leading-tight font-semibold text-black/90 dark:text-white/90 md:text-2xl">
+		{title}
+	</div>
+	{
+		description && (
+			<p class="mt-2 text-sm text-black/55 dark:text-white/55">
+				{description}
+			</p>
+		)
+	}
+</div>

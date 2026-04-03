@@ -73,6 +73,7 @@ enum I18nKey {
 	animeEmptyBangumi = "animeEmptyBangumi",
 	animeEmptyBilibili = "animeEmptyBilibili",
 	animeEmptyLocal = "animeEmptyLocal",
+	animeFilterNoResultsDesc = "animeFilterNoResultsDesc",
 	animeConfigBilibili = "animeConfigBilibili",
 	animeConfigBangumi = "animeConfigBangumi",
 
@@ -186,6 +187,8 @@ enum I18nKey {
 	skillsByLevel = "skillsByLevel",
 	skillsByCategory = "skillsByCategory",
 	noData = "noData",
+	filterEmptyTitle = "filterEmptyTitle",
+	filterEmptyDescription = "filterEmptyDescription",
 
 	// Timeline page
 	timeline = "timeline",

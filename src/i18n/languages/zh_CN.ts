@@ -75,6 +75,7 @@ export const zh_CN: Translation = {
 	[Key.animeEmptyBangumi]: "请检查 Bangumi 配置或网络连接",
 	[Key.animeEmptyBilibili]: "请检查 Bilibili 配置或网络连接",
 	[Key.animeEmptyLocal]: "请在 src/data/anime.ts 文件中添加番剧信息",
+	[Key.animeFilterNoResultsDesc]: "该状态下暂无任何番剧记录",
 	[Key.animeConfigBilibili]:
 		"请在 src/config.ts 文件中设置您的 Bilibili vmid",
 	[Key.animeConfigBangumi]:
@@ -190,6 +191,8 @@ export const zh_CN: Translation = {
 	[Key.skillsByLevel]: "按等级分布",
 	[Key.skillsByCategory]: "按分类分布",
 	[Key.noData]: "暂无数据",
+	[Key.filterEmptyTitle]: "这里空空如也",
+	[Key.filterEmptyDescription]: "暂时没有符合条件的记录",
 
 	// 时间线页面
 	[Key.timeline]: "时间线",

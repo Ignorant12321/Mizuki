@@ -78,6 +78,8 @@ export const ja: Translation = {
 		"Bilibiliの構成またはネットワーク接続を確認してください",
 	[Key.animeEmptyLocal]:
 		"src/data/anime.tsのファイルにアニメの情報を追加してください",
+	[Key.animeFilterNoResultsDesc]:
+		"このステータスにはまだアニメの記録がありません",
 	[Key.animeConfigBilibili]:
 		"src/config.tsファイルでBilibili vmidを設定してください",
 	[Key.animeConfigBangumi]:
@@ -247,6 +249,8 @@ export const ja: Translation = {
 	[Key.skillsByLevel]: "レベル別",
 	[Key.skillsByCategory]: "カテゴリー別",
 	[Key.noData]: "データなし",
+	[Key.filterEmptyTitle]: "ここは空っぽです",
+	[Key.filterEmptyDescription]: "現在の条件に一致する記録はありません",
 
 	// タイムラインページ
 	[Key.timeline]: "タイムライン",

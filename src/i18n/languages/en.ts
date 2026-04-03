@@ -78,6 +78,7 @@ export const en: Translation = {
 		"Please check Bilibili configuration or network connection",
 	[Key.animeEmptyLocal]:
 		"Please add anime information in src/data/anime.ts file",
+	[Key.animeFilterNoResultsDesc]: "No anime records in this status yet",
 	[Key.animeConfigBilibili]:
 		"Please set your Bilibili vmid in the src/config.ts file",
 	[Key.animeConfigBangumi]:
@@ -245,6 +246,8 @@ export const en: Translation = {
 	[Key.skillsByLevel]: "By Level",
 	[Key.skillsByCategory]: "By Category",
 	[Key.noData]: "No data",
+	[Key.filterEmptyTitle]: "Nothing here yet",
+	[Key.filterEmptyDescription]: "No records match the current filter",
 
 	// Timeline Page
 	[Key.timeline]: "Timeline",

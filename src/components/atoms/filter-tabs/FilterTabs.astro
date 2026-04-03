@@ -11,6 +11,7 @@ interface Props {
 	dataAttr: string;
 	activeValue?: string;
 	class?: string;
+	emptyTarget?: string;
 }
 
 const {
@@ -18,10 +19,11 @@ const {
 	dataAttr,
 	activeValue = "all",
 	class: className = "",
+	emptyTarget = "#no-results",
 } = Astro.props;
 ---
 
-<div class:list={["filter-tabs", className]}>
+<div class:list={["filter-tabs", className]} data-filter-empty={emptyTarget}>
 	{
 		tabs.map((tab) => (
 			<button
