@@ -52,7 +52,11 @@ const subtitle = i18n(I18nKey.albumsSubtitle);
 		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
 	>
 		<div class="card-base z-10 px-6 sm:px-9 py-6 relative w-full">
-			<PageHeader title={title} subtitle={subtitle} />
+			<PageHeader
+				title={title}
+				subtitle={subtitle}
+				bgImage="https://www.loliapi.com/acg/pc?t=album"
+			/>
 
 			{
 				albumsData.length > 0 && allTags.length > 0 && (

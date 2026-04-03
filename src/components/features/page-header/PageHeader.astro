@@ -5,20 +5,105 @@ const {
 	title,
 	subtitle,
 	class: className = "",
+	watermark = false,
+	bgImage,
+	desc,
+	divider = false,
 } = Astro.props as PageHeaderProps;
+
+const showWatermark = watermark !== false;
+const watermarkText = typeof watermark === "string" ? watermark : subtitle;
 ---
 
-<div class={`flex flex-col items-start justify-center mb-8 ${className}`}>
-	<h1
-		class="text-4xl font-bold text-black/90 dark:text-white/90 mb-2 relative
-			before:w-1 before:h-8 before:rounded-md before:bg-[var(--primary)]
-			before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-4"
-	>
-		{title}
-	</h1>
+<div
+	class:list={[
+		"relative w-full overflow-hidden rounded-2xl flex flex-col items-center justify-center",
+		bgImage ? "pt-16 pb-12 mb-6" : "pt-6 pb-4 mb-6",
+		className,
+	]}
+>
 	{
-		subtitle && (
-			<p class="text-lg text-black/60 dark:text-white/60">{subtitle}</p>
+		bgImage && (
+			<div class="absolute inset-0 z-0 select-none pointer-events-none bg-[var(--card-bg)]">
+				<img
+					src={bgImage}
+					alt=""
+					loading="lazy"
+					class="w-full h-full object-cover object-center transition-opacity duration-700 opacity-0"
+					onload="this.classList.remove('opacity-0'); this.classList.add('opacity-60');"
+				/>
+				<div class="absolute inset-0 bg-black/40 dark:bg-black/50" />
+				<div class="absolute inset-0 bg-gradient-to-t from-[var(--card-bg)] via-[var(--card-bg)]/20 to-transparent" />
+			</div>
 		)
 	}
+
+	{
+		showWatermark && watermarkText && (
+			<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[3rem] md:text-[5.5rem] font-black text-black/5 dark:text-white/5 uppercase tracking-[0.2em] select-none pointer-events-none z-0 whitespace-nowrap">
+				{watermarkText}
+			</div>
+		)
+	}
+
+	<div class="flex flex-col items-center justify-center w-full relative z-10">
+		<div class="mb-2 text-[var(--primary)] opacity-70">
+			<slot name="icon">
+				<svg
+					class="w-6 h-6 md:w-8 md:h-8"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.52285 12 2 12C7.52285 12 12 7.52285 12 2Z"
+						fill="currentColor"
+						opacity="0.3"
+					/>
+					<path
+						d="M12 4C12 8.41828 15.5817 12 20 12C15.5817 12 12 15.5817 12 20C12 15.5817 8.41828 12 4 12C8.41828 12 12 8.41828 12 4Z"
+						fill="currentColor"
+					/>
+					<circle cx="12" cy="12" r="1.5" fill="var(--card-bg, #fff)" />
+				</svg>
+			</slot>
+		</div>
+
+		<div class="w-full flex items-center justify-center gap-3 md:gap-5 px-2 group">
+			<div class="flex-1 max-w-[120px] md:max-w-[200px] h-px bg-gradient-to-l from-[var(--primary)] to-transparent opacity-50 group-hover:opacity-80 transition-opacity duration-500" />
+
+			<div class="flex flex-col items-center shrink-0 px-2 md:px-4">
+				<h1 class="text-xl md:text-3xl font-bold tracking-widest text-[var(--primary)] drop-shadow-sm whitespace-nowrap m-0 text-center">
+					{title}
+				</h1>
+				{
+					subtitle && (
+						<span class="text-[9px] md:text-[11px] font-mono tracking-[0.2em] md:tracking-[0.3em] opacity-60 mt-1 uppercase text-black/70 dark:text-white/70 whitespace-nowrap">
+							{subtitle}
+						</span>
+					)
+				}
+			</div>
+
+			<div class="flex-1 max-w-[120px] md:max-w-[200px] h-px bg-gradient-to-r from-[var(--primary)] to-transparent opacity-50 group-hover:opacity-80 transition-opacity duration-500" />
+		</div>
+
+		{
+			desc && (
+				<p class="text-xs md:text-sm text-black/60 dark:text-white/60 mt-4 md:mt-5 opacity-80 font-light tracking-wider text-center px-4 m-0 drop-shadow-sm">
+					{desc}
+				</p>
+			)
+		}
+
+		<slot name="bottom" />
+	</div>
 </div>
+
+{
+	divider && (
+		<div class="w-full flex justify-center mb-8 relative z-10">
+			<div class="w-[80%] md:w-[90%] border-b-2 border-dashed border-[var(--primary)] opacity-70" />
+		</div>
+	)
+}
