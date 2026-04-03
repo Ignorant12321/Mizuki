@@ -1,0 +1,53 @@
+/* 鼠标样式 */
+html,
+#twikoo,
+#twikoo-container,
+.twikoo,
+.centerTitle *,
+.f-counter,
+.fancybox__slide {
+  cursor: url("/assets/cursor/default.cur"), auto;
+}
+
+a,
+button,
+.test-btn,
+.cursor-pointer,
+.el-input-group__prepend,
+.tk-icon,
+.tk-action,
+.tk-avatar,
+.tk-submit-action-icon,
+.pio-action {
+  cursor: url("/assets/cursor/pointer.cur"), pointer !important;
+}
+
+p,
+input[type="text"],
+input[type="password"],
+input[type="email"],
+textarea {
+  cursor: url("/assets/cursor/input.cur"), text !important;
+}
+
+#pio,
+.mermaid-zoom-wrapper {
+  cursor: url("/assets/cursor/grab.cur"), grab !important;
+}
+
+#pio:active,
+.mermaid-zoom-wrapper:active {
+  cursor: url("/assets/cursor/grabing.cur"), grabbing !important;
+}
+
+button:disabled,
+input:disabled,
+.cursor-not-allowed,
+.not-allowed {
+  cursor: url("/assets/cursor/not-allowed.cur"), not-allowed !important;
+}
+
+.cursor-zoom-in,
+.f-panzoom__viewport {
+  cursor: url("/assets/cursor/zoomIn.cur"), zoom-in !important;
+}
