@@ -1,4 +1,5 @@
 export { default as AnimationTest } from "./AnimationTest.astro";
+export { default as ClickEffect } from "./ClickEffect.astro";
 export { default as ConfigCarrier } from "./ConfigCarrier.astro";
 export { default as FullscreenWallpaper } from "./FullscreenWallpaper.astro";
 export { default as Icon } from "./Icon.astro";

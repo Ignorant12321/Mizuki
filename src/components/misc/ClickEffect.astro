@@ -1,0 +1,117 @@
+---
+import { clickEffectConfig, siteConfig } from "@/config";
+
+const serializedConfig = JSON.stringify(
+	siteConfig.clickEffect ?? clickEffectConfig,
+);
+---
+
+<template id="click-effect-config" data-config={serializedConfig}></template>
+
+<style>
+	:global(.click-particle) {
+		position: fixed;
+		pointer-events: none;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		z-index: 9999;
+		will-change: transform, opacity;
+		animation: particle-explosion 0.48s cubic-bezier(0.18, 0.84, 0.32, 1)
+			both;
+		box-shadow: 0 0 4px rgba(255, 255, 255, 0.72);
+	}
+
+	:global(.dark .click-particle) {
+		box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+	}
+
+	@keyframes particle-explosion {
+		0% {
+			opacity: 1;
+			transform: scale(0.4) translate(0, 0);
+		}
+		18% {
+			opacity: 1;
+			transform: scale(1.12) translate(var(--dx), var(--dy));
+		}
+		45% {
+			opacity: 0.45;
+			transform: scale(1)
+				translate(calc(var(--dx) * 2.2), calc(var(--dy) * 2.2));
+		}
+		100% {
+			opacity: 0;
+			transform: scale(0.1)
+				translate(calc(var(--dx) * 2.8), calc(var(--dy) * 2.8));
+		}
+	}
+
+	:global(.click-particle.color-1) {
+		background: radial-gradient(circle, #ffb3ba 0%, #ffc1cc 100%);
+	}
+	:global(.click-particle.color-2) {
+		background: radial-gradient(circle, #a8d8ff 0%, #bde4ff 100%);
+	}
+	:global(.click-particle.color-3) {
+		background: radial-gradient(circle, #ffe66d 0%, #fff2a8 100%);
+	}
+	:global(.click-particle.color-4) {
+		background: radial-gradient(circle, #d4a5ff 0%, #e6ccff 100%);
+	}
+	:global(.click-particle.color-5) {
+		background: radial-gradient(circle, #a8e6a8 0%, #c1ffc1 100%);
+	}
+	:global(.click-particle.color-6) {
+		background: radial-gradient(circle, #ffcc99 0%, #ffd4a3 100%);
+	}
+	:global(.click-particle.color-7) {
+		background: radial-gradient(circle, #b3deff 0%, #c4e8ff 100%);
+	}
+	:global(.click-particle.color-8) {
+		background: radial-gradient(circle, #f5c2c7 0%, #f8d7da 100%);
+	}
+	:global(.click-particle.color-9) {
+		background: radial-gradient(circle, #c3e6c3 0%, #d1f2d1 100%);
+	}
+	:global(.click-particle.color-10) {
+		background: radial-gradient(circle, #ffe8b3 0%, #fff0d4 100%);
+	}
+
+	:global(.dark .click-particle.color-1) {
+		background: radial-gradient(circle, #ff4757 0%, #ff6b8a 100%);
+	}
+	:global(.dark .click-particle.color-2) {
+		background: radial-gradient(circle, #29b6f6 0%, #4fc3f7 100%);
+	}
+	:global(.dark .click-particle.color-3) {
+		background: radial-gradient(circle, #ffca28 0%, #ffd54f 100%);
+	}
+	:global(.dark .click-particle.color-4) {
+		background: radial-gradient(circle, #ab47bc 0%, #ba68c8 100%);
+	}
+	:global(.dark .click-particle.color-5) {
+		background: radial-gradient(circle, #66bb6a 0%, #81c784 100%);
+	}
+	:global(.dark .click-particle.color-6) {
+		background: radial-gradient(circle, #ffa726 0%, #ffb74d 100%);
+	}
+	:global(.dark .click-particle.color-7) {
+		background: radial-gradient(circle, #42a5f5 0%, #64b5f6 100%);
+	}
+	:global(.dark .click-particle.color-8) {
+		background: radial-gradient(circle, #f06292 0%, #f48fb1 100%);
+	}
+	:global(.dark .click-particle.color-9) {
+		background: radial-gradient(circle, #81c784 0%, #a5d6a7 100%);
+	}
+	:global(.dark .click-particle.color-10) {
+		background: radial-gradient(circle, #ffd54f 0%, #ffe082 100%);
+	}
+</style>
+
+<script>
+	import { initClickEffect } from "@/scripts/effects/click-effect";
+
+	initClickEffect();
+</script>

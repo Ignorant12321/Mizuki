@@ -193,6 +193,7 @@ export interface SiteConfig {
 	favicon: Favicon[];
 	showLastModified: boolean; // 控制"上次编辑"卡片显示的开关
 	pageProgressBar?: PageProgressBarConfig; // 页面顶部进度条配置
+	clickEffect?: ClickEffectConfig; // 页面点击特效配置
 	thirdPartyAnalytics?: ThirdPartyAnalyticsConfig; // 第三方统计配置
 }
 
@@ -513,6 +514,20 @@ export interface PageProgressBarConfig {
 	enable: boolean; // 是否启用页面顶部进度条
 	height?: number; // 进度条高度，默认 3px
 	duration?: number; // 动画时长，默认 8000ms
+}
+
+/**
+ * 页面点击特效配置
+ */
+export interface ClickEffectConfig {
+	enable: {
+		desktop: boolean; // 桌面端启用
+		mobile: boolean; // 移动端启用
+	};
+	blacklist?: {
+		paths?: string[]; // 页面路径黑名单
+		selectors?: string[]; // 元素选择器黑名单
+	};
 }
 
 /**

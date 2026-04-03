@@ -1,5 +1,6 @@
 ﻿import type {
 	AnnouncementConfig,
+	ClickEffectConfig,
 	CommentConfig,
 	ExpressiveCodeConfig,
 	FooterConfig,
@@ -19,6 +20,20 @@
 import { LinkPreset } from "./types/config";
 
 // 移除i18n导入以避免循环依赖
+
+export const clickEffectConfig: ClickEffectConfig = {
+	enable: {
+		desktop: true, // 桌面端启用点击特效
+		mobile: false, // 移动端默认关闭，避免触屏场景过于频繁
+	},
+	blacklist: {
+		paths: [], // "/about" 精确匹配，"/posts/" 匹配该前缀下所有页面
+		selectors: [
+			// "a",
+			// "[data-no-click-effect]",
+		],
+	},
+};
 
 // 定义站点语言
 const SITE_LANG = "zh_CN"; // 语言代码，例如：'en', 'zh_CN', 'ja' 等。
@@ -236,6 +251,7 @@ export const siteConfig: SiteConfig = {
 		height: 3, // 进度条高度 3px
 		duration: 6000, // 动画时长 6s
 	},
+	clickEffect: clickEffectConfig,
 
 	thirdPartyAnalytics: {
 		enable: false, // 是否启用第三方统计（Microsoft Clarity），默认关闭，启用可能影响 Lighthouse 评分
