@@ -87,6 +87,7 @@ export interface SiteConfig {
 	postListLayout: {
 		defaultMode: "list" | "grid"; // 默认布局模式：list=列表模式，grid=网格模式
 		allowSwitch: boolean; // 是否允许用户切换布局
+		pageSize?: number; // 首页文章每页显示数量
 		categoryBar?: {
 			enable: boolean; // 是否在文章列表页显示分类导航条
 		};
