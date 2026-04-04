@@ -277,7 +277,7 @@ export const siteConfig: SiteConfig = {
 
 - **Anime Page:** Edit anime list in `src/pages/anime.astro`
 - **Friends Page:** Edit friend data in `src/content/spec/friends.md`
-- **Diary Page:** Edit moments in `src/pages/diary.astro`
+- **Diary Page:** Edit diary route in `src/pages/diary/[...page].astro` and data source in `src/data/diary.ts`
 - **About Page:** Edit content in `src/content/spec/about.md`
 
 ### 📦 Code-Content Separation (Optional)

@@ -279,7 +279,7 @@ export const siteConfig: SiteConfig = {
 
 - **追番页面：** 在 `src/pages/anime.astro` 中编辑动画列表
 - **友链页面：** 在 `src/content/spec/friends.md` 中编辑朋友数据
-- **日记页面：** 在 `src/pages/diary.astro` 中编辑动态
+- **日记页面：** 在 `src/pages/diary/[...page].astro` 中编辑路由，在 `src/data/diary.ts` 中编辑数据源
 - **关于页面：** 在 `src/content/spec/about.md` 中编辑内容
 
 ### 📦 代码内容分离 (可选)

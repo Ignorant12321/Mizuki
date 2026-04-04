@@ -1,0 +1,260 @@
+---
+import type { GetStaticPaths, Page } from "astro";
+
+import Pagination from "@components/control/Pagination.astro";
+import { PageHeader } from "@components/features/page-header";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+
+import { siteConfig } from "../../config";
+import type { DiaryItem } from "../../data/diary";
+import { getDiaryList } from "../../data/diary";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+
+const DEFAULT_DIARY_PAGE_SIZE = 3;
+
+export const getStaticPaths = (async ({ paginate }) => {
+	if (!siteConfig.featurePages.diary) {
+		return [];
+	}
+
+	const rawDiaryPageSize = Number(siteConfig.diary?.pageSize);
+	const diaryPageSize =
+		Number.isFinite(rawDiaryPageSize) && rawDiaryPageSize >= 1
+			? Math.floor(rawDiaryPageSize)
+			: DEFAULT_DIARY_PAGE_SIZE;
+
+	const allMoments = await getDiaryList();
+	return paginate(allMoments, { pageSize: diaryPageSize });
+}) satisfies GetStaticPaths;
+
+interface Props {
+	page: Page<DiaryItem>;
+}
+
+const { page } = Astro.props as Props;
+const moments = page.data;
+
+if (!siteConfig.featurePages.diary) {
+	return Astro.redirect("/404/");
+}
+
+function formatDateSimple(dateString: string): string {
+	const date = new Date(dateString);
+	const y = date.getFullYear();
+	const m = String(date.getMonth() + 1).padStart(2, "0");
+	const d = String(date.getDate()).padStart(2, "0");
+	return `${y}.${m}.${d}`;
+}
+---
+
+<MainGridLayout title={i18n(I18nKey.diary)} description={i18n(I18nKey.diarySubtitle)}>
+	<script>
+		import("../../scripts/right-sidebar-layout.js");
+	</script>
+
+	<div
+		class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32"
+	>
+		<div
+			class="card-base z-10 px-4 py-4 md:px-6 md:py-5 relative w-full bg-(--page-bg)"
+		>
+			<div class="relative max-w-3xl w-full mx-auto px-2 md:px-0">
+				<PageHeader
+					title={i18n(I18nKey.diary)}
+					subtitle={i18n(I18nKey.diarySubtitle)}
+					bgImage="https://www.loliapi.com/acg/pc?t=diary"
+				/>
+
+				{
+					moments.length > 0 ? (
+						<div class="moments-timeline relative z-10">
+							<div
+								class="absolute left-4 md:left-[2px] top-4 bottom-4 w-0.5 bg-(--primary) opacity-30 hidden md:block"
+							/>
+							<div class="timeline-list space-y-8" id="post-container">
+								{
+									moments.map((moment, index) => {
+										const imageCount = moment.images?.length || 0;
+										const dateStr = formatDateSimple(moment.date);
+
+										return (
+											<div class="moment-item relative pl-0 md:pl-8 group">
+												<div class="absolute left-0 top-5 w-2 h-2 rounded-full bg-(--primary) ring-4 ring-(--page-bg) hidden md:block transition-all duration-300 ease-out group-hover:scale-150 group-hover:ring-6 group-hover:ring-(--primary)/20" />
+
+												<div class="card-base-daily rounded-(--radius-large) bg-(--card-bg) border-2 border-(--line-divider) hover:border-(--primary) transition-[border-color,box-shadow] duration-300 hover:shadow-xl overflow-hidden">
+													<div class="moment-header flex items-center justify-between px-5 pt-5 pb-3 md:px-7 md:pt-6">
+														<h2
+															id={`diary-${dateStr}-${index}`}
+															class="text-lg md:text-xl font-bold text-90 font-mono tracking-tight"
+														>
+															{dateStr}
+														</h2>
+														<div class="flex flex-wrap items-center justify-end gap-3 text-xs md:text-sm text-50">
+															{
+																moment.location && (
+																	<div class="flex items-center gap-1 shrink-0">
+																		<span class="text-(--primary) opacity-80">
+																			🗺
+																		</span>
+																		<span class="truncate max-w-[100px] md:max-w-[150px]">
+																			{moment.location}
+																		</span>
+																	</div>
+																)
+															}
+															{
+																moment.mood && (
+																	<div class="flex items-center gap-1 shrink-0">
+																		<span class="opacity-80">❤️</span>
+																		<span>{moment.mood}</span>
+																	</div>
+																)
+															}
+														</div>
+													</div>
+
+													<div class="moment-content px-5 md:px-7 pb-4">
+														<p class="text-base md:text-[1.05rem] text-90 leading-relaxed whitespace-pre-wrap">
+															{moment.content}
+														</p>
+
+														{
+															imageCount > 0 && (
+																<div class="diary-images mt-4 gap-2 md:gap-3 grid w-full grid-cols-6">
+																	{moment.images!.map((image, idx) => {
+																		const isSingle = imageCount === 1;
+																		const totalRows = Math.ceil(
+																			imageCount / 3,
+																		);
+																		const currentRow = Math.floor(
+																			idx / 3,
+																		);
+																		const isLastRow =
+																			currentRow === totalRows - 1;
+																		const remainder =
+																			imageCount % 3 === 0
+																				? 3
+																				: imageCount % 3;
+
+																		let spanClass = "col-span-2";
+																		let aspectClass = "aspect-square";
+
+																		if (isSingle) {
+																			spanClass = "col-span-6";
+																			aspectClass =
+																				"aspect-21/9 md:aspect-3/1";
+																		} else if (isLastRow) {
+																			if (remainder === 1) {
+																				spanClass = "col-span-6";
+																				aspectClass =
+																					"aspect-21/9 md:aspect-3/1";
+																			} else if (remainder === 2) {
+																				spanClass = "col-span-3";
+																				aspectClass = "aspect-4/3";
+																			}
+																		}
+
+																		return (
+																			<div
+																				class={`image-item relative rounded-lg overflow-hidden bg-(--card-bg-alt) w-full shadow-sm ${spanClass} ${aspectClass}`}
+																			>
+																				<a
+																					href="javascript:void(0)"
+																					data-src={image}
+																					data-type="image"
+																					data-fancybox={`gallery-diary-${index}`}
+																					class="block w-full h-full"
+																				>
+																					<img
+																						src={image}
+																						alt="diary moment"
+																						class="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+																						loading="lazy"
+																						decoding="async"
+																					/>
+																				</a>
+																			</div>
+																		);
+																	})}
+																</div>
+															)
+														}
+													</div>
+
+													{
+														moment.tags && moment.tags.length > 0 && (
+															<div class="moment-footer px-5 py-3 md:px-7 bg-(--card-bg-alt)/50 border-t border-(--line-divider)/50 flex flex-wrap items-center justify-between gap-y-2 text-xs md:text-sm text-50">
+																<div class="flex flex-wrap items-center gap-x-3 gap-y-1 ml-auto pl-4">
+																	{moment.tags.map((tag) => (
+																		<span class="btn-regular h-6 text-xs px-2 rounded-lg text-90">
+																			<span class="opacity-50 mr-0.5">
+																				#
+																			</span>
+																			{tag}
+																		</span>
+																	))}
+																</div>
+															</div>
+														)
+													}
+												</div>
+											</div>
+										);
+									})
+								}
+							</div>
+						</div>
+					) : (
+						<div class="text-center py-16">
+							<iconify-icon
+								icon="material-symbols:edit-note"
+								width="64"
+								height="64"
+								class="text-30 mb-4"
+							/>
+							<h3 class="text-lg font-medium text-90 mb-2">
+								{i18n(I18nKey.diaryNoResults)}
+							</h3>
+						</div>
+					)
+				}
+
+				{
+					page.lastPage > 1 && (
+						<Pagination page={page} basePath="/diary" class="mt-14 mb-4" />
+					)
+				}
+			</div>
+
+			<div
+				class="moments-tips text-center mt-12 mb-8 text-50 text-xs md:text-sm opacity-80"
+			>
+				<span class="mx-2">——</span>
+				{i18n(I18nKey.diaryTips)}
+				<span class="mx-2">——</span>
+			</div>
+		</div>
+	</div>
+</MainGridLayout>
+
+<style>
+	.card-base-daily {
+		box-shadow:
+			0 2px 8px -2px rgba(0, 0, 0, 0.05),
+			0 0 1px rgba(0, 0, 0, 0.1);
+	}
+
+	@media (max-width: 768px) {
+		.moment-footer {
+			align-items: flex-start;
+		}
+		.moment-footer > div.ml-auto {
+			margin-right: 0;
+			padding-right: 0;
+			margin-top: 0.5rem;
+			width: 100%;
+			justify-content: flex-end;
+		}
+	}
+</style>

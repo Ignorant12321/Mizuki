@@ -90,7 +90,7 @@ export const ja: Translation = {
 	[Key.diaryNoResults]: "一致する日記がありません",
 	[Key.diaryCount]: "件の日記",
 
-	[Key.diaryTips]: "最新の30件の日記のエントリーのみを表示",
+	[Key.diaryTips]: "つぶやき、自分に聞かせる。",
 	[Key.diaryMinutesAgo]: "分前",
 	[Key.diaryHoursAgo]: "時間前",
 	[Key.diaryDaysAgo]: "日前",

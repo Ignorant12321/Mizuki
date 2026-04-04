@@ -44,7 +44,19 @@ const specCollection = defineCollection({
 	loader: glob({ pattern: "**/*.md", base: "./src/content/spec" }),
 	schema: z.object({}),
 });
+const diaryCollection = defineCollection({
+	loader: glob({ pattern: "**/*.md", base: "./src/content/diary" }),
+	schema: z.object({
+		date: z.date(),
+		id: z.union([z.string(), z.number()]).optional(),
+		images: z.array(z.string()).optional().default([]),
+		location: z.string().optional().default(""),
+		mood: z.string().optional().default(""),
+		tags: z.array(z.string()).optional().default([]),
+	}),
+});
 export const collections = {
 	posts: postsCollection,
 	spec: specCollection,
+	diary: diaryCollection,
 };

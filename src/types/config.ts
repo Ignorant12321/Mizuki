@@ -69,6 +69,12 @@ export interface SiteConfig {
 		devices: boolean; // 设备页面开关
 	};
 
+	// 日记页面配置
+	diary?: {
+		dataSource: "json" | "md"; // 日记数据源
+		pageSize: number; // 每页显示数量
+	};
+
 	// 文章列表布局配置
 	postListLayout: {
 		defaultMode: "list" | "grid"; // 默认布局模式：list=列表模式，grid=网格模式

@@ -8,9 +8,11 @@ interface Props {
 	page: Page;
 	class?: string;
 	style?: string;
+	basePath?: string;
 }
 
 const { page, style } = Astro.props;
+const basePath = Astro.props.basePath ?? "";
 
 const HIDDEN = -1;
 
@@ -61,11 +63,26 @@ if (r < page.lastPage) {
 }
 
 const getPageUrl = (p: number) => {
+	const normalizedBasePath = basePath
+		? `/${basePath.replace(/^\/+|\/+$/g, "")}`
+		: "";
+
 	if (p === 1) {
-		return "/";
+		return normalizedBasePath ? `${normalizedBasePath}/` : "/";
 	}
-	return `/${p}/`;
+	return `${normalizedBasePath}/${p}/`;
 };
+
+const ensureTrailingSlash = (target?: string) => {
+	if (!target) return "";
+	const [pathPart, suffix = ""] = target.split(/([?#].*)/, 2);
+	if (!pathPart) return target;
+	if (pathPart.endsWith("/")) return target;
+	return `${pathPart}/${suffix}`;
+};
+
+const prevUrl = page.url.prev ? url(ensureTrailingSlash(page.url.prev)) : "";
+const nextUrl = page.url.next ? url(ensureTrailingSlash(page.url.next)) : "";
 ---
 
 <div
@@ -73,7 +90,7 @@ const getPageUrl = (p: number) => {
 	style={style}
 >
 	<a
-		href={page.url.prev || ""}
+		href={prevUrl}
 		aria-label="上一页"
 		class:list={[
 			"btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",
@@ -118,7 +135,7 @@ const getPageUrl = (p: number) => {
 		}
 	</div>
 	<a
-		href={page.url.next || ""}
+		href={nextUrl}
 		aria-label="下一页"
 		class:list={[
 			"btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",

@@ -65,6 +65,14 @@ export const siteConfig: SiteConfig = {
 		devices: true, // 设备页面开关
 	},
 
+	diary: {
+		// 日记数据源：
+		// - "json" -> src/data/diary-data.json
+		// - "md" -> src/content/diary/*.md
+		dataSource: "md", // "json" | "md"
+		pageSize: 1, // 日记分页大小
+	},
+
 	// 顶栏标题配置
 	navbarTitle: {
 		// 显示模式："text-icon" 显示图标+文本，"logo" 仅显示Logo
