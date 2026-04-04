@@ -93,6 +93,15 @@ export const en: Translation = {
 	[Key.diaryMinutesAgo]: "minutes ago",
 	[Key.diaryHoursAgo]: "hours ago",
 	[Key.diaryDaysAgo]: "days ago",
+	[Key.paginationPrevious]: "Previous page",
+	[Key.paginationNext]: "Next page",
+	[Key.paginationGoToPage]: "Go to page {page}",
+	[Key.paginationCurrentPage]: "Current page {page}",
+	[Key.paginationEllipsis]: "More pages",
+	[Key.paginationInputPrompt]:
+		"Enter page number (1-{last}), current page {current}",
+	[Key.paginationInputInvalid]:
+		"Please enter an integer page number between 1 and {last}",
 
 	// 404 Page
 	[Key.notFound]: "404",

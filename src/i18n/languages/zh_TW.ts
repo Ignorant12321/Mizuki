@@ -95,6 +95,13 @@ export const zh_TW: Translation = {
 	[Key.diaryMinutesAgo]: "分鐘前",
 	[Key.diaryHoursAgo]: "小時前",
 	[Key.diaryDaysAgo]: "天前",
+	[Key.paginationPrevious]: "上一頁",
+	[Key.paginationNext]: "下一頁",
+	[Key.paginationGoToPage]: "跳轉到第 {page} 頁",
+	[Key.paginationCurrentPage]: "當前第 {page} 頁",
+	[Key.paginationEllipsis]: "更多頁碼",
+	[Key.paginationInputPrompt]: "輸入要跳轉的頁碼（1-{last}），當前第 {current} 頁",
+	[Key.paginationInputInvalid]: "請輸入 1 到 {last} 之間的整數頁碼",
 
 	// 404頁面
 	[Key.notFound]: "404",

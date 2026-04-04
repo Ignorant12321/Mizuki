@@ -86,6 +86,13 @@ enum I18nKey {
 	diaryMinutesAgo = "diaryMinutesAgo",
 	diaryHoursAgo = "diaryHoursAgo",
 	diaryDaysAgo = "diaryDaysAgo",
+	paginationPrevious = "paginationPrevious",
+	paginationNext = "paginationNext",
+	paginationGoToPage = "paginationGoToPage",
+	paginationCurrentPage = "paginationCurrentPage",
+	paginationEllipsis = "paginationEllipsis",
+	paginationInputPrompt = "paginationInputPrompt",
+	paginationInputInvalid = "paginationInputInvalid",
 
 	// 404页面
 	notFound = "notFound",

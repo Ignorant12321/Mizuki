@@ -94,6 +94,15 @@ export const ja: Translation = {
 	[Key.diaryMinutesAgo]: "分前",
 	[Key.diaryHoursAgo]: "時間前",
 	[Key.diaryDaysAgo]: "日前",
+	[Key.paginationPrevious]: "前のページ",
+	[Key.paginationNext]: "次のページ",
+	[Key.paginationGoToPage]: "ページ {page} へ移動",
+	[Key.paginationCurrentPage]: "現在のページ {page}",
+	[Key.paginationEllipsis]: "その他のページ",
+	[Key.paginationInputPrompt]:
+		"移動するページ番号を入力してください（1-{last}、現在 {current} ページ）",
+	[Key.paginationInputInvalid]:
+		"1 から {last} の範囲で整数のページ番号を入力してください",
 
 	// 404ページ
 	[Key.notFound]: "404",

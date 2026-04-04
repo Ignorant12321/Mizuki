@@ -75,6 +75,14 @@ export interface SiteConfig {
 		pageSize: number; // 每页显示数量
 	};
 
+	// 全局分页配置
+	pagination?: {
+		visiblePages?: {
+			mobile: number; // 移动端页码按钮数量
+			desktop: number; // 桌面端页码按钮数量
+		};
+	};
+
 	// 文章列表布局配置
 	postListLayout: {
 		defaultMode: "list" | "grid"; // 默认布局模式：list=列表模式，grid=网格模式

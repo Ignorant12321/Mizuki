@@ -73,6 +73,13 @@ export const siteConfig: SiteConfig = {
 		pageSize: 1, // 日记分页大小
 	},
 
+	pagination: {
+		visiblePages: {
+			mobile: 3, // 移动端分页条显示页码数量
+			desktop: 5, // 桌面端分页条显示页码数量
+		},
+	},
+
 	// 顶栏标题配置
 	navbarTitle: {
 		// 显示模式："text-icon" 显示图标+文本，"logo" 仅显示Logo

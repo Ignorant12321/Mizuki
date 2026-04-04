@@ -90,6 +90,13 @@ export const zh_CN: Translation = {
 	[Key.diaryMinutesAgo]: "分钟前",
 	[Key.diaryHoursAgo]: "小时前",
 	[Key.diaryDaysAgo]: "天前",
+	[Key.paginationPrevious]: "上一页",
+	[Key.paginationNext]: "下一页",
+	[Key.paginationGoToPage]: "跳转到第 {page} 页",
+	[Key.paginationCurrentPage]: "当前第 {page} 页",
+	[Key.paginationEllipsis]: "更多页码",
+	[Key.paginationInputPrompt]: "输入要跳转的页码（1-{last}），当前第 {current} 页",
+	[Key.paginationInputInvalid]: "请输入 1 到 {last} 之间的整数页码",
 
 	// 404页面
 	[Key.notFound]: "404",

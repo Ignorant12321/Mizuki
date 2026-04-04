@@ -2,6 +2,9 @@
 import type { Page } from "astro";
 import { Icon } from "astro-icon/components";
 
+import { siteConfig } from "../../config";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
 import { url } from "../../utils/url-utils";
 
 interface Props {
@@ -13,60 +16,13 @@ interface Props {
 
 const { page, style } = Astro.props;
 const basePath = Astro.props.basePath ?? "";
-
-const HIDDEN = -1;
-
 const className = Astro.props.class;
-
-const ADJ_DIST = 2;
-const VISIBLE = ADJ_DIST * 2 + 1;
-
-// for test
-let count = 1;
-let l = page.currentPage;
-let r = page.currentPage;
-while (0 < l - 1 && r + 1 <= page.lastPage && count + 2 <= VISIBLE) {
-	count += 2;
-	l--;
-	r++;
-}
-while (0 < l - 1 && count < VISIBLE) {
-	count++;
-	l--;
-}
-while (r + 1 <= page.lastPage && count < VISIBLE) {
-	count++;
-	r++;
-}
-
-const pages: number[] = [];
-if (l > 1) {
-	pages.push(1);
-}
-if (l === 3) {
-	pages.push(2);
-}
-if (l > 3) {
-	pages.push(HIDDEN);
-}
-for (let i = l; i <= r; i++) {
-	pages.push(i);
-}
-if (r < page.lastPage - 2) {
-	pages.push(HIDDEN);
-}
-if (r === page.lastPage - 2) {
-	pages.push(page.lastPage - 1);
-}
-if (r < page.lastPage) {
-	pages.push(page.lastPage);
-}
+const normalizedBasePath = basePath
+	? `/${basePath.replace(/^\/+|\/+$/g, "")}`
+	: "";
+const paginationId = `pagination-${Math.random().toString(36).slice(2, 10)}`;
 
 const getPageUrl = (p: number) => {
-	const normalizedBasePath = basePath
-		? `/${basePath.replace(/^\/+|\/+$/g, "")}`
-		: "";
-
 	if (p === 1) {
 		return normalizedBasePath ? `${normalizedBasePath}/` : "/";
 	}
@@ -81,70 +37,330 @@ const ensureTrailingSlash = (target?: string) => {
 	return `${pathPart}/${suffix}`;
 };
 
+const sanitizeVisiblePages = (value: unknown, fallback: number) => {
+	const parsed = Number(value);
+	if (!Number.isFinite(parsed)) return fallback;
+	return Math.max(1, Math.floor(parsed));
+};
+
+type PaginationToken = number | "ellipsis";
+
+const buildPaginationTokens = (
+	currentPage: number,
+	lastPage: number,
+	visibleCount: number,
+): PaginationToken[] => {
+	if (lastPage <= 0) return [];
+	if (lastPage === 1) return [1];
+
+	const clampedVisibleCount = Math.max(1, visibleCount);
+	const middleStartPage = 2;
+	const middleEndPage = lastPage - 1;
+	const middlePageCount = Math.max(0, middleEndPage - middleStartPage + 1);
+
+	if (middlePageCount <= clampedVisibleCount) {
+		return Array.from({ length: lastPage }, (_, idx) => idx + 1);
+	}
+
+	const tokens: PaginationToken[] = [1];
+
+	let start = Math.max(
+		middleStartPage,
+		currentPage - Math.floor((clampedVisibleCount - 1) / 2),
+	);
+	let end = start + clampedVisibleCount - 1;
+
+	if (end > middleEndPage) {
+		end = middleEndPage;
+		start = Math.max(middleStartPage, end - clampedVisibleCount + 1);
+	}
+
+	if (start > middleStartPage) {
+		tokens.push("ellipsis");
+	}
+	for (let i = start; i <= end; i++) {
+		tokens.push(i);
+	}
+	if (end < middleEndPage) {
+		tokens.push("ellipsis");
+	}
+
+	if (lastPage > 1) {
+		tokens.push(lastPage);
+	}
+
+	return tokens;
+};
+
+const mobileVisiblePages = sanitizeVisiblePages(
+	siteConfig.pagination?.visiblePages?.mobile,
+	3,
+);
+const desktopVisiblePages = sanitizeVisiblePages(
+	siteConfig.pagination?.visiblePages?.desktop,
+	5,
+);
+const mobileTokens = buildPaginationTokens(
+	page.currentPage,
+	page.lastPage,
+	mobileVisiblePages,
+);
+const desktopTokens = buildPaginationTokens(
+	page.currentPage,
+	page.lastPage,
+	desktopVisiblePages,
+);
+
 const prevUrl = page.url.prev ? url(ensureTrailingSlash(page.url.prev)) : "";
 const nextUrl = page.url.next ? url(ensureTrailingSlash(page.url.next)) : "";
+const prevLabel = i18n(I18nKey.paginationPrevious);
+const nextLabel = i18n(I18nKey.paginationNext);
+const gotoPageLabel = i18n(I18nKey.paginationGoToPage);
+const currentPageLabel = i18n(I18nKey.paginationCurrentPage);
+const ellipsisLabel = i18n(I18nKey.paginationEllipsis);
+const withPageNumber = (template: string, pageNumber: number) =>
+	template.includes("{page}")
+		? template.replace("{page}", String(pageNumber))
+		: `${template} ${pageNumber}`;
 ---
 
 <div
-	class:list={[className, "flex flex-row gap-3 justify-center"]}
+	id={paginationId}
+	class:list={[className, "flex flex-row items-center gap-2 md:gap-3 justify-center"]}
 	style={style}
 >
-	<a
-		href={prevUrl}
-		aria-label="上一页"
-		class:list={[
-			"btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",
-			{ disabled: page.url.prev == undefined },
-		]}
-	>
-		<Icon
-			name="material-symbols:chevron-left-rounded"
-			class="text-[1.75rem]"
-		/>
-	</a>
+	{
+		page.url.prev ? (
+			<a
+				href={prevUrl}
+				aria-label={prevLabel}
+				class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-10 h-10 md:w-11 md:h-11"
+			>
+				<Icon
+					name="material-symbols:chevron-left-rounded"
+					class="text-[1.6rem] md:text-[1.75rem]"
+				/>
+			</a>
+		) : (
+			<span
+				aria-label={prevLabel}
+				aria-disabled="true"
+				class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-10 h-10 md:w-11 md:h-11 opacity-40 cursor-not-allowed pointer-events-none flex items-center justify-center"
+			>
+				<Icon
+					name="material-symbols:chevron-left-rounded"
+					class="text-[1.6rem] md:text-[1.75rem]"
+				/>
+			</span>
+		)
+	}
+
 	<div
-		class="bg-[var(--card-bg)] flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold"
+		class="bg-[var(--card-bg)] rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold hidden md:flex overflow-visible"
 	>
 		{
-			pages.map((p) => {
-				if (p == HIDDEN) {
-					return (
-						<Icon name="material-symbols:more-horiz" class="mx-1" />
-					);
-				}
-				if (p == page.currentPage) {
+			desktopTokens.map((token) => {
+				if (token === "ellipsis") {
 					return (
 						<div
-							class="h-11 w-11 rounded-lg bg-[var(--primary)] flex items-center justify-center
-                    font-bold text-white dark:text-black/70"
+							data-pagination-jump
+							class="w-11 h-11 rounded-lg relative overflow-visible"
 						>
-							{p}
+							<button
+								type="button"
+								data-pagination-ellipsis
+								aria-label={ellipsisLabel}
+								class="absolute inset-0 z-10 flex items-center justify-center text-60 transition-colors hover:text-[var(--primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/40 rounded-lg"
+							>
+								<Icon name="material-symbols:more-horiz" />
+							</button>
+							<input
+								data-pagination-input
+								type="text"
+								inputmode="numeric"
+								pattern="[0-9]*"
+								aria-label={gotoPageLabel}
+								class="hidden absolute inset-0 z-20 w-11 h-11 box-border rounded-lg text-center text-sm leading-none bg-[var(--card-bg)] border border-[var(--line-divider)] focus:outline-none focus:border-[var(--primary)]"
+							/>
+						</div>
+					);
+				}
+				if (token === page.currentPage) {
+					return (
+						<div
+							aria-current="page"
+							aria-label={withPageNumber(currentPageLabel, token)}
+							class="h-11 w-11 rounded-lg bg-[var(--primary)] flex items-center justify-center font-bold text-white dark:text-black/70"
+						>
+							{token}
 						</div>
 					);
 				}
 				return (
 					<a
-						href={url(getPageUrl(p))}
-						aria-label={`Page ${p}`}
+						href={url(getPageUrl(token))}
+						aria-label={withPageNumber(gotoPageLabel, token)}
 						class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.85]"
 					>
-						{p}
+						{token}
 					</a>
 				);
 			})
 		}
 	</div>
-	<a
-		href={nextUrl}
-		aria-label="下一页"
-		class:list={[
-			"btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",
-			{ disabled: page.url.next == undefined },
-		]}
+
+	<div
+		class="bg-[var(--card-bg)] rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold flex md:hidden overflow-visible"
 	>
-		<Icon
-			name="material-symbols:chevron-right-rounded"
-			class="text-[1.75rem]"
-		/>
-	</a>
+		{
+			mobileTokens.map((token) => {
+				if (token === "ellipsis") {
+					return (
+						<div
+							data-pagination-jump
+							class="w-10 h-10 rounded-lg relative overflow-visible"
+						>
+							<button
+								type="button"
+								data-pagination-ellipsis
+								aria-label={ellipsisLabel}
+								class="absolute inset-0 z-10 flex items-center justify-center text-60 transition-colors hover:text-[var(--primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/40 rounded-lg"
+							>
+								<Icon name="material-symbols:more-horiz" />
+							</button>
+							<input
+								data-pagination-input
+								type="text"
+								inputmode="numeric"
+								pattern="[0-9]*"
+								aria-label={gotoPageLabel}
+								class="hidden absolute inset-0 z-20 w-10 h-10 box-border rounded-lg text-center text-sm leading-none bg-[var(--card-bg)] border border-[var(--line-divider)] focus:outline-none focus:border-[var(--primary)]"
+							/>
+						</div>
+					);
+				}
+				if (token === page.currentPage) {
+					return (
+						<div
+							aria-current="page"
+							aria-label={withPageNumber(currentPageLabel, token)}
+							class="h-10 w-10 rounded-lg bg-[var(--primary)] flex items-center justify-center font-bold text-white dark:text-black/70"
+						>
+							{token}
+						</div>
+					);
+				}
+				return (
+					<a
+						href={url(getPageUrl(token))}
+						aria-label={withPageNumber(gotoPageLabel, token)}
+						class="btn-card w-10 h-10 rounded-lg overflow-hidden active:scale-[0.85]"
+					>
+						{token}
+					</a>
+				);
+			})
+		}
+	</div>
+
+	{
+		page.url.next ? (
+			<a
+				href={nextUrl}
+				aria-label={nextLabel}
+				class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-10 h-10 md:w-11 md:h-11"
+			>
+				<Icon
+					name="material-symbols:chevron-right-rounded"
+					class="text-[1.6rem] md:text-[1.75rem]"
+				/>
+			</a>
+		) : (
+			<span
+				aria-label={nextLabel}
+				aria-disabled="true"
+				class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-10 h-10 md:w-11 md:h-11 opacity-40 cursor-not-allowed pointer-events-none flex items-center justify-center"
+			>
+				<Icon
+					name="material-symbols:chevron-right-rounded"
+					class="text-[1.6rem] md:text-[1.75rem]"
+				/>
+			</span>
+		)
+	}
 </div>
+
+<script
+	define:vars={{
+		paginationId,
+		lastPage: page.lastPage,
+		currentPage: page.currentPage,
+		normalizedBasePath,
+	}}
+>
+	const container = document.getElementById(paginationId);
+	if (container) {
+		const getJumpUrl = (targetPage) => {
+			if (targetPage === 1) {
+				return normalizedBasePath ? `${normalizedBasePath}/` : "/";
+			}
+			return normalizedBasePath
+				? `${normalizedBasePath}/${targetPage}/`
+				: `/${targetPage}/`;
+		};
+
+		const jumpWrappers = container.querySelectorAll("[data-pagination-jump]");
+		for (const wrapper of jumpWrappers) {
+			const button = wrapper.querySelector("[data-pagination-ellipsis]");
+			const input = wrapper.querySelector("[data-pagination-input]");
+			if (!button || !input) continue;
+
+			const closeInput = () => {
+				input.classList.add("hidden");
+				button.classList.remove("hidden");
+				input.value = "";
+				input.classList.remove("border-red-500");
+			};
+
+			const submitInput = () => {
+				const targetPage = Number.parseInt(input.value.trim(), 10);
+				const isValid =
+					Number.isInteger(targetPage) &&
+					targetPage >= 1 &&
+					targetPage <= lastPage;
+
+				if (!isValid) {
+					input.classList.add("border-red-500");
+					input.focus();
+					input.select();
+					return;
+				}
+
+				window.location.assign(getJumpUrl(targetPage));
+			};
+
+			button.addEventListener("click", () => {
+				button.classList.add("hidden");
+				input.classList.remove("hidden");
+				input.value = String(currentPage);
+				input.focus();
+				input.select();
+				input.classList.remove("border-red-500");
+			});
+
+			input.addEventListener("keydown", (event) => {
+				if (event.key === "Enter") {
+					event.preventDefault();
+					submitInput();
+				} else if (event.key === "Escape") {
+					event.preventDefault();
+					closeInput();
+				}
+			});
+
+			input.addEventListener("blur", () => {
+				closeInput();
+			});
+		}
+	}
+</script>
