@@ -58,6 +58,7 @@ export const siteConfig: SiteConfig = {
 		anime: true, // 番剧页面开关
 		diary: true, // 日记页面开关
 		friends: true, // 友链页面开关
+		igNav: true, // 个人导航页面开关
 		projects: true, // 项目页面开关
 		skills: true, // 技能页面开关
 		timeline: true, // 时间线页面开关
@@ -372,6 +373,11 @@ export const navBarConfig: NavBarConfig = {
 					name: "Friends",
 					url: "/friends/",
 					icon: "material-symbols:group",
+				},
+				{
+					name: "Navigation",
+					url: "/ig-nav/",
+					icon: "material-symbols:map-search",
 				},
 			],
 		},
