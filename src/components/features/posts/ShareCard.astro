@@ -14,6 +14,13 @@ interface Props {
 	url: string;
 	siteTitle: string;
 	avatar?: string;
+	avatarFrame?: {
+		enable: boolean;
+		image: string;
+		scale?: number;
+		offsetX?: number;
+		offsetY?: number;
+	} | null;
 	class?: string;
 }
 
@@ -26,6 +33,7 @@ const {
 	url,
 	siteTitle,
 	avatar,
+	avatarFrame,
 	class: className,
 } = Astro.props;
 ---
@@ -70,6 +78,7 @@ const {
 				{url}
 				{siteTitle}
 				avatar={avatar ?? null}
+				avatarFrame={avatarFrame ?? null}
 			/>
 		</div>
 	</div>

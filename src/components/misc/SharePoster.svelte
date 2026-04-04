@@ -24,6 +24,13 @@
 	export let url: string;
 	export let siteTitle: string;
 	export let avatar: string | null = null;
+	export let avatarFrame: {
+		enable: boolean;
+		image: string;
+		scale?: number;
+		offsetX?: number;
+		offsetY?: number;
+	} | null = null;
 
 	// Constants
 	const SCALE = 2;
@@ -101,10 +108,19 @@
 				color: { dark: colors.qrDark, light: colors.qrLight },
 			});
 
-			const [qrImg, coverImg, avatarImg] = await Promise.all([
+			const shouldDrawAvatarFrame = !!(
+				avatar &&
+				avatarFrame?.enable &&
+				avatarFrame.image
+			);
+
+			const [qrImg, coverImg, avatarImg, avatarFrameImg] = await Promise.all([
 				loadImage(qrCodeUrl),
 				coverImage ? loadImage(coverImage) : Promise.resolve(null),
 				avatar ? loadImage(avatar) : Promise.resolve(null),
+				shouldDrawAvatarFrame
+					? loadImage(avatarFrame.image)
+					: Promise.resolve(null),
 			]);
 
 			const canvas = document.createElement("canvas");
@@ -310,6 +326,25 @@
 				ctx.strokeStyle = colors.avatarBorder;
 				ctx.lineWidth = 2 * SCALE;
 				ctx.stroke();
+
+				if (avatarFrameImg) {
+					const frameScale = avatarFrame?.scale ?? 1;
+					const frameOffsetX = (avatarFrame?.offsetX ?? 0) * SCALE;
+					const frameOffsetY = (avatarFrame?.offsetY ?? 0) * SCALE;
+					const frameSize = avatarSize * frameScale;
+					const frameX =
+						avatarX + (avatarSize - frameSize) / 2 + frameOffsetX;
+					const frameY =
+						footerY + (avatarSize - frameSize) / 2 + frameOffsetY;
+
+					ctx.drawImage(
+						avatarFrameImg,
+						frameX,
+						frameY,
+						frameSize,
+						frameSize,
+					);
+				}
 			}
 
 			// Author text

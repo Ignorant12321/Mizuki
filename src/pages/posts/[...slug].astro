@@ -164,6 +164,35 @@ if (profileConfig.avatar) {
 	}
 }
 
+let posterAvatarFrameConfig = shareConfig.avatarFrame
+	? { ...shareConfig.avatarFrame }
+	: null;
+if (
+	posterAvatarFrameConfig?.enable &&
+	posterAvatarFrameConfig.image &&
+	posterAvatarFrameConfig.image.trim() !== ""
+) {
+	const isLocal = !(
+		posterAvatarFrameConfig.image.startsWith("/") ||
+		posterAvatarFrameConfig.image.startsWith("http") ||
+		posterAvatarFrameConfig.image.startsWith("https") ||
+		posterAvatarFrameConfig.image.startsWith("data:")
+	);
+	if (isLocal) {
+		const files = import.meta.glob<ImageMetadata>("../../**", {
+			import: "default",
+		});
+		const normalizedPath = path
+			.normalize(path.join("../../", posterAvatarFrameConfig.image))
+			.replace(/\\/g, "/");
+		const file = files[normalizedPath];
+		if (file) {
+			const img = await file();
+			posterAvatarFrameConfig.image = img.src;
+		}
+	}
+}
+
 // 判断是否为加密文章
 const isEncrypted = !!(entry.data.encrypted && entry.data.password);
 
@@ -316,6 +345,7 @@ const jsonLd = {
 						url={Astro.url.toString()}
 						siteTitle={siteConfig.title}
 						avatar={posterAvatarUrl}
+						avatarFrame={posterAvatarFrameConfig}
 					/>
 				)
 			}

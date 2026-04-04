@@ -11,6 +11,13 @@ export interface PosterConfig {
 	url: string;
 	siteTitle: string;
 	avatar: string | null;
+	avatarFrame?: {
+		enable: boolean;
+		image: string;
+		scale?: number;
+		offsetX?: number;
+		offsetY?: number;
+	} | null;
 	themeColor: string;
 }
 

@@ -402,6 +402,13 @@ export const navBarConfig: NavBarConfig = {
 
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avatar.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
+	avatarFrame: {
+		enable: true,
+		image: "assets/images/avatar_frame_profile_01.webp",
+		scale: 1.2,
+		offsetX: -2,
+		offsetY: 2,
+	},
 	name: "北に向かう",
 	bio: "孩儿立志出乡关，学不成名誓不还",
 	typewriter: {
@@ -504,6 +511,13 @@ export const commentConfig: CommentConfig = {
 
 export const shareConfig: ShareConfig = {
 	enable: true, // 启用分享功能
+	avatarFrame: {
+		enable: true,
+		image: "assets/images/avatar_frame_share_01.webp",
+		scale: 1.1,
+		offsetX: 0,
+		offsetY: 5,
+	},
 };
 
 export const announcementConfig: AnnouncementConfig = {

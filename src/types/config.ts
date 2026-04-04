@@ -245,6 +245,7 @@ export interface NavBarConfig {
 
 export interface ProfileConfig {
 	avatar?: string;
+	avatarFrame?: AvatarFrameConfig;
 	name: string;
 	bio?: string;
 	links: {
@@ -528,6 +529,15 @@ export interface PioConfig {
  */
 export interface ShareConfig {
 	enable: boolean; // 是否启用分享功能
+	avatarFrame?: AvatarFrameConfig; // 分享海报头像框配置
+}
+
+export interface AvatarFrameConfig {
+	enable: boolean; // 是否启用头像框
+	image: string; // 头像框图片路径
+	scale?: number; // 缩放倍数，默认 1
+	offsetX?: number; // X 轴偏移（px）
+	offsetY?: number; // Y 轴偏移（px）
 }
 
 /**
