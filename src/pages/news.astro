@@ -1,0 +1,665 @@
+---
+import { PageHeader } from "@components/features/page-header";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+
+import { siteConfig } from "../config";
+import { newsFeedSources } from "../data/news";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+
+export const prerender = true;
+
+if (!siteConfig.featurePages.news) {
+	return Astro.redirect("/404/");
+}
+
+const title = siteConfig.news?.title || "时语";
+const subtitle = siteConfig.news?.subtitle || "倾听世界之声";
+const sourceLabel = i18n(I18nKey.newsSource);
+const sourcesLabel = i18n(I18nKey.newsSources);
+const emptyTitle = i18n(I18nKey.newsEmpty);
+const emptyDescription = i18n(I18nKey.newsEmptyDescription);
+const expandLabel = i18n(I18nKey.newsExpand);
+const collapseLabel = i18n(I18nKey.newsCollapse);
+const loadMoreLabel = i18n(I18nKey.newsLoadMore);
+const initialVisible = Math.max(1, Number(siteConfig.news?.initialVisible ?? 12));
+const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
+---
+
+<MainGridLayout title={title} description={subtitle}>
+	<script>
+		import("../scripts/right-sidebar-layout.js");
+	</script>
+
+	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+		<div class="card-base news-page z-10 px-5 sm:px-8 py-6 relative w-full">
+			<PageHeader
+				title={title}
+				subtitle={subtitle}
+				bgImage="https://www.loliapi.com/acg/pc?t=news"
+			/>
+
+			<div class="news-toolbar">
+				<div class="news-toolbar-head">
+					<span class="news-dot"></span>
+					<span class="news-toolbar-title">{sourcesLabel}</span>
+				</div>
+				<div class="news-sources">
+					{
+						newsFeedSources.map((source) => (
+							<a
+								href={source.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="news-source-chip"
+							>
+								{source.name}
+							</a>
+						))
+					}
+				</div>
+			</div>
+
+			<div id="news-list" class="news-list">
+				<div class="news-loading" id="news-loading">
+					<div class="news-loading-title">Loading news...</div>
+				</div>
+				<div class="news-empty" id="news-empty" style="display: none;">
+					<div class="news-empty-title">{emptyTitle}</div>
+					<div class="news-empty-desc">{emptyDescription}</div>
+				</div>
+			</div>
+
+			<div class="news-actions">
+				<button
+					id="news-load-more"
+					type="button"
+					class="news-load-more-btn"
+					style="display: none;"
+				>
+					{loadMoreLabel}
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<script
+		is:inline
+		define:vars={{
+			expandLabel,
+			collapseLabel,
+			loadMoreLabel,
+			sourceLabel,
+			initialVisible,
+			loadMoreStep,
+		}}
+	>
+		const INITIAL_VISIBLE = Number(initialVisible) || 12;
+		const STEP = Number(loadMoreStep) || 12;
+		const OPEN_NEWS_LABEL = "Open news in new tab";
+
+		function createNewsCard(item) {
+			const article = document.createElement("article");
+			article.className = "news-card";
+			article.setAttribute("data-news-item", "true");
+
+			const categoryNode = item.category
+				? `<span class="news-category-tag"></span>`
+				: "";
+			const descriptionNode = item.description
+				? `<div class="news-desc-wrap"><p class="news-desc" data-news-desc></p><button type="button" class="news-toggle-btn" data-news-toggle data-expanded="false" style="display: none;">${expandLabel}</button></div>`
+				: "";
+
+			article.innerHTML = `
+				<div class="news-card-inner">
+					<div class="news-title-row">
+						<h2 class="news-title"></h2>
+						<a href="#" target="_blank" rel="noopener noreferrer" class="news-open-btn" aria-label="${OPEN_NEWS_LABEL}">
+							<span class="news-arrow" aria-hidden="true">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M7 17L17 7"></path>
+									<path d="M8 7H17V16"></path>
+								</svg>
+							</span>
+						</a>
+					</div>
+					<div class="news-meta">
+						<time></time>
+						<span class="news-source-tag"></span>
+						${categoryNode}
+					</div>
+					${descriptionNode}
+				</div>
+			`;
+
+			const titleEl = article.querySelector(".news-title");
+			const openBtn = article.querySelector(".news-open-btn");
+			const timeEl = article.querySelector("time");
+			const sourceEl = article.querySelector(".news-source-tag");
+			const categoryEl = article.querySelector(".news-category-tag");
+			const descEl = article.querySelector("[data-news-desc]");
+
+			if (titleEl) {titleEl.textContent = item.title || "";}
+			if (openBtn) {openBtn.href = item.link || "#";}
+			if (timeEl) {
+				timeEl.textContent = item.pubDate || "";
+				if (item.pubDate) {
+					timeEl.setAttribute("datetime", item.pubDate);
+				} else {
+					timeEl.remove();
+				}
+			}
+			if (sourceEl) {
+				sourceEl.textContent = `${sourceLabel} · ${item.sourceName || ""}`;
+			}
+			if (categoryEl) {
+				if (item.category) {
+					categoryEl.textContent = item.category;
+				} else {
+					categoryEl.remove();
+				}
+			}
+			if (descEl && item.description) {
+				descEl.textContent = item.description;
+			}
+
+			return article;
+		}
+
+		function initNewsPage() {
+			const listEl = document.getElementById("news-list");
+			const loadingEl = document.getElementById("news-loading");
+			const emptyEl = document.getElementById("news-empty");
+			const loadMoreBtn = document.getElementById("news-load-more");
+			if (!listEl) {return;}
+
+			listEl.setAttribute("data-news-initialized", "true");
+			if (loadingEl) {loadingEl.style.display = "";}
+			if (emptyEl) {emptyEl.style.display = "none";}
+
+			fetch("/api/news.json")
+				.then((response) => {
+					if (!response.ok) {
+						throw new Error(`Failed to fetch news: ${response.status}`);
+					}
+					return response.json();
+				})
+				.then((data) => {
+					const list = Array.isArray(data?.items) ? data.items : [];
+					if (loadingEl) {loadingEl.style.display = "none";}
+
+					if (list.length === 0) {
+						if (emptyEl) {emptyEl.style.display = "";}
+						if (loadMoreBtn) {loadMoreBtn.style.display = "none";}
+						return;
+					}
+
+					const cards = list.map((item) => createNewsCard(item));
+					cards.forEach((card) => listEl.appendChild(card));
+
+					const descElements = Array.from(
+						document.querySelectorAll("[data-news-desc]"),
+					);
+
+					descElements.forEach((descEl) => {
+						const toggleBtn = descEl.parentElement?.querySelector(
+							"[data-news-toggle]",
+						);
+						if (!toggleBtn) {
+							return;
+						}
+
+						const lineHeight = Number.parseFloat(
+							window.getComputedStyle(descEl).lineHeight,
+						);
+						const collapsedHeight = Number.isFinite(lineHeight)
+							? Math.round(lineHeight * 3)
+							: 84;
+						const naturalHeight = descEl.scrollHeight;
+
+						if (naturalHeight <= collapsedHeight + 4) {
+							descEl.style.maxHeight = "";
+							descEl.classList.remove("is-collapsed");
+							toggleBtn.style.display = "none";
+							return;
+						}
+
+						descEl.dataset.collapsedHeight = String(collapsedHeight);
+						descEl.classList.add("is-collapsed");
+						// Prevent collapse animation on first paint / refresh.
+						descEl.style.transition = "none";
+						descEl.style.maxHeight = `${collapsedHeight}px`;
+						requestAnimationFrame(() => {
+							descEl.style.transition = "";
+						});
+
+						toggleBtn.style.display = "inline-flex";
+						toggleBtn.textContent = expandLabel;
+						toggleBtn.setAttribute("data-expanded", "false");
+						toggleBtn.onclick = () => {
+							const expanded =
+								toggleBtn.getAttribute("data-expanded") === "true";
+
+							if (!expanded) {
+								descEl.classList.remove("is-collapsed");
+								const expandedHeight = descEl.scrollHeight;
+								descEl.style.maxHeight = `${expandedHeight}px`;
+								toggleBtn.setAttribute("data-expanded", "true");
+								toggleBtn.textContent = collapseLabel;
+								return;
+							}
+
+							const currentExpandedHeight = descEl.scrollHeight;
+							descEl.style.maxHeight = `${currentExpandedHeight}px`;
+							requestAnimationFrame(() => {
+								descEl.classList.add("is-collapsed");
+								const targetHeight = Number(
+									descEl.dataset.collapsedHeight || descEl.clientHeight,
+								);
+								descEl.style.maxHeight = `${targetHeight}px`;
+							});
+							toggleBtn.setAttribute("data-expanded", "false");
+							toggleBtn.textContent = expandLabel;
+						};
+					});
+
+					let visibleCount = INITIAL_VISIBLE;
+					cards.forEach((card, index) => {
+						card.style.display = index < visibleCount ? "" : "none";
+					});
+
+					function refreshLoadMore() {
+						if (!loadMoreBtn) {
+							return;
+						}
+
+						if (visibleCount >= cards.length) {
+							loadMoreBtn.style.display = "none";
+						} else {
+							loadMoreBtn.style.display = "";
+							loadMoreBtn.textContent = loadMoreLabel;
+						}
+					}
+
+					if (loadMoreBtn) {
+						loadMoreBtn.onclick = () => {
+							visibleCount += STEP;
+							let revealedIndex = 0;
+							cards.forEach((card, index) => {
+								if (index < visibleCount) {
+									const wasHidden = card.style.display === "none";
+									card.style.display = "";
+									if (wasHidden) {
+										card.classList.remove("news-card-enter");
+										card.style.animationDelay = `${revealedIndex * 45}ms`;
+										revealedIndex += 1;
+										requestAnimationFrame(() => {
+											card.classList.add("news-card-enter");
+										});
+									}
+								}
+							});
+							refreshLoadMore();
+						};
+					}
+
+					refreshLoadMore();
+				})
+				.catch(() => {
+					if (loadingEl) {loadingEl.style.display = "none";}
+					if (emptyEl) {emptyEl.style.display = "";}
+					if (loadMoreBtn) {loadMoreBtn.style.display = "none";}
+				});
+		}
+
+		function bootNewsPage() {
+			const listEl = document.getElementById("news-list");
+			if (!listEl) {
+				return;
+			}
+			if (listEl.getAttribute("data-news-initialized") === "true") {
+				return;
+			}
+			initNewsPage();
+		}
+
+		bootNewsPage();
+		document.addEventListener("astro:after-swap", () => {
+			const listEl = document.getElementById("news-list");
+			if (!listEl) {
+				return;
+			}
+			listEl.removeAttribute("data-news-initialized");
+			bootNewsPage();
+		});
+	</script>
+</MainGridLayout>
+
+<style is:global>
+	.news-loading {
+		padding: 1rem;
+		border-radius: 1rem;
+		border: 1px dashed color-mix(in srgb, var(--primary) 28%, transparent);
+		background: color-mix(in srgb, var(--primary) 6%, transparent);
+	}
+
+	.news-loading-title {
+		font-size: 0.9rem;
+		color: var(--text-secondary);
+	}
+
+	.news-toolbar {
+		position: relative;
+		padding: 1rem;
+		border-radius: 1rem;
+		margin-bottom: 1rem;
+		border: 1px solid color-mix(in srgb, var(--primary) 26%, transparent);
+		background:
+			linear-gradient(
+				160deg,
+				color-mix(in srgb, var(--primary) 14%, transparent),
+				color-mix(in srgb, var(--primary) 2%, transparent) 58%
+			),
+			var(--card-bg);
+	}
+
+	.news-toolbar-head {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.7rem;
+	}
+
+	.news-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 999px;
+		background: var(--primary);
+		box-shadow: 0 0 16px color-mix(in srgb, var(--primary) 60%, transparent);
+	}
+
+	.news-toolbar-title {
+		font-size: 0.92rem;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--text-primary) 88%, var(--primary));
+	}
+
+	.news-sources {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.news-source-chip {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.3rem 0.65rem;
+		border-radius: 999px;
+		font-size: 0.78rem;
+		text-decoration: none;
+		color: color-mix(in srgb, var(--primary) 90%, black 10%);
+		background: color-mix(in srgb, var(--primary) 11%, transparent);
+		border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+		transition: border-color 0.18s ease, background 0.18s ease;
+	}
+
+	.news-source-chip:hover {
+		background: color-mix(in srgb, var(--primary) 16%, transparent);
+		border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+	}
+
+	.news-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.9rem;
+	}
+
+	.news-card {
+		border-radius: 1rem;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		background:
+			linear-gradient(
+				160deg,
+				color-mix(in srgb, var(--primary) 6%, transparent),
+				transparent 52%
+			),
+			var(--card-bg);
+		box-shadow: 0 10px 26px rgba(0, 0, 0, 0.04);
+		transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+	}
+
+	.news-card.news-card-enter {
+		animation: news-card-enter 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	}
+
+	.news-card:hover {
+		box-shadow: 0 10px 26px rgba(0, 0, 0, 0.05);
+		border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+		background:
+			linear-gradient(
+				160deg,
+				color-mix(in srgb, var(--primary) 10%, transparent),
+				transparent 56%
+			),
+			var(--card-bg);
+	}
+
+	.news-card-inner {
+		padding: 1rem 1rem 0.9rem;
+	}
+
+	.news-title-row {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.85rem;
+		align-items: flex-start;
+	}
+
+	.news-title {
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.65;
+		color: var(--primary);
+		font-weight: 700;
+		flex: 1;
+	}
+
+	.news-open-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		text-decoration: none;
+		transition: transform 0.16s ease;
+	}
+
+	.news-open-btn:hover {
+		transform: scale(1.06);
+	}
+
+	.news-arrow {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		border-radius: 999px;
+		border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+		background: color-mix(in srgb, var(--primary) 8%, transparent);
+		color: var(--primary);
+		opacity: 0.9;
+		flex-shrink: 0;
+	}
+
+	.news-arrow svg {
+		width: 0.9rem;
+		height: 0.9rem;
+	}
+
+	.news-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-top: 0.55rem;
+		font-size: 0.78rem;
+		color: var(--text-secondary);
+		justify-content: flex-start;
+	}
+
+	.news-meta time {
+		margin-right: auto;
+		white-space: nowrap;
+	}
+
+	.news-source-tag,
+	.news-category-tag {
+		padding: 0.12rem 0.45rem;
+		border-radius: 999px;
+		background: rgba(0, 0, 0, 0.08);
+		border: 1px solid rgba(0, 0, 0, 0.14);
+		color: rgba(0, 0, 0, 0.7);
+	}
+
+	.news-desc-wrap {
+		margin-top: 0.55rem;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.news-desc {
+		margin: 0;
+		font-size: 0.92rem;
+		line-height: 1.8;
+		color: var(--text-secondary);
+		max-height: 999px;
+		display: block;
+		overflow: hidden;
+		transition: max-height 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+		will-change: max-height;
+	}
+
+	.news-desc.is-collapsed {
+		overflow: hidden;
+		-webkit-mask-image: linear-gradient(
+			to bottom,
+			rgba(0, 0, 0, 1) 68%,
+			rgba(0, 0, 0, 0.85) 82%,
+			rgba(0, 0, 0, 0) 100%
+		);
+		mask-image: linear-gradient(
+			to bottom,
+			rgba(0, 0, 0, 1) 68%,
+			rgba(0, 0, 0, 0.85) 82%,
+			rgba(0, 0, 0, 0) 100%
+		);
+	}
+
+	.news-toggle-btn {
+		margin-top: 0.35rem;
+		border: none;
+		background: transparent;
+		padding: 0;
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: var(--primary);
+		cursor: pointer;
+		display: inline-flex;
+		align-self: flex-end;
+	}
+
+	.news-actions {
+		display: flex;
+		justify-content: center;
+		margin-top: 1.2rem;
+	}
+
+	.news-load-more-btn {
+		border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+		background: color-mix(in srgb, var(--primary) 10%, transparent);
+		color: var(--primary);
+		padding: 0.5rem 1rem;
+		border-radius: 999px;
+		font-size: 0.9rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: border-color 0.2s ease, background 0.2s ease;
+	}
+
+	.news-load-more-btn:hover {
+		background: color-mix(in srgb, var(--primary) 16%, transparent);
+		border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+	}
+
+	.news-empty {
+		padding: 2.5rem 1rem;
+		text-align: center;
+		border: 1px dashed color-mix(in srgb, var(--text-primary) 18%, transparent);
+		border-radius: 1rem;
+		background: color-mix(in srgb, var(--text-primary) 2%, transparent);
+	}
+
+	.news-empty-title {
+		font-size: 1.03rem;
+		font-weight: 700;
+		color: var(--text-primary);
+	}
+
+	.news-empty-desc {
+		margin-top: 0.6rem;
+		font-size: 0.9rem;
+		color: var(--text-secondary);
+	}
+
+	:global(.dark) .news-toolbar-title {
+		color: color-mix(in srgb, white 85%, var(--primary));
+	}
+
+	:global(.dark) .news-source-chip {
+		color: color-mix(in srgb, white 88%, var(--primary));
+		background: color-mix(in srgb, var(--primary) 20%, transparent);
+		border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+	}
+
+	:global(.dark) .news-title {
+		color: color-mix(in srgb, var(--primary) 78%, white);
+	}
+
+	:global(.dark) .news-card {
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	:global(.dark) .news-card:hover {
+		border-color: color-mix(in srgb, var(--primary) 55%, rgba(255, 255, 255, 0.2));
+	}
+
+	:global(.dark) .news-meta {
+		color: rgba(255, 255, 255, 0.74);
+	}
+
+	:global(.dark) .news-source-tag,
+	:global(.dark) .news-category-tag {
+		background: rgba(255, 255, 255, 0.1);
+		color: rgba(255, 255, 255, 0.86);
+	}
+
+	:global(.dark) .news-desc {
+		color: rgba(255, 255, 255, 0.85);
+	}
+
+	@media (max-width: 640px) {
+		.news-card-inner {
+			padding: 0.85rem;
+		}
+	}
+
+	@keyframes news-card-enter {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+</style>

@@ -63,6 +63,7 @@ export interface SiteConfig {
 		diary: boolean; // 日记页面开关
 		friends: boolean; // 友链页面开关
 		navigation: boolean; // 导航页面开关
+		news: boolean; // 新闻页面开关
 		projects: boolean; // 项目页面开关
 		skills: boolean; // 技能页面开关
 		timeline: boolean; // 时间线页面开关
@@ -74,6 +75,19 @@ export interface SiteConfig {
 	diary?: {
 		dataSource: "json" | "md"; // 日记数据源
 		pageSize: number; // 每页显示数量
+	};
+
+	// 新闻页面配置
+	news?: {
+		title?: string; // 新闻页标题
+		subtitle?: string; // 新闻页副标题
+		initialVisible?: number; // 首屏展示数量
+		loadMoreStep?: number; // 每次加载更多数量
+		feeds?: {
+			id: string;
+			name: string;
+			url: string;
+		}[]; // RSS 订阅源列表
 	};
 
 	// 全局分页配置
@@ -230,6 +244,7 @@ export enum LinkPreset {
 	Projects = 7,
 	Skills = 8,
 	Timeline = 9,
+	News = 10,
 }
 
 export interface NavBarLink {

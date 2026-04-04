@@ -59,6 +59,7 @@ export const siteConfig: SiteConfig = {
 		diary: true, // 日记页面开关
 		friends: true, // 友链页面开关
 		navigation: true, // 导航页面开关
+		news: true, // 新闻页面开关
 		projects: true, // 项目页面开关
 		skills: true, // 技能页面开关
 		timeline: true, // 时间线页面开关
@@ -72,6 +73,25 @@ export const siteConfig: SiteConfig = {
 		// - "md" -> src/content/diary/*.md
 		dataSource: "md", // "json" | "md"
 		pageSize: 1, // 日记分页大小
+	},
+
+	news: {
+		title: "时语",
+		subtitle: "倾听世界之声",
+		initialVisible: 8,
+		loadMoreStep: 4,
+		feeds: [
+			{
+				id: "zaobao-china",
+				name: "联合早报 · 中国",
+				url: "https://rsshub.pseudoyu.com/zaobao/realtime/china",
+			},
+			{
+				id: "zaobao-world",
+				name: "联合早报 · 国际",
+				url: "https://rsshub.pseudoyu.com/zaobao/realtime/world",
+			},
+		],
 	},
 
 	pagination: {
@@ -400,6 +420,11 @@ export const navBarConfig: NavBarConfig = {
 					name: "Timeline",
 					url: "/timeline/",
 					icon: "material-symbols:timeline",
+				},
+				{
+					name: "News",
+					url: "/news/",
+					icon: "material-symbols:article",
 				},
 			],
 		},
