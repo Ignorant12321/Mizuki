@@ -1,5 +1,6 @@
 ---
 import FriendCard from "@components/features/friends/FriendCard.astro";
+import Comment from "@components/comment/index.astro";
 import { FilterTabs } from "@components/atoms/filter-tabs";
 import { PageHeader } from "@components/features/page-header";
 import Markdown from "@components/misc/Markdown.astro";
@@ -135,6 +136,8 @@ const filterTabs = [
 	<!-- 引用全局脚本 -->
 	<script is:inline src="/js/filter-tabs-handler.js"></script>
 	<script is:inline src="/js/friends-page-handler.js"></script>
+
+	<Comment path="/friends/" />
 </MainGridLayout>
 
 <style>
