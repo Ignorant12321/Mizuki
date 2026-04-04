@@ -79,7 +79,9 @@
 					!searchTerm ||
 					title.indexOf(searchTerm) >= 0 ||
 					desc.indexOf(searchTerm) >= 0;
-				var filteredByTag = card.classList.contains("filtered-out");
+				var filteredByTag =
+					card.classList.contains("filtered-out") ||
+					card.classList.contains("is-filter-hiding");
 
 				if (matchesSearch) {
 					card.style.display = "";
@@ -93,10 +95,10 @@
 			}
 
 			if (visibleCount === 0) {
-				noResults.classList.remove("hidden");
+				noResults.classList.add("is-visible");
 				friendsGrid.classList.add("hidden");
 			} else {
-				noResults.classList.add("hidden");
+				noResults.classList.remove("is-visible");
 				friendsGrid.classList.remove("hidden");
 			}
 		}
@@ -117,9 +119,7 @@
 		for (var i = 0; i < tagFilters.length; i++) {
 			((button) => {
 				var clickHandler = () => {
-					setTimeout(() => {
-						filterFriends();
-					}, 0);
+					filterFriends();
 				};
 				button.addEventListener("click", clickHandler);
 				window.friendsPageState.eventListeners.push([

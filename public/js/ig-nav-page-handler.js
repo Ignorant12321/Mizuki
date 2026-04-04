@@ -51,7 +51,9 @@
 				var desc = (card.getAttribute("data-desc") || "").toLowerCase();
 				var matchesSearch =
 					!searchTerm || title.indexOf(searchTerm) >= 0 || desc.indexOf(searchTerm) >= 0;
-				var filteredByTag = card.classList.contains("filtered-out");
+				var filteredByTag =
+					card.classList.contains("filtered-out") ||
+					card.classList.contains("is-filter-hiding");
 
 				if (matchesSearch) {
 					card.style.display = "";
@@ -65,10 +67,10 @@
 			}
 
 			if (visibleCount === 0) {
-				noResults.classList.remove("hidden");
+				noResults.classList.add("is-visible");
 				igNavGrid.classList.add("hidden");
 			} else {
-				noResults.classList.add("hidden");
+				noResults.classList.remove("is-visible");
 				igNavGrid.classList.remove("hidden");
 			}
 		}
@@ -83,9 +85,7 @@
 		for (var i = 0; i < tagFilters.length; i++) {
 			((button) => {
 				var clickHandler = () => {
-					setTimeout(() => {
-						filterIgNavs();
-					}, 0);
+					filterIgNavs();
 				};
 				button.addEventListener("click", clickHandler);
 				window.igNavPageState.eventListeners.push([button, "click", clickHandler]);

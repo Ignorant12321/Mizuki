@@ -77,6 +77,7 @@ const filterTabs = [
 					tabs={filterTabs}
 					dataAttr="tags"
 					priorityValues={tagPriority}
+					emptyTarget="none"
 				/>
 			</div>
 
@@ -88,7 +89,7 @@ const filterTabs = [
 				}
 			</div>
 
-			<div id="no-results" class="hidden">
+			<div id="no-results" class="no-results-panel">
 				<FilterEmptyState />
 			</div>
 
@@ -105,5 +106,21 @@ const filterTabs = [
 <style>
 	#ig-nav-search:focus {
 		box-shadow: 0 0 0 3px var(--primary) / 0.1;
+	}
+
+	.no-results-panel {
+		opacity: 0;
+		transform: translateY(8px);
+		visibility: hidden;
+		pointer-events: none;
+		transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+	}
+
+	.no-results-panel.is-visible {
+		opacity: 1;
+		transform: translateY(0);
+		visibility: visible;
+		pointer-events: auto;
+		transition: opacity 0.18s ease, transform 0.18s ease;
 	}
 </style>
