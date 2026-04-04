@@ -10,6 +10,7 @@ interface Props {
 	tabs: FilterTab[];
 	dataAttr: string;
 	activeValue?: string;
+	priorityValues?: string[];
 	class?: string;
 	emptyTarget?: string;
 }
@@ -18,14 +19,39 @@ const {
 	tabs,
 	dataAttr,
 	activeValue = "all",
+	priorityValues = [],
 	class: className = "",
 	emptyTarget = "#no-results",
 } = Astro.props;
+
+const hasPriorityValues = Array.isArray(priorityValues) && priorityValues.length > 0;
+
+const sortedTabs = !hasPriorityValues
+	? tabs
+	: (() => {
+			const allTab = tabs.find((tab) => tab.value === "all");
+			const nonAllTabs = tabs.filter((tab) => tab.value !== "all");
+			const tabMap = new Map(nonAllTabs.map((tab) => [tab.value, tab]));
+			const usedValues = new Set<string>();
+
+			const priorityTabs = priorityValues
+				.map((value) => {
+					const tab = tabMap.get(value);
+					if (tab) {
+						usedValues.add(value);
+					}
+					return tab;
+				})
+				.filter((tab): tab is FilterTab => Boolean(tab));
+
+			const remainingTabs = nonAllTabs.filter((tab) => !usedValues.has(tab.value));
+			return allTab ? [allTab, ...priorityTabs, ...remainingTabs] : [...priorityTabs, ...remainingTabs];
+		})();
 ---
 
 <div class:list={["filter-tabs", className]} data-filter-empty={emptyTarget}>
 	{
-		tabs.map((tab) => (
+		sortedTabs.map((tab) => (
 			<button
 				class:list={[
 					"filter-tabs-item",

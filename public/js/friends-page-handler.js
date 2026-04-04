@@ -27,7 +27,7 @@
 			return false;
 		}
 
-		var tagFilters = document.querySelectorAll(".filter-tag");
+		var tagFilters = document.querySelectorAll(".filter-tabs-item");
 		var friendCards = document.querySelectorAll(".friend-card");
 		var copyButtons = document.querySelectorAll(".copy-link-btn");
 
@@ -65,30 +65,30 @@
 			window.friendsPageState.eventListeners = [];
 		}
 
-		var currentTag = "all";
 		var searchTerm = "";
 
-		// 过滤函数
+		// 搜索过滤函数（标签筛选由 filter-tabs-handler.js 控制）
 		function filterFriends() {
 			var visibleCount = 0;
 			for (var i = 0; i < friendCards.length; i++) {
 				var card = friendCards[i];
 				var title = (card.getAttribute("data-title") || "").toLowerCase();
 				var desc = (card.getAttribute("data-desc") || "").toLowerCase();
-				var tags = card.getAttribute("data-tags") || "";
 
 				var matchesSearch =
 					!searchTerm ||
 					title.indexOf(searchTerm) >= 0 ||
 					desc.indexOf(searchTerm) >= 0;
-				var matchesTag =
-					currentTag === "all" || tags.split(",").indexOf(currentTag) >= 0;
+				var filteredByTag = card.classList.contains("filtered-out");
 
-				if (matchesSearch && matchesTag) {
+				if (matchesSearch) {
 					card.style.display = "";
-					visibleCount++;
 				} else {
 					card.style.display = "none";
+				}
+
+				if (matchesSearch && !filteredByTag) {
+					visibleCount++;
 				}
 			}
 
@@ -113,19 +113,13 @@
 			searchHandler,
 		]);
 
-		// 标签筛选
+		// 标签切换后重新应用搜索过滤与空状态
 		for (var i = 0; i < tagFilters.length; i++) {
 			((button) => {
 				var clickHandler = () => {
-					// 更新选中状态
-					for (var j = 0; j < tagFilters.length; j++) {
-						var btn = tagFilters[j];
-						btn.classList.remove("active");
-					}
-					button.classList.add("active");
-
-					currentTag = button.getAttribute("data-tag") || "all";
-					filterFriends();
+					setTimeout(() => {
+						filterFriends();
+					}, 0);
 				};
 				button.addEventListener("click", clickHandler);
 				window.friendsPageState.eventListeners.push([
@@ -135,6 +129,8 @@
 				]);
 			})(tagFilters[i]);
 		}
+
+		filterFriends();
 
 		// 复制链接功能
 		for (var i = 0; i < copyButtons.length; i++) {

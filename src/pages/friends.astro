@@ -1,5 +1,6 @@
 ---
 import FriendCard from "@components/features/friends/FriendCard.astro";
+import { FilterTabs } from "@components/atoms/filter-tabs";
 import { PageHeader } from "@components/features/page-header";
 import Markdown from "@components/misc/Markdown.astro";
 import { FilterEmptyState } from "@components/atoms/empty-state";
@@ -7,7 +8,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getEntry, render } from "astro:content";
 
 import { siteConfig } from "../config";
-import { getShuffledFriendsList } from "../data/friends";
+import { getShuffledFriendsList, tagPriority } from "../data/friends";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 
@@ -26,6 +27,18 @@ if (!friendsPost) {
 const { Content } = await render(friendsPost);
 const friendsList = getShuffledFriendsList();
 const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
+const filterTabs = [
+	{
+		value: "all",
+		label: i18n(I18nKey.friendsFilterAll),
+		count: friendsList.length,
+	},
+	...allTags.map((tag) => ({
+		value: tag,
+		label: tag,
+		count: friendsList.filter((item) => item.tags.includes(tag)).length,
+	})),
+];
 ---
 
 <MainGridLayout
@@ -86,18 +99,11 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 				</div>
 
 				<!-- 标签筛选 -->
-				<div class="filter-container flex flex-wrap gap-2">
-					<button class="filter-tag active" data-tag="all">
-						{i18n(I18nKey.friendsFilterAll)}
-					</button>
-					{
-						allTags.map((tag) => (
-							<button class="filter-tag" data-tag={tag}>
-								{tag}
-							</button>
-						))
-					}
-				</div>
+				<FilterTabs
+					tabs={filterTabs}
+					dataAttr="tags"
+					priorityValues={tagPriority}
+				/>
 			</div>
 
 			<!-- 友链卡片网格 -->
@@ -126,6 +132,7 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 	</div>
 
 	<!-- 引用全局脚本 -->
+	<script is:inline src="/js/filter-tabs-handler.js"></script>
 	<script is:inline src="/js/friends-page-handler.js"></script>
 </MainGridLayout>
 
@@ -135,42 +142,4 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 		box-shadow: 0 0 0 3px var(--primary) / 0.1;
 	}
 
-	/* 标签筛选按钮样式 */
-	.filter-container {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-
-	.filter-tag {
-		padding: 0.5rem 1rem;
-		border: 1px solid var(--line-divider);
-		border-radius: var(--radius-large);
-		background: var(--btn-regular-bg);
-		color: var(--btn-content);
-		font-size: 0.875rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		white-space: nowrap;
-	}
-
-	.filter-tag:hover:not(.active) {
-		background: var(--btn-hover-bg);
-		border-color: var(--primary);
-		transform: translateY(-1px);
-	}
-
-	.filter-tag.active {
-		background: var(--primary);
-		color: white;
-		border-color: var(--primary);
-	}
-
-	.filter-tag.active:hover {
-		background: var(--primary) !important;
-		color: white !important;
-		border-color: var(--primary) !important;
-		transform: translateY(-1px);
-	}
 </style>

@@ -10,6 +10,9 @@ export interface FriendItem {
 	tags: string[];
 }
 
+// 标签固定优先级（为空时保持默认顺序）
+export const tagPriority: string[] = [];
+
 // 友情链接数据
 export const friendsData: FriendItem[] = [
 	{
