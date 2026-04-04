@@ -4,6 +4,7 @@ import { FilterTabs } from "@components/atoms/filter-tabs";
 import { AlbumCard } from "@components/features/albums";
 import { PageHeader } from "@components/features/page-header";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { Icon } from "astro-icon/components";
 
 import { siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
@@ -78,11 +79,9 @@ const subtitle = i18n(I18nKey.albumsSubtitle);
 			{
 				albumsData.length === 0 && (
 					<div class="text-center py-16">
-						<iconify-icon
-							icon="material-symbols:photo-library"
-							width="64"
-							height="64"
-							class="text-black/15 dark:text-white/15 mb-4"
+						<Icon
+							name="material-symbols:photo-library"
+							class="text-6xl text-black/15 dark:text-white/15 mb-4"
 						/>
 						<h3 class="text-lg font-medium text-black/90 dark:text-white/90 mb-2">
 							{i18n(I18nKey.albumsEmpty)}
