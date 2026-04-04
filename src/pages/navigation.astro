@@ -2,35 +2,42 @@
 import { FilterTabs } from "@components/atoms/filter-tabs";
 import { FilterEmptyState } from "@components/atoms/empty-state";
 import { PageHeader } from "@components/features/page-header";
-import IgNavCard from "@components/features/ig-nav/IgNavCard.astro";
+import NavigationCard from "@components/features/navigation/NavigationCard.astro";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 
 import { siteConfig } from "../config";
-import { getShuffledIgNavsList, tagPriority } from "../data/ig-nav";
+import { getShuffledNavigationList, tagPriority } from "../data/navigation";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 
 export const prerender = true;
 
-if (!siteConfig.featurePages.igNav) {
+if (!siteConfig.featurePages.navigation) {
 	return Astro.redirect("/404/");
 }
 
-const igNavsList = getShuffledIgNavsList();
-const allTags = Array.from(new Set(igNavsList.flatMap((item) => item.tags)));
+const navigationList = getShuffledNavigationList();
+const allTags = Array.from(new Set(navigationList.flatMap((item) => item.tags)));
 const filterTabs = [
-	{ value: "all", label: "全部", count: igNavsList.length },
+	{
+		value: "all",
+		label: i18n(I18nKey.navigationFilterAll),
+		count: navigationList.length,
+	},
 	...allTags.map((tag) => ({
 		value: tag,
 		label: tag,
-		count: igNavsList.filter((item) => item.tags.includes(tag)).length,
+		count: navigationList.filter((item) => item.tags.includes(tag)).length,
 	})),
 ];
 ---
 
-<MainGridLayout title="Navigation" description="个人导航页">
+<MainGridLayout
+	title={i18n(I18nKey.navigation)}
+	description={i18n(I18nKey.navigationSubtitle)}
+>
 	<script is:inline>
-		window.isIgNavPage = true;
+		window.isNavigationPage = true;
 	</script>
 	<script>
 		import("../scripts/right-sidebar-layout.js");
@@ -39,9 +46,9 @@ const filterTabs = [
 	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
 		<div class="card-base z-10 px-9 py-6 relative w-full">
 			<PageHeader
-				title="Navigation"
-				subtitle="个人导航页"
-				bgImage="https://www.loliapi.com/acg/pc?t=ig-nav"
+				title={i18n(I18nKey.navigation)}
+				subtitle={i18n(I18nKey.navigationSubtitle)}
+				bgImage="https://www.loliapi.com/acg/pc?t=navigation"
 			/>
 
 			<div class="mb-6 space-y-3">
@@ -49,8 +56,8 @@ const filterTabs = [
 					<div class="relative">
 						<input
 							type="text"
-							id="ig-nav-search"
-							placeholder="搜索网站名称或描述..."
+							id="navigation-search"
+							placeholder={i18n(I18nKey.navigationSearchPlaceholder)}
 							class="w-full px-4 py-2 pl-10 rounded-lg bg-[var(--btn-regular-bg)]
 									text-black/90 dark:text-white/90
 									border border-black/10 dark:border-white/10
@@ -81,10 +88,14 @@ const filterTabs = [
 				/>
 			</div>
 
-			<div id="ig-nav-grid" class="grid grid-cols-1 gap-4 mb-6">
+			<div id="navigation-grid" class="grid grid-cols-1 gap-4 mb-6">
 				{
-					igNavsList.map((item) => (
-						<IgNavCard item={item} visitText="访问" copyText="复制链接" />
+					navigationList.map((item) => (
+						<NavigationCard
+							item={item}
+							visitText={i18n(I18nKey.navigationVisit)}
+							copyText={i18n(I18nKey.copyLink)}
+						/>
 					))
 				}
 			</div>
@@ -93,18 +104,18 @@ const filterTabs = [
 				<FilterEmptyState />
 			</div>
 
-			<div id="ig-nav-copy-success-text" style="display: none;">
-				{i18n(I18nKey.friendsCopySuccess)}
+			<div id="navigation-copy-success-text" style="display: none;">
+				{i18n(I18nKey.copied)}
 			</div>
 		</div>
 	</div>
 
 	<script is:inline src="/js/filter-tabs-handler.js"></script>
-	<script is:inline src="/js/ig-nav-page-handler.js"></script>
+	<script is:inline src="/js/navigation-page-handler.js"></script>
 </MainGridLayout>
 
 <style>
-	#ig-nav-search:focus {
+	#navigation-search:focus {
 		box-shadow: 0 0 0 3px var(--primary) / 0.1;
 	}
 

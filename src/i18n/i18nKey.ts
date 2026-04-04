@@ -55,6 +55,11 @@ enum I18nKey {
 	friendsCopyLink = "friendsCopyLink",
 	friendsCopySuccess = "friendsCopySuccess",
 	friendsTags = "friendsTags",
+	navigation = "navigation",
+	navigationSubtitle = "navigationSubtitle",
+	navigationSearchPlaceholder = "navigationSearchPlaceholder",
+	navigationFilterAll = "navigationFilterAll",
+	navigationVisit = "navigationVisit",
 	anime = "anime",
 	diary = "diary",
 

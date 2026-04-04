@@ -1,6 +1,6 @@
-// 个人导航数据配置
+// 导航数据配置
 
-export interface IgNavItem {
+export interface NavigationItem {
 	id: number;
 	title: string;
 	imgurl: string;
@@ -12,7 +12,7 @@ export interface IgNavItem {
 // 标签固定优先级（为空时保持默认顺序）
 export const tagPriority: string[] = ["私筑", "博引"];
 
-export const igNavsData: IgNavItem[] = [
+export const navigationData: NavigationItem[] = [
 	{
 		id: 1,
 		title: "寄驿",
@@ -79,12 +79,12 @@ export const igNavsData: IgNavItem[] = [
 	},
 ];
 
-export function getIgNavsList(): IgNavItem[] {
-	return igNavsData;
+export function getNavigationList(): NavigationItem[] {
+	return navigationData;
 }
 
-export function getShuffledIgNavsList(): IgNavItem[] {
-	const shuffled = [...igNavsData];
+export function getShuffledNavigationList(): NavigationItem[] {
+	const shuffled = [...navigationData];
 	for (let i = shuffled.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1));
 		[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];

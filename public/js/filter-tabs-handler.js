@@ -97,6 +97,17 @@
 					if (noResults) {
 						noResults.classList.toggle("hidden", visibleCount > 0);
 					}
+
+					document.dispatchEvent(
+						new CustomEvent("filter-tabs:changed", {
+							detail: {
+								container: container,
+								filterAttr: filterAttr,
+								activeValue: activeValue,
+								visibleCount: visibleCount,
+							},
+						}),
+					);
 				});
 			});
 		});

@@ -8,6 +8,7 @@
 	if (typeof window.friendsPageState === "undefined") {
 		window.friendsPageState = {
 			initialized: false,
+			initializedFor: null,
 			eventListeners: [],
 			mutationObserver: null,
 			copySuccessText: "已复制", // 默认值，会被页面覆盖
@@ -27,13 +28,18 @@
 			return false;
 		}
 
-		var tagFilters = document.querySelectorAll(".filter-tabs-item");
 		var friendCards = document.querySelectorAll(".friend-card");
 		var copyButtons = document.querySelectorAll(".copy-link-btn");
 
+		if (
+			window.friendsPageState.initialized &&
+			window.friendsPageState.initializedFor === friendsGrid
+		) {
+			return true;
+		}
+
 		console.log("[Friends Global] Found elements:", {
 			cards: friendCards.length,
-			filters: tagFilters.length,
 			copyButtons: copyButtons.length,
 		});
 
@@ -66,6 +72,7 @@
 		}
 
 		var searchTerm = "";
+		var searchRafId = 0;
 
 		// 搜索过滤函数（标签筛选由 filter-tabs-handler.js 控制）
 		function filterFriends() {
@@ -106,7 +113,13 @@
 		// 搜索功能
 		var searchHandler = (e) => {
 			searchTerm = e.target.value.toLowerCase();
-			filterFriends();
+			if (searchRafId) {
+				cancelAnimationFrame(searchRafId);
+			}
+			searchRafId = requestAnimationFrame(() => {
+				searchRafId = 0;
+				filterFriends();
+			});
 		};
 		searchInput.addEventListener("input", searchHandler);
 		window.friendsPageState.eventListeners.push([
@@ -115,20 +128,25 @@
 			searchHandler,
 		]);
 
-		// 标签切换后重新应用搜索过滤与空状态
-		for (var i = 0; i < tagFilters.length; i++) {
-			((button) => {
-				var clickHandler = () => {
-					filterFriends();
-				};
-				button.addEventListener("click", clickHandler);
-				window.friendsPageState.eventListeners.push([
-					button,
-					"click",
-					clickHandler,
-				]);
-			})(tagFilters[i]);
-		}
+		var pageRoot = friendsGrid.closest(".card-base");
+		var filterChangedHandler = (e) => {
+			var sourceContainer = e && e.detail ? e.detail.container : null;
+			if (!friendsGrid.isConnected) return;
+			if (
+				sourceContainer &&
+				pageRoot &&
+				!pageRoot.contains(sourceContainer)
+			) {
+				return;
+			}
+			filterFriends();
+		};
+		document.addEventListener("filter-tabs:changed", filterChangedHandler);
+		window.friendsPageState.eventListeners.push([
+			document,
+			"filter-tabs:changed",
+			filterChangedHandler,
+		]);
 
 		filterFriends();
 
@@ -169,6 +187,7 @@
 		}
 
 		window.friendsPageState.initialized = true;
+		window.friendsPageState.initializedFor = friendsGrid;
 		console.log(
 			"[Friends Global] ✅ Initialization complete with",
 			window.friendsPageState.eventListeners.length,
@@ -222,7 +241,6 @@
 
 				if (shouldInit) {
 					console.log("[Friends Global] DOM mutation detected");
-					window.friendsPageState.initialized = false;
 					setTimeout(() => {
 						tryInit();
 					}, 50);
@@ -261,7 +279,6 @@
 		((eventName) => {
 			document.addEventListener(eventName, () => {
 				console.log("[Friends Global] Event:", eventName);
-				window.friendsPageState.initialized = false;
 				setTimeout(() => {
 					tryInit();
 				}, 100);

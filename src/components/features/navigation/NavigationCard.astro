@@ -17,18 +17,17 @@ const hostname = new URL(item.siteurl).hostname;
 ---
 
 <div
-	class="ignav-card group relative bg-transparent rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+	class="navigation-card group relative bg-transparent rounded-xl border border-black/10 dark:border-white/10 overflow-hidden hover:shadow-lg hover:-translate-y-px"
 	data-title={item.title.toLowerCase()}
 	data-desc={item.desc.toLowerCase()}
 	data-tags={item.tags.join(",")}
-	data-filter-animate="fade"
 >
 	<div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
 		<div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden transition-all duration-300 shrink-0">
 			<img
 				src={item.imgurl}
 				alt={item.title}
-				class="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-300"
+				class="w-full h-full object-contain transform scale-85 group-hover:scale-95 transition-transform duration-300"
 				loading="lazy"
 			/>
 		</div>
@@ -89,37 +88,40 @@ const hostname = new URL(item.siteurl).hostname;
 </div>
 
 <style>
-	.ignav-card {
+	.navigation-card {
 		animation: fadeInUp 0.5s ease-out forwards;
 		opacity: 0;
-		transition: opacity 0.18s ease, transform 0.18s ease;
+		transition:
+			transform 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+			box-shadow 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+			opacity 0.18s ease;
 	}
 
-	.ignav-card:nth-child(1) {
+	.navigation-card:nth-child(1) {
 		animation-delay: 0.05s;
 	}
-	.ignav-card:nth-child(2) {
+	.navigation-card:nth-child(2) {
 		animation-delay: 0.1s;
 	}
-	.ignav-card:nth-child(3) {
+	.navigation-card:nth-child(3) {
 		animation-delay: 0.15s;
 	}
-	.ignav-card:nth-child(4) {
+	.navigation-card:nth-child(4) {
 		animation-delay: 0.2s;
 	}
-	.ignav-card:nth-child(5) {
+	.navigation-card:nth-child(5) {
 		animation-delay: 0.25s;
 	}
-	.ignav-card:nth-child(6) {
+	.navigation-card:nth-child(6) {
 		animation-delay: 0.3s;
 	}
 
-	.ignav-card.filtered-out {
+	.navigation-card.filtered-out {
 		display: none !important;
 	}
 
-	.ignav-card.is-filter-hiding,
-	.ignav-card.is-filter-showing {
+	.navigation-card.is-filter-hiding,
+	.navigation-card.is-filter-showing {
 		opacity: 0;
 		transform: translateY(6px);
 	}

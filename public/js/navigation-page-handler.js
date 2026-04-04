@@ -1,36 +1,44 @@
-// 个人导航页面处理脚本
+// 导航页面处理脚本
 // 此脚本作为全局脚本加载，不受 Swup 页面切换影响
 
 (() => {
-	if (typeof window.igNavPageState === "undefined") {
-		window.igNavPageState = {
+	if (typeof window.navigationPageState === "undefined") {
+		window.navigationPageState = {
+			initialized: false,
+			initializedFor: null,
 			eventListeners: [],
 			mutationObserver: null,
 			copySuccessText: "已复制",
 		};
 	}
 
-	function initIgNavPage() {
-		var searchInput = document.getElementById("ig-nav-search");
-		var igNavGrid = document.getElementById("ig-nav-grid");
+	function initNavigationPage() {
+		var searchInput = document.getElementById("navigation-search");
+		var navigationGrid = document.getElementById("navigation-grid");
 		var noResults = document.getElementById("no-results");
 
-		if (!searchInput || !igNavGrid || !noResults) {
+		if (!searchInput || !navigationGrid || !noResults) {
 			return false;
 		}
 
-		var tagFilters = document.querySelectorAll(".filter-tabs-item");
-		var igNavCards = document.querySelectorAll(".ignav-card");
+		var navigationCards = document.querySelectorAll(".navigation-card");
 		var copyButtons = document.querySelectorAll(".copy-link-btn");
 
-		var copySuccessTextElement = document.getElementById("ig-nav-copy-success-text");
-		if (copySuccessTextElement) {
-			window.igNavPageState.copySuccessText = copySuccessTextElement.textContent;
+		if (
+			window.navigationPageState.initialized &&
+			window.navigationPageState.initializedFor === navigationGrid
+		) {
+			return true;
 		}
 
-		if (window.igNavPageState.eventListeners.length > 0) {
-			for (var i = 0; i < window.igNavPageState.eventListeners.length; i++) {
-				var listener = window.igNavPageState.eventListeners[i];
+		var copySuccessTextElement = document.getElementById("navigation-copy-success-text");
+		if (copySuccessTextElement) {
+			window.navigationPageState.copySuccessText = copySuccessTextElement.textContent;
+		}
+
+		if (window.navigationPageState.eventListeners.length > 0) {
+			for (var i = 0; i < window.navigationPageState.eventListeners.length; i++) {
+				var listener = window.navigationPageState.eventListeners[i];
 				var element = listener[0];
 				var type = listener[1];
 				var handler = listener[2];
@@ -38,15 +46,16 @@
 					element.removeEventListener(type, handler);
 				}
 			}
-			window.igNavPageState.eventListeners = [];
+			window.navigationPageState.eventListeners = [];
 		}
 
 		var searchTerm = "";
+		var searchRafId = 0;
 
-		function filterIgNavs() {
+		function filterNavigationItems() {
 			var visibleCount = 0;
-			for (var i = 0; i < igNavCards.length; i++) {
-				var card = igNavCards[i];
+			for (var i = 0; i < navigationCards.length; i++) {
+				var card = navigationCards[i];
 				var title = (card.getAttribute("data-title") || "").toLowerCase();
 				var desc = (card.getAttribute("data-desc") || "").toLowerCase();
 				var matchesSearch =
@@ -68,29 +77,45 @@
 
 			if (visibleCount === 0) {
 				noResults.classList.add("is-visible");
-				igNavGrid.classList.add("hidden");
+				navigationGrid.classList.add("hidden");
 			} else {
 				noResults.classList.remove("is-visible");
-				igNavGrid.classList.remove("hidden");
+				navigationGrid.classList.remove("hidden");
 			}
 		}
 
 		var searchHandler = (e) => {
 			searchTerm = e.target.value.toLowerCase();
-			filterIgNavs();
+			if (searchRafId) {
+				cancelAnimationFrame(searchRafId);
+			}
+			searchRafId = requestAnimationFrame(() => {
+				searchRafId = 0;
+				filterNavigationItems();
+			});
 		};
 		searchInput.addEventListener("input", searchHandler);
-		window.igNavPageState.eventListeners.push([searchInput, "input", searchHandler]);
+		window.navigationPageState.eventListeners.push([searchInput, "input", searchHandler]);
 
-		for (var i = 0; i < tagFilters.length; i++) {
-			((button) => {
-				var clickHandler = () => {
-					filterIgNavs();
-				};
-				button.addEventListener("click", clickHandler);
-				window.igNavPageState.eventListeners.push([button, "click", clickHandler]);
-			})(tagFilters[i]);
-		}
+		var pageRoot = navigationGrid.closest(".card-base");
+		var filterChangedHandler = (e) => {
+			var sourceContainer = e && e.detail ? e.detail.container : null;
+			if (!navigationGrid.isConnected) return;
+			if (
+				sourceContainer &&
+				pageRoot &&
+				!pageRoot.contains(sourceContainer)
+			) {
+				return;
+			}
+			filterNavigationItems();
+		};
+		document.addEventListener("filter-tabs:changed", filterChangedHandler);
+		window.navigationPageState.eventListeners.push([
+			document,
+			"filter-tabs:changed",
+			filterChangedHandler,
+		]);
 
 		for (var i = 0; i < copyButtons.length; i++) {
 			((button) => {
@@ -105,7 +130,7 @@
 								var originalHTML = button.innerHTML;
 								button.innerHTML =
 									'<div class="flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span class="text-xs">' +
-									window.igNavPageState.copySuccessText +
+									window.navigationPageState.copySuccessText +
 									"</span></div>";
 								button.classList.add("text-green-500");
 								setTimeout(() => {
@@ -114,22 +139,24 @@
 								}, 2000);
 							})
 							.catch((err) => {
-								console.error("[IgNav Global] Copy failed:", err);
+								console.error("[Navigation Global] Copy failed:", err);
 							});
 					}
 				};
 				button.addEventListener("click", clickHandler);
-				window.igNavPageState.eventListeners.push([button, "click", clickHandler]);
+				window.navigationPageState.eventListeners.push([button, "click", clickHandler]);
 			})(copyButtons[i]);
 		}
 
-		filterIgNavs();
+		filterNavigationItems();
+		window.navigationPageState.initialized = true;
+		window.navigationPageState.initializedFor = navigationGrid;
 		return true;
 	}
 
 	function tryInit(retries) {
 		retries = retries || 0;
-		if (initIgNavPage()) {
+		if (initNavigationPage()) {
 			return;
 		}
 		if (retries < 5) {
@@ -140,11 +167,11 @@
 	}
 
 	function setupMutationObserver() {
-		if (window.igNavPageState.mutationObserver) {
-			window.igNavPageState.mutationObserver.disconnect();
+		if (window.navigationPageState.mutationObserver) {
+			window.navigationPageState.mutationObserver.disconnect();
 		}
 
-		window.igNavPageState.mutationObserver = new MutationObserver((mutations) => {
+		window.navigationPageState.mutationObserver = new MutationObserver((mutations) => {
 			var shouldInit = false;
 			for (var i = 0; i < mutations.length; i++) {
 				var mutation = mutations[i];
@@ -153,9 +180,9 @@
 						var node = mutation.addedNodes[j];
 						if (node.nodeType === 1) {
 							if (
-								node.id === "ig-nav-grid" ||
-								node.id === "ig-nav-search" ||
-								(node.querySelector && node.querySelector("#ig-nav-grid"))
+								node.id === "navigation-grid" ||
+								node.id === "navigation-search" ||
+								(node.querySelector && node.querySelector("#navigation-grid"))
 							) {
 								shouldInit = true;
 								break;
@@ -173,7 +200,7 @@
 			}
 		});
 
-		window.igNavPageState.mutationObserver.observe(document.body, {
+		window.navigationPageState.mutationObserver.observe(document.body, {
 			childList: true,
 			subtree: true,
 		});
