@@ -1,5 +1,6 @@
 ---
 import { commentConfig } from "@/config";
+import { PageHeader } from "@/components/features/page-header";
 
 interface Props {
 	path: string;
@@ -11,7 +12,19 @@ const config = {
 };
 ---
 
-<div id="giscus-container" class="giscus-container"></div>
+<section class="giscus-comment">
+	<PageHeader
+		class="giscus-header"
+		title="繁星回音"
+		subtitle="STARRY ECHOES"
+		watermark="COMMENTS"
+		divider={false}
+	/>
+
+	<div class="giscus-panel">
+		<div id="giscus-container" class="giscus-container"></div>
+	</div>
+</section>
 
 <script is:inline define:vars={{ config }}>
 	(function () {
@@ -19,6 +32,9 @@ const config = {
 		const ROOT_MARGIN = "200px";
 
 		let observer = null;
+		let themeObserver = null;
+		let swupReplaceHandler = null;
+		let swupEnableHandler = null;
 
 		function getCurrentPath() {
 			const pathname = window.location.pathname;
@@ -27,21 +43,24 @@ const config = {
 				: pathname;
 		}
 
+		function getThemeValue() {
+			if (config.theme !== "preferred_color_scheme") {
+				return config.theme;
+			}
+
+			const isDark =
+				document.documentElement.classList.contains("dark") ||
+				document.documentElement.getAttribute("data-theme")?.includes("dark");
+			return isDark ? "dark" : "light";
+		}
+
 		async function initGiscus() {
 			const container = document.getElementById(GISCUS_CONTAINER_ID);
 			if (!container) {
 				return;
 			}
 
-			let theme = config.theme;
-			if (theme === "preferred_color_scheme") {
-				const isDark =
-					document.documentElement.classList.contains("dark") ||
-					document.documentElement
-						.getAttribute("data-theme")
-						?.includes("dark");
-				theme = isDark ? "dark" : "light";
-			}
+			const theme = getThemeValue();
 
 			container.innerHTML = "";
 
@@ -77,8 +96,22 @@ const config = {
 				observer.disconnect();
 				observer = null;
 			}
+			if (themeObserver) {
+				themeObserver.disconnect();
+				themeObserver = null;
+			}
 			if (window.swup?.hooks) {
-				window.swup.hooks.off("content:replace", initGiscus);
+				if (swupReplaceHandler) {
+					window.swup.hooks.off(
+						"content:replace",
+						swupReplaceHandler,
+					);
+					swupReplaceHandler = null;
+				}
+			}
+			if (swupEnableHandler) {
+				document.removeEventListener("swup:enable", swupEnableHandler);
+				swupEnableHandler = null;
 			}
 		}
 
@@ -86,6 +119,11 @@ const config = {
 			const container = document.getElementById(GISCUS_CONTAINER_ID);
 			if (!container) {
 				return;
+			}
+
+			if (observer) {
+				observer.disconnect();
+				observer = null;
 			}
 
 			observer = new IntersectionObserver(
@@ -104,21 +142,27 @@ const config = {
 
 		function setupSwupHooks() {
 			if (window.swup?.hooks) {
-				window.swup.hooks.on("content:replace", () => {
-					setTimeout(setupLazyLoad, 200);
+				if (!swupReplaceHandler) {
+					swupReplaceHandler = () => {
+						setTimeout(setupLazyLoad, 200);
+					};
+					window.swup.hooks.on("content:replace", swupReplaceHandler);
+				}
+			} else if (!swupEnableHandler) {
+				swupEnableHandler = () => {
+					if (window.swup?.hooks && !swupReplaceHandler) {
+						swupReplaceHandler = () => {
+							setTimeout(setupLazyLoad, 200);
+						};
+						window.swup.hooks.on(
+							"content:replace",
+							swupReplaceHandler,
+						);
+					}
+				};
+				document.addEventListener("swup:enable", swupEnableHandler, {
+					once: true,
 				});
-			} else {
-				document.addEventListener(
-					"swup:enable",
-					() => {
-						if (window.swup?.hooks) {
-							window.swup.hooks.on("content:replace", () => {
-								setTimeout(setupLazyLoad, 200);
-							});
-						}
-					},
-					{ once: true },
-				);
 			}
 		}
 
@@ -138,25 +182,18 @@ const config = {
 			setupSwupHooks();
 		}
 
-		const observer_theme = new MutationObserver((mutations) => {
+		themeObserver = new MutationObserver((mutations) => {
 			mutations.forEach((mutation) => {
 				if (
 					mutation.attributeName === "class" ||
 					mutation.attributeName === "data-theme"
 				) {
-					const isDark =
-						document.documentElement.classList.contains("dark") ||
-						document.documentElement
-							.getAttribute("data-theme")
-							?.includes("dark");
-					const theme = isDark ? "dark" : "light";
-
 					const iframe = document.querySelector(
 						"iframe.giscus-frame",
 					);
 					if (iframe) {
 						iframe.contentWindow?.postMessage(
-							{ giscus: { setConfig: { theme } } },
+							{ giscus: { setConfig: { theme: getThemeValue() } } },
 							"https://giscus.app",
 						);
 					}
@@ -164,12 +201,51 @@ const config = {
 			});
 		});
 
-		observer_theme.observe(document.documentElement, { attributes: true });
+		themeObserver.observe(document.documentElement, { attributes: true });
 	})();
 </script>
 
 <style>
+	.giscus-comment {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+	}
+
+	.giscus-header {
+		margin-bottom: 0.75rem;
+	}
+
+	.giscus-panel {
+		position: relative;
+		padding: 1rem;
+		border: 1px solid
+			color-mix(in oklab, var(--line-divider) 82%, var(--primary) 18%);
+		border-radius: calc(var(--radius-large) - 0.15rem);
+		background: linear-gradient(
+			180deg,
+			color-mix(in oklab, var(--card-bg) 94%, var(--primary) 6%) 0%,
+			var(--card-bg) 100%
+		);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+		transition:
+			background-color 0.2s ease,
+			border-color 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+
+	:global(.dark) .giscus-panel {
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+	}
+
 	.giscus-container {
 		min-height: 200px;
+		width: 100%;
+	}
+
+	@media (max-width: 640px) {
+		.giscus-panel {
+			padding: 0.875rem;
+		}
 	}
 </style>
