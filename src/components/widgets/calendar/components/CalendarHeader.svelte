@@ -60,7 +60,7 @@
 			onclick={onBackToToday}
 			aria-label="Back to today"
 		>
-			<Icon name="material-symbols:restart-alt-rounded" class="text-xl" />
+			<Icon icon="material-symbols:restart-alt-rounded" class="text-xl" />
 		</button>
 		<button
 			type="button"
