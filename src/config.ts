@@ -76,7 +76,7 @@ export const siteConfig: SiteConfig = {
 	},
 
 	news: {
-		mode: "local",
+		mode: "online",
 		title: "时语",
 		subtitle: "倾听世界之声",
 		initialVisible: 8,
