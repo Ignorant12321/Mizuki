@@ -76,6 +76,7 @@ export const siteConfig: SiteConfig = {
 	},
 
 	news: {
+		mode: "local",
 		title: "时语",
 		subtitle: "倾听世界之声",
 		initialVisible: 8,
@@ -84,12 +85,12 @@ export const siteConfig: SiteConfig = {
 			{
 				id: "zaobao-china",
 				name: "联合早报 · 中国",
-				url: "https://rsshub.pseudoyu.com/zaobao/realtime/china",
+				url: "https://rss.ssr.ddns-ip.net/rss?source=zaobao-china",
 			},
 			{
 				id: "zaobao-world",
 				name: "联合早报 · 国际",
-				url: "https://rsshub.pseudoyu.com/zaobao/realtime/world",
+				url: "https://rss.ssr.ddns-ip.net/rss?source=zaobao-world",
 			},
 		],
 	},

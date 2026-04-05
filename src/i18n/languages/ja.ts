@@ -46,10 +46,21 @@ export const ja: Translation = {
 	[Key.newsSourceDescription]: "Lianhe Zaobao リアルタイム",
 	[Key.newsSources]: "フィードソース",
 	[Key.newsEmpty]: "まだニュースを取得できませんでした",
-	[Key.newsEmptyDescription]: "しばらくしてから再試行するか、RSS URL が到達可能か確認してください。",
+	[Key.newsEmptyDescription]:
+		"しばらくしてから再試行するか、RSS URL が到達可能か確認してください。",
 	[Key.newsExpand]: "展開",
 	[Key.newsCollapse]: "折りたたむ",
 	[Key.newsLoadMore]: "ニュースをもっと表示",
+	[Key.newsRefresh]: "ニュースを更新",
+	[Key.newsOnlineHint]:
+		"現在はオンラインモードです。更新ボタンを押すと最新ニュースを取得します。",
+	[Key.newsRefreshing]: "ニュースを更新しています...",
+	[Key.newsOnlineConfigError]:
+		"オンラインモードに使用可能な RSS フィードが設定されていないため、更新できません。",
+	[Key.newsLocalRefreshError]:
+		"現在はローカルモードのため、オンライン更新はできません。",
+	[Key.newsRefreshFailed]:
+		"更新に失敗しました。しばらくしてから再試行するか、RSS フィードがブラウザから直接参照できるか確認してください。",
 	[Key.untitled]: "無題",
 	[Key.uncategorized]: "未分類",
 	[Key.noTags]: "タグはありません",

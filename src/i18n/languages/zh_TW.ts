@@ -50,6 +50,14 @@ export const zh_TW: Translation = {
 	[Key.newsExpand]: "展開",
 	[Key.newsCollapse]: "收起",
 	[Key.newsLoadMore]: "展開更多新聞",
+	[Key.newsRefresh]: "刷新新聞",
+	[Key.newsOnlineHint]: "當前為在線模式，點擊刷新按鈕後獲取最新新聞。",
+	[Key.newsRefreshing]: "正在刷新新聞...",
+	[Key.newsOnlineConfigError]:
+		"在線模式未配置可用的 RSS 訂閱源，暫時無法刷新新聞。",
+	[Key.newsLocalRefreshError]: "當前為本地模式，無法在線刷新新聞。",
+	[Key.newsRefreshFailed]:
+		"刷新失敗，請稍後重試，或檢查 RSS 訂閱源是否支持瀏覽器直接訪問。",
 	[Key.untitled]: "無標題",
 	[Key.uncategorized]: "未分類",
 	[Key.noTags]: "無標籤",
@@ -115,7 +123,8 @@ export const zh_TW: Translation = {
 	[Key.paginationGoToPage]: "跳轉到第 {page} 頁",
 	[Key.paginationCurrentPage]: "當前第 {page} 頁",
 	[Key.paginationEllipsis]: "更多頁碼",
-	[Key.paginationInputPrompt]: "輸入要跳轉的頁碼（1-{last}），當前第 {current} 頁",
+	[Key.paginationInputPrompt]:
+		"輸入要跳轉的頁碼（1-{last}），當前第 {current} 頁",
 	[Key.paginationInputInvalid]: "請輸入 1 到 {last} 之間的整數頁碼",
 
 	// 404頁面

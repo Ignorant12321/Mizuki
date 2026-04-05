@@ -70,6 +70,12 @@ enum I18nKey {
 	newsExpand = "newsExpand",
 	newsCollapse = "newsCollapse",
 	newsLoadMore = "newsLoadMore",
+	newsRefresh = "newsRefresh",
+	newsOnlineHint = "newsOnlineHint",
+	newsRefreshing = "newsRefreshing",
+	newsOnlineConfigError = "newsOnlineConfigError",
+	newsLocalRefreshError = "newsLocalRefreshError",
+	newsRefreshFailed = "newsRefreshFailed",
 	anime = "anime",
 	diary = "diary",
 

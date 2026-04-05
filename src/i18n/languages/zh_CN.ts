@@ -50,6 +50,14 @@ export const zh_CN: Translation = {
 	[Key.newsExpand]: "展开",
 	[Key.newsCollapse]: "收起",
 	[Key.newsLoadMore]: "展开更多新闻",
+	[Key.newsRefresh]: "刷新新闻",
+	[Key.newsOnlineHint]: "当前为在线模式，点击刷新按钮后获取最新新闻。",
+	[Key.newsRefreshing]: "正在刷新新闻...",
+	[Key.newsOnlineConfigError]:
+		"在线模式未配置可用的 RSS 订阅源，暂时无法刷新新闻。",
+	[Key.newsLocalRefreshError]: "当前为本地模式，无法在线刷新新闻。",
+	[Key.newsRefreshFailed]:
+		"刷新失败，请稍后重试，或检查 RSS 订阅源是否支持浏览器直接访问。",
 	[Key.untitled]: "无标题",
 	[Key.uncategorized]: "未分类",
 	[Key.noTags]: "无标签",
@@ -110,7 +118,8 @@ export const zh_CN: Translation = {
 	[Key.paginationGoToPage]: "跳转到第 {page} 页",
 	[Key.paginationCurrentPage]: "当前第 {page} 页",
 	[Key.paginationEllipsis]: "更多页码",
-	[Key.paginationInputPrompt]: "输入要跳转的页码（1-{last}），当前第 {current} 页",
+	[Key.paginationInputPrompt]:
+		"输入要跳转的页码（1-{last}），当前第 {current} 页",
 	[Key.paginationInputInvalid]: "请输入 1 到 {last} 之间的整数页码",
 
 	// 404页面

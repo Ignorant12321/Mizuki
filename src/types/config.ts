@@ -79,6 +79,7 @@ export interface SiteConfig {
 
 	// 新闻页面配置
 	news?: {
+		mode?: "online" | "local"; // 新闻数据模式
 		title?: string; // 新闻页标题
 		subtitle?: string; // 新闻页副标题
 		initialVisible?: number; // 首屏展示数量

@@ -34,6 +34,8 @@ const defaultNewsFeedSources: NewsFeedSource[] = [
 	},
 ];
 
+export const newsMode = siteConfig.news?.mode ?? "local";
+
 export const newsFeedSources: NewsFeedSource[] =
 	siteConfig.news?.feeds?.filter(
 		(feed) =>
@@ -44,8 +46,6 @@ export const newsFeedSources: NewsFeedSource[] =
 			typeof feed.url === "string" &&
 			feed.url.trim().length > 0,
 	) ?? defaultNewsFeedSources;
-
-let cachedNewsList: NewsItem[] | null = null;
 
 const entityMap: Record<string, string> = {
 	amp: "&",
@@ -70,7 +70,7 @@ function decodeEntities(value: string): string {
 		.replace(/&([a-z]+);/gi, (_, name: string) => entityMap[name] ?? _);
 }
 
-function stripHtml(value = ""): string {
+export function stripNewsHtml(value = ""): string {
 	return decodeEntities(value)
 		.replace(/<[^>]*>/g, " ")
 		.replace(/\s+/g, " ")
@@ -107,14 +107,14 @@ function resolveLink(link: string, baseUrl: string): string {
 	}
 }
 
-function formatDate(dateStr?: string): string {
+export function formatNewsDate(dateStr?: string): string {
 	if (!dateStr) {
 		return "";
 	}
 
 	const date = new Date(dateStr);
 	if (Number.isNaN(date.getTime())) {
-		return stripHtml(dateStr);
+		return stripNewsHtml(dateStr);
 	}
 
 	const locale =
@@ -144,7 +144,7 @@ function toTimeValue(dateStr?: string): number {
 	return Number.isFinite(time) ? time : 0;
 }
 
-async function fetchNewsListBySource(
+export async function fetchNewsListBySource(
 	source: NewsFeedSource,
 ): Promise<NewsItem[]> {
 	try {
@@ -166,16 +166,20 @@ async function fetchNewsListBySource(
 
 		return itemXmlList
 			.map((itemXml) => {
-				const title = stripHtml(extractFirstTag(itemXml, "title")) || "无标题";
+				const title =
+					stripNewsHtml(extractFirstTag(itemXml, "title")) ||
+					"无标题";
 				const link =
 					decodeEntities(extractFirstTag(itemXml, "link")) ||
 					decodeEntities(extractFirstTag(itemXml, "guid"));
-				const pubDate = stripHtml(extractFirstTag(itemXml, "pubDate"));
-				const description = stripHtml(
+				const pubDate = stripNewsHtml(
+					extractFirstTag(itemXml, "pubDate"),
+				);
+				const description = stripNewsHtml(
 					extractFirstTag(itemXml, "description"),
 				);
 				const categoryValues = extractTagValues(itemXml, "category")
-					.map((value) => stripHtml(value))
+					.map((value) => stripNewsHtml(value))
 					.filter(Boolean);
 
 				return {
@@ -192,18 +196,16 @@ async function fetchNewsListBySource(
 				};
 			})
 			.filter((item) => item.title && item.link);
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
 
-export async function getNewsList(): Promise<NewsItem[]> {
-	if (cachedNewsList) {
-		return cachedNewsList;
-	}
-
+export async function fetchNewsList(
+	sources: NewsFeedSource[] = newsFeedSources,
+): Promise<NewsItem[]> {
 	const listBySource = await Promise.all(
-		newsFeedSources.map((source) => fetchNewsListBySource(source)),
+		sources.map((source) => fetchNewsListBySource(source)),
 	);
 
 	const merged = listBySource.flat();
@@ -211,11 +213,7 @@ export async function getNewsList(): Promise<NewsItem[]> {
 		new Map(merged.map((item) => [item.link || item.title, item])).values(),
 	);
 
-	cachedNewsList = deduped.sort(
+	return deduped.sort(
 		(a, b) => toTimeValue(b.pubDate) - toTimeValue(a.pubDate),
 	);
-
-	return cachedNewsList;
 }
-
-export { formatDate as formatNewsDate, stripHtml as stripNewsHtml };

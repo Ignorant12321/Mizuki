@@ -41,15 +41,27 @@ export const en: Translation = {
 	[Key.navigationFilterAll]: "All",
 	[Key.navigationVisit]: "Visit",
 	[Key.news]: "News",
-	[Key.newsSubtitle]: "Aggregate external sources for a quick glance at the latest updates",
+	[Key.newsSubtitle]:
+		"Aggregate external sources for a quick glance at the latest updates",
 	[Key.newsSource]: "Source",
 	[Key.newsSourceDescription]: "Lianhe Zaobao Realtime",
 	[Key.newsSources]: "Feed Sources",
 	[Key.newsEmpty]: "No news content could be fetched for now",
-	[Key.newsEmptyDescription]: "Try again later, or check whether the RSS URL is reachable.",
+	[Key.newsEmptyDescription]:
+		"Try again later, or check whether the RSS URL is reachable.",
 	[Key.newsExpand]: "Expand",
 	[Key.newsCollapse]: "Collapse",
 	[Key.newsLoadMore]: "Load more news",
+	[Key.newsRefresh]: "Refresh news",
+	[Key.newsOnlineHint]:
+		"This page is in online mode. Click refresh to fetch the latest news.",
+	[Key.newsRefreshing]: "Refreshing news...",
+	[Key.newsOnlineConfigError]:
+		"Online mode has no usable RSS feeds configured, so live refresh is unavailable.",
+	[Key.newsLocalRefreshError]:
+		"This page is in local mode and does not support live refresh.",
+	[Key.newsRefreshFailed]:
+		"Refresh failed. Please try again later or verify that the RSS feeds allow direct browser access.",
 	[Key.untitled]: "Untitled",
 	[Key.uncategorized]: "Uncategorized",
 	[Key.noTags]: "No Tags",
