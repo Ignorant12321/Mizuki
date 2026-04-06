@@ -1,4 +1,5 @@
 ---
+import { FilterEmptyState } from "@components/atoms/empty-state";
 import { PageHeader } from "@components/features/page-header";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 
@@ -33,6 +34,8 @@ const initialVisible = Math.max(
 	Number(siteConfig.news?.initialVisible ?? 12),
 );
 const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
+const siteLang = siteConfig.lang;
+const siteTimeZone = siteConfig.timeZone;
 ---
 
 <MainGridLayout title={title} description={subtitle}>
@@ -94,9 +97,12 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 				>
 					<div class="news-loading-title">Loading news...</div>
 				</div>
-				<div class="news-empty" id="news-empty" style="display: none;">
-					<div class="news-empty-title">{emptyTitle}</div>
-					<div class="news-empty-desc">{emptyDescription}</div>
+				<div id="no-result" class="hidden">
+					<FilterEmptyState
+						title={emptyTitle}
+						description={emptyDescription}
+						compact={false}
+					/>
 				</div>
 			</div>
 
@@ -124,6 +130,8 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 			loadMoreStep,
 			newsMode,
 			newsFeedSources,
+			siteLang,
+			siteTimeZone,
 			onlineHint,
 			refreshingLabel,
 			onlineConfigError,
@@ -203,24 +211,8 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 			}
 		}
 
-		function toTimeValue(dateStr) {
-			if (!dateStr) {
-				return 0;
-			}
-
-			const time = new Date(dateStr).getTime();
-			return Number.isFinite(time) ? time : 0;
-		}
-
-		async function fetchFeedSource(source) {
-			const response = await fetch(source.url, { cache: "no-store" });
-			if (!response.ok) {
-				throw new Error(`Failed to fetch RSS: ${response.status}`);
-			}
-
-			const xml = await response.text();
+		function parseGenericRss(xml, source) {
 			const itemXmlList = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
-
 			return itemXmlList
 				.map((itemXml) => {
 					const title =
@@ -251,9 +243,463 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 									)
 								: "",
 						sourceName: source.name,
+						sourceUrl: source.url,
 					};
 				})
 				.filter((item) => item.title && item.link);
+		}
+
+		function tightenCjkSpacing(value) {
+			return String(value || "")
+				.replace(/([\u3400-\u9fff])\s+([\u3400-\u9fff])/g, "$1$2")
+				.replace(
+					/([\u3400-\u9fff])\s+([，。！？；：、）】》])/g,
+					"$1$2",
+				)
+				.replace(/([（【《])\s+([\u3400-\u9fff])/g, "$1$2")
+				.replace(
+					/([，。！？；：、）】》])\s+([\u3400-\u9fff])/g,
+					"$1$2",
+				);
+		}
+
+		function cleanZaobaoDescription(value) {
+			const decoded = decodeEntities(value || "");
+			const normalized = decoded
+				.replace(/<figure\b[\s\S]*?<\/figure>/gi, "\n")
+				.replace(/<br\s*\/?>/gi, "\n")
+				.replace(/<\/(p|div|li|h1|h2|h3|h4|h5|h6|blockquote)>/gi, "\n")
+				.replace(/<(li)\b[^>]*>/gi, "• ")
+				.replace(/<a\b[^>]*>/gi, "")
+				.replace(/<\/a>/gi, "")
+				.replace(/<[^>]*>/g, " ")
+				.replace(/\r\n?/g, "\n")
+				.replace(/[ \t]+\n/g, "\n")
+				.replace(/\n[ \t]+/g, "\n")
+				.replace(/[ \t]{2,}/g, " ")
+				.replace(/\n{3,}/g, "\n\n")
+				.trim();
+
+			const lines = normalized
+				.split("\n")
+				.map((line) => tightenCjkSpacing(line.trim()))
+				.filter(Boolean)
+				.filter((line) => !/^[•·。\-.|]+$/.test(line));
+
+			return lines.join("\n");
+		}
+
+		function parseZaobaoFeed(xml, source) {
+			const itemXmlList = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
+
+			return itemXmlList
+				.map((itemXml) => {
+					const title =
+						stripHtml(extractFirstTag(itemXml, "title")) ||
+						"无标题";
+					const link =
+						decodeEntities(extractFirstTag(itemXml, "link")) ||
+						decodeEntities(extractFirstTag(itemXml, "guid"));
+					const pubDate = stripHtml(
+						extractFirstTag(itemXml, "pubDate"),
+					);
+					const description = cleanZaobaoDescription(
+						extractFirstTag(itemXml, "description"),
+					);
+					const categoryValues = extractTagValues(itemXml, "category")
+						.map((value) => stripHtml(value))
+						.filter(Boolean);
+
+					return {
+						title,
+						link: resolveLink(link, source.url),
+						pubDate,
+						description,
+						category:
+							categoryValues.length > 0
+								? Array.from(new Set(categoryValues)).join(
+										" / ",
+									)
+								: "",
+						sourceName: source.name,
+						sourceUrl: source.url,
+					};
+				})
+				.filter((item) => item.title && item.link);
+		}
+
+		function detectCsdnSectionMarkers(decodedHtml) {
+			const headings = Array.from(
+				String(decodedHtml || "").matchAll(
+					/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi,
+				),
+			)
+				.map((match) => stripHtml(match[1] || "").trim())
+				.map((line) => line.replace(/\s+/g, " "))
+				.filter((line) => line.length >= 2 && line.length <= 16)
+				.filter((line) => !line.includes("一分钟速览新闻点"))
+				.filter((line) => !line.includes("极客头条"));
+			return Array.from(new Set(headings));
+		}
+
+		function cleanCsdnDescription(value) {
+			const decoded = decodeEntities(value || "");
+			const sectionMarkers = detectCsdnSectionMarkers(decoded);
+			const withBreaks = decoded
+				.replace(/<br\s*\/?>/gi, "\n")
+				.replace(/<\/(p|div|li|h1|h2|h3|h4|h5|h6)>/gi, "\n")
+				.replace(/<(li)\b[^>]*>/gi, "• ")
+				.replace(/<[^>]*>/g, " ");
+			const normalized = withBreaks
+				.replace(/\r\n?/g, "\n")
+				.replace(/[ \t]+\n/g, "\n")
+				.replace(/\n[ \t]+/g, "\n")
+				.replace(/[ \t]{2,}/g, " ")
+				.replace(/\n{3,}/g, "\n\n")
+				.trim();
+
+			const splitLines = normalized
+				.split("\n")
+				.map((line) => line.trim())
+				.filter(Boolean)
+				.filter((line) => !/^[•·。\-.|]+$/.test(line));
+
+			const uniqueLines = [];
+			const seenLines = new Set();
+			splitLines.forEach((line) => {
+				const n = line.replace(/\s+/g, " ").trim();
+				if (!n || seenLines.has(n)) {
+					return;
+				}
+				seenLines.add(n);
+				uniqueLines.push(n);
+			});
+
+			const quickIndex = uniqueLines.findIndex((line) =>
+				line.includes("一分钟速览新闻点"),
+			);
+			const firstSectionIndex = uniqueLines.findIndex((line) =>
+				sectionMarkers.some((marker) => line === marker),
+			);
+
+			const intro =
+				quickIndex > 0
+					? uniqueLines.slice(0, quickIndex).slice(0, 4)
+					: uniqueLines.slice(0, Math.min(4, uniqueLines.length));
+			const tocStart = quickIndex >= 0 ? quickIndex + 1 : -1;
+			const tocEnd =
+				firstSectionIndex > tocStart
+					? firstSectionIndex
+					: uniqueLines.length;
+			const toc =
+				tocStart >= 0 && tocStart < tocEnd
+					? uniqueLines.slice(tocStart, tocEnd).slice(0, 20)
+					: [];
+			const body =
+				firstSectionIndex >= 0
+					? uniqueLines.slice(firstSectionIndex).slice(0, 40)
+					: uniqueLines
+							.slice(Math.max(quickIndex + 1, 0))
+							.slice(0, 24);
+
+			const parts = [];
+			if (intro.length > 0) {
+				parts.push("【导语】");
+				parts.push(intro.join("\n"));
+			}
+			if (toc.length > 0) {
+				parts.push("【目录】");
+				parts.push(
+					toc
+						.map((line, index) => `${index + 1}. ${line}`)
+						.join("\n"),
+				);
+			}
+			if (body.length > 0) {
+				parts.push("【正文】");
+				parts.push(body.join("\n\n"));
+			}
+
+			return parts.join("\n\n").trim();
+		}
+
+		function normalizeCsdnHeading(value) {
+			return String(value || "")
+				.replace(/^[\d.\-、\s]+/, "")
+				.replace(/[“”"'‘’【】《》()（）:：,，。！？!?\-]/g, "")
+				.replace(/\s+/g, "")
+				.trim()
+				.toLowerCase();
+		}
+
+		function extractCsdnSections(value) {
+			const decoded = decodeEntities(value || "");
+			const sectionMarkers = detectCsdnSectionMarkers(decoded);
+			const withBreaks = decoded
+				.replace(/<br\s*\/?>/gi, "\n")
+				.replace(/<\/(p|div|li|h1|h2|h3|h4|h5|h6)>/gi, "\n")
+				.replace(/<(li)\b[^>]*>/gi, "• ")
+				.replace(/<[^>]*>/g, " ");
+			const normalized = withBreaks
+				.replace(/\r\n?/g, "\n")
+				.replace(/[ \t]+\n/g, "\n")
+				.replace(/\n[ \t]+/g, "\n")
+				.replace(/[ \t]{2,}/g, " ")
+				.replace(/\n{3,}/g, "\n\n")
+				.trim();
+			const lines = normalized
+				.split("\n")
+				.map((line) => line.trim())
+				.filter(Boolean)
+				.filter((line) => !/^[•·。\-.|]+$/.test(line));
+
+			const quickIndex = lines.findIndex((line) =>
+				line.includes("一分钟速览新闻点"),
+			);
+			const firstSectionIndex = lines.findIndex((line) =>
+				sectionMarkers.some((marker) => line === marker),
+			);
+			const intro =
+				quickIndex > 0
+					? lines.slice(0, quickIndex).slice(0, 4)
+					: lines.slice(0, Math.min(4, lines.length));
+			const tocStart = quickIndex >= 0 ? quickIndex + 1 : -1;
+			const tocEnd =
+				firstSectionIndex > tocStart ? firstSectionIndex : lines.length;
+			const toc =
+				tocStart >= 0 && tocStart < tocEnd
+					? Array.from(
+							new Set(
+								lines
+									.slice(tocStart, tocEnd)
+									.map((line) =>
+										line.replace(/\s+/g, " ").trim(),
+									)
+									.filter(Boolean),
+							),
+						).slice(0, 24)
+					: [];
+			const body =
+				firstSectionIndex >= 0
+					? lines.slice(firstSectionIndex)
+					: lines.slice(Math.max(quickIndex + 1, 0));
+
+			return { intro, toc, body, sectionMarkers };
+		}
+
+		function trimCsdnDescription(lines, maxLen = 520) {
+			const chunks = [];
+			let used = 0;
+			for (const line of lines || []) {
+				const next = String(line || "").trim();
+				if (!next) {
+					continue;
+				}
+				const cost = next.length + (chunks.length > 0 ? 2 : 0);
+				if (chunks.length > 0 && used + cost > maxLen) {
+					break;
+				}
+				chunks.push(next);
+				used += cost;
+			}
+			return chunks.join("\n\n").trim();
+		}
+
+		function parseCsdnFeed(xml, source) {
+			const items = parseGenericRss(xml, source);
+			const itemXmlList = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
+
+			return items.flatMap((item, index) => {
+				const itemXml = itemXmlList[index] || "";
+				const descriptionRaw = extractFirstTag(itemXml, "description");
+				const sections = extractCsdnSections(descriptionRaw);
+				const base = {
+					...item,
+					description: cleanCsdnDescription(descriptionRaw),
+				};
+
+				if (sections.toc.length < 3 || sections.body.length === 0) {
+					return [base];
+				}
+
+				const tocSet = new Set(
+					sections.toc.map((title) => normalizeCsdnHeading(title)),
+				);
+				const bodyBlocks = [];
+				let currentSection = "";
+				let current = null;
+
+				for (const line of sections.body) {
+					if (sections.sectionMarkers.includes(line)) {
+						currentSection = line;
+						continue;
+					}
+					const normalized = normalizeCsdnHeading(line);
+					if (tocSet.has(normalized)) {
+						if (current) {
+							bodyBlocks.push(current);
+						}
+						current = {
+							title: line,
+							section: currentSection,
+							lines: [],
+						};
+						continue;
+					}
+					if (current) {
+						current.lines.push(line);
+					}
+				}
+				if (current) {
+					bodyBlocks.push(current);
+				}
+				if (bodyBlocks.length < 2) {
+					return [base];
+				}
+
+				return sections.toc.map((tocTitle, tocIndex) => {
+					const tocNormalized = normalizeCsdnHeading(tocTitle);
+					const block =
+						bodyBlocks.find(
+							(itemBlock) =>
+								normalizeCsdnHeading(itemBlock.title) ===
+									tocNormalized ||
+								normalizeCsdnHeading(itemBlock.title).includes(
+									tocNormalized,
+								) ||
+								tocNormalized.includes(
+									normalizeCsdnHeading(itemBlock.title),
+								),
+						) ?? null;
+
+					const descParts = [];
+					const shortDesc = trimCsdnDescription(
+						block?.lines ?? [],
+						520,
+					);
+					if (shortDesc) {
+						descParts.push(shortDesc);
+					} else if (sections.intro.length > 0) {
+						descParts.push(
+							trimCsdnDescription(sections.intro, 280),
+						);
+					}
+
+					return {
+						...base,
+						title: tocTitle,
+						link: `${base.link}#csdn-item-${tocIndex + 1}`,
+						category: block?.section || base.category,
+						description: descParts.join("\n\n").trim(),
+					};
+				});
+			});
+		}
+
+		function parseBilibiliFeed(xml, source) {
+			return parseGenericRss(xml, source).map((item) => ({
+				...item,
+				category: "",
+			}));
+		}
+
+		function pickParser(source) {
+			const fingerprint = `${String(source.id || "").toLowerCase()} ${String(source.name || "").toLowerCase()} ${String(source.url || "").toLowerCase()}`;
+			if (fingerprint.includes("zaobao")) {
+				return parseZaobaoFeed;
+			}
+			if (fingerprint.includes("csdn")) {
+				return parseCsdnFeed;
+			}
+			if (fingerprint.includes("bilibili")) {
+				return parseBilibiliFeed;
+			}
+			return parseGenericRss;
+		}
+
+		function toTimeValue(dateStr) {
+			if (!dateStr) {
+				return 0;
+			}
+
+			const time = new Date(dateStr).getTime();
+			return Number.isFinite(time) ? time : 0;
+		}
+
+		function formatNewsDate(dateStr) {
+			if (!dateStr) {
+				return "";
+			}
+
+			const date = new Date(dateStr);
+			if (Number.isNaN(date.getTime())) {
+				return stripHtml(dateStr);
+			}
+
+			const locale =
+				siteLang === "ja"
+					? "ja-JP"
+					: siteLang === "zh_TW"
+						? "zh-TW"
+						: siteLang === "en"
+							? "en-US"
+							: "zh-CN";
+			const offset =
+				siteTimeZone >= -12 && siteTimeZone <= 12 ? siteTimeZone : 8;
+			const siteDate = new Date(date.getTime() + offset * 60 * 60 * 1000);
+
+			return siteDate.toLocaleString(locale, {
+				year: "numeric",
+				month: "2-digit",
+				day: "2-digit",
+				hour: "2-digit",
+				minute: "2-digit",
+				second: "2-digit",
+				hour12: false,
+				timeZone: "UTC",
+			});
+		}
+
+		function indentNewsDescription(value) {
+			const raw = String(value || "");
+			if (!raw) {
+				return "";
+			}
+
+			return raw
+				.split("\n")
+				.map((line) => {
+					const trimmed = line.trim();
+					if (!trimmed) {
+						return "";
+					}
+
+					const keepUnindented =
+						/^【[^】]+】$/.test(trimmed) ||
+						/^\d+[.)、]\s*/.test(trimmed) ||
+						/^[•·\-]\s*/.test(trimmed);
+					if (keepUnindented) {
+						return trimmed;
+					}
+
+					return `\u3000\u3000${trimmed}`;
+				})
+				.join("\n");
+		}
+
+		async function fetchFeedSource(source) {
+			const response = await fetch(source.url, { cache: "no-store" });
+			if (!response.ok) {
+				throw new Error(`Failed to fetch RSS: ${response.status}`);
+			}
+
+			const xml = await response.text();
+			const items = pickParser(source)(xml, source);
+
+			return items.map((item) => ({
+				...item,
+				pubDate: formatNewsDate(item.pubDate),
+			}));
 		}
 
 		async function fetchOnlineNews() {
@@ -345,7 +791,7 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 				}
 			}
 			if (descEl && item.description) {
-				descEl.textContent = item.description;
+				descEl.textContent = indentNewsDescription(item.description);
 			}
 
 			return article;
@@ -421,7 +867,9 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 		function initNewsPage() {
 			const listEl = document.getElementById("news-list");
 			const loadingEl = document.getElementById("news-loading");
-			const emptyEl = document.getElementById("news-empty");
+			const emptyEl =
+				document.getElementById("no-result") ||
+				document.getElementById("no-results");
 			const loadMoreBtn = document.getElementById("news-load-more");
 			const refreshBtn = document.getElementById("news-refresh");
 			const statusEl = document.getElementById("news-status");
@@ -482,9 +930,7 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 				clearRenderedCards();
 				visibleCount = INITIAL_VISIBLE;
 
-				if (emptyEl) {
-					emptyEl.style.display = list.length === 0 ? "" : "none";
-				}
+				emptyEl?.classList.toggle("hidden", list.length > 0);
 
 				if (list.length === 0) {
 					refreshLoadMore();
@@ -495,9 +941,11 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 				cards.forEach((card, index) => {
 					card.style.display = index < visibleCount ? "" : "none";
 					listEl.appendChild(card);
+					if (index < visibleCount) {
+						setupDescriptions(card);
+					}
 				});
 
-				setupDescriptions(listEl);
 				refreshLoadMore();
 			}
 
@@ -521,9 +969,7 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 				}
 
 				setLoadingState(true);
-				if (emptyEl) {
-					emptyEl.style.display = "none";
-				}
+				emptyEl?.classList.add("hidden");
 				setStatus(refreshingLabel, "info");
 
 				try {
@@ -534,8 +980,8 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 					renderList(list);
 					setStatus("", "info");
 				} catch {
-					if (cards.length === 0 && emptyEl) {
-						emptyEl.style.display = "";
+					if (cards.length === 0) {
+						emptyEl?.classList.remove("hidden");
 					}
 					setStatus(refreshFailed, "error");
 				} finally {
@@ -552,6 +998,7 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 							const wasHidden = card.style.display === "none";
 							card.style.display = "";
 							if (wasHidden) {
+								setupDescriptions(card);
 								card.classList.remove("news-card-enter");
 								card.style.animationDelay = `${revealedIndex * 45}ms`;
 								revealedIndex += 1;
@@ -628,7 +1075,7 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 
 	.news-loading-title {
 		font-size: 0.9rem;
-		color: var(--text-secondary);
+		color: var(--content-meta);
 	}
 
 	.news-toolbar {
@@ -671,7 +1118,7 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 	.news-toolbar-title {
 		font-size: 0.92rem;
 		font-weight: 700;
-		color: color-mix(in srgb, var(--text-primary) 88%, var(--primary));
+		color: color-mix(in srgb, var(--content-meta) 88%, var(--primary));
 	}
 
 	.news-sources {
@@ -688,7 +1135,7 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 		border-radius: 999px;
 		font-size: 0.78rem;
 		text-decoration: none;
-		color: color-mix(in srgb, var(--primary) 90%, black 10%);
+		color: color-mix(in srgb, var(--primary) 82%, var(--content-meta));
 		background: color-mix(in srgb, var(--primary) 11%, transparent);
 		border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
 		transition:
@@ -737,7 +1184,7 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 	}
 
 	.news-status[data-tone="info"] {
-		color: color-mix(in srgb, var(--text-primary) 82%, var(--primary));
+		color: color-mix(in srgb, var(--content-meta) 82%, var(--primary));
 		background: color-mix(in srgb, var(--primary) 8%, transparent);
 		border-color: color-mix(in srgb, var(--primary) 22%, transparent);
 	}
@@ -845,7 +1292,7 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 		gap: 0.5rem;
 		margin-top: 0.55rem;
 		font-size: 0.78rem;
-		color: var(--text-secondary);
+		color: var(--content-meta);
 		justify-content: flex-start;
 	}
 
@@ -858,9 +1305,10 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 	.news-category-tag {
 		padding: 0.12rem 0.45rem;
 		border-radius: 999px;
-		background: rgba(0, 0, 0, 0.08);
-		border: 1px solid rgba(0, 0, 0, 0.14);
-		color: rgba(0, 0, 0, 0.7);
+		background: color-mix(in srgb, var(--content-meta) 12%, transparent);
+		border: 1px solid
+			color-mix(in srgb, var(--content-meta) 18%, transparent);
+		color: var(--content-meta);
 	}
 
 	.news-desc-wrap {
@@ -873,7 +1321,8 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 		margin: 0;
 		font-size: 0.92rem;
 		line-height: 1.8;
-		color: var(--text-secondary);
+		color: var(--content-meta);
+		white-space: pre-line;
 		max-height: 999px;
 		display: block;
 		overflow: hidden;
@@ -935,39 +1384,10 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 		border-color: color-mix(in srgb, var(--primary) 45%, transparent);
 	}
 
-	.news-empty {
-		padding: 2.5rem 1rem;
-		text-align: center;
-		border: 1px dashed
-			color-mix(in srgb, var(--text-primary) 18%, transparent);
-		border-radius: 1rem;
-		background: color-mix(in srgb, var(--text-primary) 2%, transparent);
-	}
-
-	.news-empty-title {
-		font-size: 1.03rem;
-		font-weight: 700;
-		color: var(--text-primary);
-	}
-
-	.news-empty-desc {
-		margin-top: 0.6rem;
-		font-size: 0.9rem;
-		color: var(--text-secondary);
-	}
-
-	:global(.dark) .news-toolbar-title {
-		color: color-mix(in srgb, white 85%, var(--primary));
-	}
-
 	:global(.dark) .news-source-chip {
-		color: color-mix(in srgb, white 88%, var(--primary));
+		color: color-mix(in srgb, var(--content-meta) 92%, var(--primary));
 		background: color-mix(in srgb, var(--primary) 20%, transparent);
 		border-color: color-mix(in srgb, var(--primary) 35%, transparent);
-	}
-
-	:global(.dark) .news-title {
-		color: color-mix(in srgb, var(--primary) 78%, white);
 	}
 
 	:global(.dark) .news-card {
@@ -983,23 +1403,7 @@ const loadMoreStep = Math.max(1, Number(siteConfig.news?.loadMoreStep ?? 12));
 	}
 
 	:global(.dark) .news-meta {
-		color: rgba(255, 255, 255, 0.74);
-	}
-
-	:global(.dark) .news-source-tag,
-	:global(.dark) .news-category-tag {
-		background: rgba(255, 255, 255, 0.1);
-		color: rgba(255, 255, 255, 0.86);
-	}
-
-	:global(.dark) .news-desc {
-		color: rgba(255, 255, 255, 0.85);
-	}
-
-	:global(.dark) .news-status[data-tone="error"] {
-		color: #ffb4ab;
-		background: rgba(255, 84, 73, 0.12);
-		border-color: rgba(255, 84, 73, 0.24);
+		color: var(--content-meta);
 	}
 
 	@media (max-width: 640px) {

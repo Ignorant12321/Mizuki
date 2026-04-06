@@ -49,7 +49,7 @@ export const zh_CN: Translation = {
 	[Key.newsEmptyDescription]: "可以稍后重试，或者检查 RSS 地址是否可访问。",
 	[Key.newsExpand]: "展开",
 	[Key.newsCollapse]: "收起",
-	[Key.newsLoadMore]: "展开更多新闻",
+	[Key.newsLoadMore]: "加载更多新闻",
 	[Key.newsRefresh]: "刷新新闻",
 	[Key.newsOnlineHint]: "当前为在线模式，点击刷新按钮后获取最新新闻。",
 	[Key.newsRefreshing]: "正在刷新新闻...",

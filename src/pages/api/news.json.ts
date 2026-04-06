@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import path from "path";
 
 import type { APIRoute } from "astro";
 
@@ -6,10 +7,13 @@ import { formatNewsDate } from "../../data/news";
 
 export const GET: APIRoute = async () => {
 	try {
-		const raw = await fs.readFile(
-			new URL("../../data/news-data.json", import.meta.url),
-			"utf-8",
+		const snapshotPath = path.join(
+			process.cwd(),
+			"src",
+			"data",
+			"news-data.json",
 		);
+		const raw = await fs.readFile(snapshotPath, "utf-8");
 		const parsed = JSON.parse(raw);
 		const items = Array.isArray(parsed) ? parsed : [];
 

@@ -50,7 +50,7 @@ export const ja: Translation = {
 		"しばらくしてから再試行するか、RSS URL が到達可能か確認してください。",
 	[Key.newsExpand]: "展開",
 	[Key.newsCollapse]: "折りたたむ",
-	[Key.newsLoadMore]: "ニュースをもっと表示",
+	[Key.newsLoadMore]: "もっと表示",
 	[Key.newsRefresh]: "ニュースを更新",
 	[Key.newsOnlineHint]:
 		"現在はオンラインモードです。更新ボタンを押すと最新ニュースを取得します。",

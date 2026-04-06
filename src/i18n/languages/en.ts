@@ -51,7 +51,7 @@ export const en: Translation = {
 		"Try again later, or check whether the RSS URL is reachable.",
 	[Key.newsExpand]: "Expand",
 	[Key.newsCollapse]: "Collapse",
-	[Key.newsLoadMore]: "Load more news",
+	[Key.newsLoadMore]: "Load more",
 	[Key.newsRefresh]: "Refresh news",
 	[Key.newsOnlineHint]:
 		"This page is in online mode. Click refresh to fetch the latest news.",

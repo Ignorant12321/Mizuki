@@ -79,19 +79,29 @@ export const siteConfig: SiteConfig = {
 		mode: "online",
 		title: "时语",
 		subtitle: "倾听世界之声",
-		initialVisible: 8,
-		loadMoreStep: 4,
+		initialVisible: 5,
+		loadMoreStep: 3,
 		feeds: [
+			// {
+			// 	id: "zaobao-china",
+			// 	name: "联合早报 · 中国",
+			// 	url: "https://rss.ssr.ddns-ip.net/rss?source=zaobao-china",
+			// },
+			// {
+			// 	id: "zaobao-world",
+			// 	name: "联合早报 · 国际",
+			// 	url: "https://rss.ssr.ddns-ip.net/rss?source=zaobao-world",
+			// },
 			{
-				id: "zaobao-china",
-				name: "联合早报 · 中国",
-				url: "https://rss.ssr.ddns-ip.net/rss?source=zaobao-china",
+				id: "csdn-geeknews",
+				name: "CSDN · 极客日报",
+				url: "https://rss.ssr.ddns-ip.net/rss?source=csdn-geeknews",
 			},
-			{
-				id: "zaobao-world",
-				name: "联合早报 · 国际",
-				url: "https://rss.ssr.ddns-ip.net/rss?source=zaobao-world",
-			},
+			// {
+			// 	id: "bilibili-hot",
+			// 	name: "bilibili 排行榜 · 全站",
+			// 	url: "https://rss.ssr.ddns-ip.net/rss?source=bilibili-hot",
+			// },
 		],
 	},
 
