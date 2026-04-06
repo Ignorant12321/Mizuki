@@ -109,10 +109,14 @@
 
 	<SidebarPlaylist
 		playlist={state.playlist}
+		playlists={state.playlists}
+		currentPlaylistIndex={state.currentPlaylistIndex}
+		isPlaylistLoading={state.isPlaylistLoading}
 		currentIndex={state.currentIndex}
 		isPlaying={state.isPlaying}
 		show={showPlaylist}
 		onClose={togglePlaylistView}
+		onPlaylistSourceSelect={(index) => musicPlayerStore.selectPlaylist(index)}
 		onPlaySong={playIndex}
 	/>
 </div>
@@ -122,8 +126,15 @@
 		border-radius: 1.25rem;
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
-		border: 1px solid color-mix(in srgb, var(--line-color) 65%, transparent);
-		box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+		border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--line-color));
+		background: linear-gradient(
+			180deg,
+			color-mix(in oklab, var(--primary) 7%, var(--card-bg)) 0%,
+			var(--card-bg) 36%
+		);
+		box-shadow:
+			0 0 0 1px color-mix(in oklab, var(--primary) 10%, transparent),
+			0 14px 32px color-mix(in oklab, black 16%, transparent);
 	}
 
 	:global(.dark) .fab-music-panel {
@@ -134,7 +145,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.8rem;
-		margin-bottom: 0.75rem;
+		margin-bottom: 0.82rem;
 	}
 
 	@media (max-width: 640px) {

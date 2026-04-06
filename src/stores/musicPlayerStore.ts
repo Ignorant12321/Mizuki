@@ -2,6 +2,9 @@ import Key from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 
 import {
+	DEFAULT_METING_API,
+	DEFAULT_METING_SERVER,
+	DEFAULT_METING_TYPE,
 	DEFAULT_SONG,
 	LOCAL_PLAYLIST,
 	SKIP_ERROR_DELAY,
@@ -9,10 +12,24 @@ import {
 } from "@/components/widgets/music-player/constants";
 import type { RepeatMode, Song } from "@/components/widgets/music-player/types";
 import { musicPlayerConfig } from "@/config";
+import type { MusicPlaylistConfig } from "@/types/config";
+
+export interface ResolvedPlaylistConfig {
+	name: string;
+	mode: "meting" | "local";
+	meting_api: string;
+	id: string;
+	server: string;
+	type: string;
+}
 
 export interface MusicPlayerState {
 	currentSong: Song;
 	playlist: Song[];
+	playlists: ResolvedPlaylistConfig[];
+	currentPlaylistIndex: number;
+	currentPlaylistName: string;
+	isPlaylistLoading: boolean;
 	currentIndex: number;
 	isPlaying: boolean;
 	isLoading: boolean;
@@ -49,6 +66,8 @@ class MusicPlayerStore {
 	private state: MusicPlayerState;
 	private isInitialized = false;
 	private unregisterInteraction: (() => void) | undefined;
+	private playlistRequestToken = 0;
+	private playlistCache = new Map<string, Song[]>();
 	private listeners = new Set<(state: MusicPlayerState) => void>();
 
 	constructor() {
@@ -59,6 +78,10 @@ class MusicPlayerStore {
 		return {
 			currentSong: { ...DEFAULT_SONG },
 			playlist: [],
+			playlists: [],
+			currentPlaylistIndex: 0,
+			currentPlaylistName: "",
+			isPlaylistLoading: false,
 			currentIndex: 0,
 			isPlaying: false,
 			isLoading: false,
@@ -67,7 +90,7 @@ class MusicPlayerStore {
 			volume: 0.7,
 			isMuted: false,
 			isShuffled: false,
-			isRepeating: 0,
+			isRepeating: 2,
 			showPlaylist: false,
 			errorMessage: "",
 			showError: false,
@@ -83,6 +106,9 @@ class MusicPlayerStore {
 			...this.state,
 			currentSong: { ...this.state.currentSong },
 			playlist: this.state.playlist.map((song) => ({ ...song })),
+			playlists: this.state.playlists.map((playlist) => ({
+				...playlist,
+			})),
 		};
 	}
 
@@ -246,40 +272,173 @@ class MusicPlayerStore {
 	}
 
 	private async loadPlaylist(): Promise<void> {
-		const mode = musicPlayerConfig.mode ?? "meting";
-		const meting_api =
-			musicPlayerConfig.meting_api ??
-			"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r";
-		const meting_id = musicPlayerConfig.id ?? "14164869977";
-		const meting_server = musicPlayerConfig.server ?? "netease";
-		const meting_type = musicPlayerConfig.type ?? "playlist";
+		const playlists = this.normalizePlaylists(musicPlayerConfig.playlists);
+		this.state.playlists = playlists;
+		this.state.currentPlaylistIndex = 0;
+		this.state.currentPlaylistName = playlists[0]?.name ?? "";
 
-		if (mode === "meting") {
-			await this.fetchMetingPlaylist(
-				meting_api,
-				meting_server,
-				meting_type,
-				meting_id,
+		if (playlists.length === 0) {
+			this.showError(i18n(Key.musicPlayerErrorNoPlaylists));
+			this.broadcastState();
+			return;
+		}
+
+		await this.loadPlaylistAtIndex(0, false);
+	}
+
+	private normalizePlaylists(
+		playlists: MusicPlaylistConfig[] | undefined,
+	): ResolvedPlaylistConfig[] {
+		return (playlists ?? [])
+			.filter((playlist) => !!playlist?.name)
+			.map((playlist) => ({
+				name: playlist.name,
+				mode: playlist.mode ?? "meting",
+				meting_api: playlist.meting_api ?? DEFAULT_METING_API,
+				id: playlist.id ?? "",
+				server: playlist.server ?? DEFAULT_METING_SERVER,
+				type: playlist.type ?? DEFAULT_METING_TYPE,
+			}));
+	}
+
+	private cloneSongs(songs: Song[]): Song[] {
+		return songs.map((song) => ({ ...song }));
+	}
+
+	private async loadPlaylistAtIndex(
+		index: number,
+		autoPlay: boolean,
+	): Promise<void> {
+		const source = this.state.playlists[index];
+		if (!source) {
+			return;
+		}
+
+		this.state.currentPlaylistIndex = index;
+		this.state.currentPlaylistName = source.name;
+		this.state.isPlaylistLoading = true;
+		this.state.isLoading = false;
+		this.broadcastState();
+
+		if (this.audio) {
+			this.audio.pause();
+		}
+
+		const shouldAutoPlay = autoPlay;
+		const requestToken = ++this.playlistRequestToken;
+
+		if (source.mode === "local") {
+			const cacheKey = `${source.mode}:${source.meting_api}:${source.server}:${source.type}:${source.id}`;
+			this.playlistCache.set(cacheKey, this.cloneSongs(LOCAL_PLAYLIST));
+			this.applyPlaylistSongs(
+				index,
+				this.cloneSongs(LOCAL_PLAYLIST),
+				shouldAutoPlay,
 			);
-		} else {
-			this.loadLocalPlaylist();
+			this.state.isPlaylistLoading = false;
+			this.broadcastState();
+			return;
+		}
+
+		const cacheKey = `${source.mode}:${source.meting_api}:${source.server}:${source.type}:${source.id}`;
+		const cachedSongs = this.playlistCache.get(cacheKey);
+		if (cachedSongs) {
+			this.applyPlaylistSongs(
+				index,
+				this.cloneSongs(cachedSongs),
+				shouldAutoPlay,
+			);
+			this.state.isPlaylistLoading = false;
+			this.broadcastState();
+			return;
+		}
+
+		this.state.playlist = [];
+		this.state.currentIndex = 0;
+		this.resetCurrentTrack();
+		this.broadcastState();
+
+		const songs = await this.fetchMetingSongs(source, requestToken);
+		if (requestToken !== this.playlistRequestToken) {
+			return;
+		}
+
+		if (!songs) {
+			this.state.isPlaylistLoading = false;
+			this.broadcastState();
+			return;
+		}
+
+		this.playlistCache.set(cacheKey, this.cloneSongs(songs));
+		this.applyPlaylistSongs(index, songs, shouldAutoPlay);
+		this.state.isPlaylistLoading = false;
+		this.broadcastState();
+	}
+
+	selectPlaylist(index: number): void {
+		if (index < 0 || index >= this.state.playlists.length) {
+			return;
+		}
+
+		if (
+			index === this.state.currentPlaylistIndex &&
+			this.state.playlist.length > 0
+		) {
+			return;
+		}
+
+		const shouldAutoPlay = this.state.isPlaying;
+		void this.loadPlaylistAtIndex(index, shouldAutoPlay);
+	}
+
+	private applyPlaylistSongs(
+		index: number,
+		songs: Song[],
+		autoPlay: boolean,
+	): void {
+		this.state.playlist = this.cloneSongs(songs);
+		this.state.currentIndex = 0;
+		if (this.state.playlist.length === 0) {
+			this.resetCurrentTrack();
+			this.showError(i18n(Key.musicPlayerErrorEmpty));
+			return;
+		}
+		this.loadSong(this.state.playlist[0], autoPlay);
+		this.state.currentPlaylistIndex = index;
+		this.state.currentPlaylistName =
+			this.state.playlists[index]?.name ?? this.state.currentPlaylistName;
+	}
+
+	private resetCurrentTrack(): void {
+		this.state.currentSong = { ...DEFAULT_SONG };
+		this.state.currentIndex = 0;
+		this.state.currentTime = 0;
+		this.state.duration = 0;
+		this.state.isLoading = false;
+		this.state.willAutoPlay = false;
+		if (this.audio) {
+			this.audio.removeAttribute("src");
+			this.audio.load();
 		}
 	}
 
-	private async fetchMetingPlaylist(
-		api: string,
-		server: string,
-		type: string,
-		id: string,
-	): Promise<void> {
-		if (!api || !id) {
-			return;
+	private async fetchMetingSongs(
+		source: ResolvedPlaylistConfig,
+		requestToken: number,
+	): Promise<Song[] | null> {
+		const { meting_api, server, type, id } = source;
+		if (!meting_api || !id) {
+			this.state.isLoading = false;
+			if (requestToken === this.playlistRequestToken) {
+				this.showError(i18n(Key.musicPlayerErrorPlaylist));
+			}
+			return null;
 		}
 
 		this.state.isLoading = true;
 		this.broadcastState();
 
-		const apiUrl = api
+		const apiUrl = meting_api
 			.replace(":server", server)
 			.replace(":type", type)
 			.replace(":id", id)
@@ -292,19 +451,14 @@ class MusicPlayerStore {
 				throw new Error("meting api error");
 			}
 			const list: any[] = await res.json();
-			this.state.playlist = list.map((song) =>
-				this.convertMetingSong(song),
-			);
+			return list.map((song) => this.convertMetingSong(song));
+		} catch (_error) {
 			this.state.isLoading = false;
-
-			if (this.state.playlist.length > 0) {
-				this.loadSong(this.state.playlist[0], false);
+			if (requestToken === this.playlistRequestToken) {
+				this.showError(i18n(Key.musicPlayerErrorPlaylist));
 			}
-		} catch (e) {
-			this.showError(i18n(Key.musicPlayerErrorPlaylist));
-			this.state.isLoading = false;
+			return null;
 		}
-		this.broadcastState();
 	}
 
 	private convertMetingSong(song: any): Song {
@@ -332,15 +486,6 @@ class MusicPlayerStore {
 			url: song.url ?? "",
 			duration: dur,
 		};
-	}
-
-	private loadLocalPlaylist(): void {
-		this.state.playlist = [...LOCAL_PLAYLIST];
-		if (this.state.playlist.length === 0) {
-			this.showError("本地播放列表为空");
-		} else {
-			this.loadSong(this.state.playlist[0], false);
-		}
 	}
 
 	private loadSong(song: Song, autoPlay = true): void {

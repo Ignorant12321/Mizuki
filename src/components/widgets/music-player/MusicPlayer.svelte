@@ -47,6 +47,10 @@
 		musicPlayerStore.playIndex(index);
 	}
 
+	function selectPlaylist(index: number) {
+		musicPlayerStore.selectPlaylist(index);
+	}
+
 	function setProgress(event: MouseEvent) {
 		const progressElement = event.currentTarget as HTMLElement | null;
 		if (!progressElement) {
@@ -305,10 +309,14 @@
 
 			<Playlist
 				playlist={state.playlist}
+				playlists={state.playlists}
+				currentPlaylistIndex={state.currentPlaylistIndex}
+				isPlaylistLoading={state.isPlaylistLoading}
 				currentIndex={state.currentIndex}
 				isPlaying={state.isPlaying}
 				show={state.showPlaylist}
 				onClose={togglePlaylist}
+				onPlaylistSourceSelect={selectPlaylist}
 				onPlaySong={playIndex}
 			/>
 		</div>

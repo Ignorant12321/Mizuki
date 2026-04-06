@@ -4,7 +4,6 @@
 	import type { MusicPlayerState } from "@/stores/musicPlayerStore";
 	import { musicPlayerStore } from "@/stores/musicPlayerStore";
 
-	import type { Song } from "../music-player/types";
 	import SidebarControls from "./components/SidebarControls.svelte";
 	import SidebarCover from "./components/SidebarCover.svelte";
 	import SidebarPlaylist from "./components/SidebarPlaylist.svelte";
@@ -108,15 +107,23 @@
 
 	<SidebarPlaylist
 		playlist={state.playlist}
+		playlists={state.playlists}
+		currentPlaylistIndex={state.currentPlaylistIndex}
+		isPlaylistLoading={state.isPlaylistLoading}
 		currentIndex={state.currentIndex}
 		isPlaying={state.isPlaying}
 		show={showPlaylist}
 		onClose={togglePlaylistView}
+		onPlaylistSourceSelect={(index) => musicPlayerStore.selectPlaylist(index)}
 		onPlaySong={playIndex}
 	/>
 </div>
 
 <style>
+	.music-sidebar-widget {
+		padding: 0.12rem 0.05rem 0.02rem;
+	}
+
 	@media (max-width: 520px) {
 		.music-sidebar-widget {
 			min-width: 0;
