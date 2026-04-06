@@ -21,7 +21,8 @@ export const SWUP_SELECTORS = {
 		"#navbar-wrapper",
 		"#sidebar",
 		".music-player",
-		"#pio-container",
+		"#waifu",
+		"#waifu-toggle",
 	],
 
 	// Banner 相关
@@ -126,7 +127,7 @@ export interface PerformanceConfig {
 		maxParticles: number; // 桌面端最大粒子数
 		maxParticlesMobile: number; // 移动端最大粒子数
 	};
-	// Live2D/Pio 配置
+	// Live2D 配置
 	live2D: {
 		enabled: boolean;
 		hideOnMobile: boolean;

@@ -2,7 +2,7 @@
 export * from "./atoms";
 
 // Features - 功能性组件
-export * from "./features/pio";
+export * from "./features/live2d";
 export * from "./features/posts";
 export * from "./features/projects";
 export * from "./features/settings";

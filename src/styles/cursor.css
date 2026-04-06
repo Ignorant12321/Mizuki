@@ -19,7 +19,8 @@ button,
 .tk-action,
 .tk-avatar,
 .tk-submit-action-icon,
-.pio-action {
+#waifu-tool span,
+#waifu-toggle {
   cursor: url("/assets/cursor/pointer.cur"), pointer !important;
 }
 
@@ -31,12 +32,12 @@ textarea {
   cursor: url("/assets/cursor/input.cur"), text !important;
 }
 
-#pio,
+#live2d,
 .mermaid-zoom-wrapper {
   cursor: url("/assets/cursor/grab.cur"), grab !important;
 }
 
-#pio:active,
+#live2d:active,
 .mermaid-zoom-wrapper:active {
   cursor: url("/assets/cursor/grabing.cur"), grabbing !important;
 }

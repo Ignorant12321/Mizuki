@@ -776,29 +776,48 @@ export const sakuraConfig: SakuraConfig = {
 	zIndex: 100, // 层级，确保樱花在合适的层级显示
 };
 
-// Pio 看板娘配置
-export const pioConfig: import("./types/config").PioConfig = {
-	enable: true, // 禁用看板娘以提升性能
-	models: ["/pio/models/pio/model.json"], // 默认模型路径
-	position: "left", // 模型位置
-	width: 280, // 默认宽度
-	height: 250, // 默认高度
-	mode: "draggable", // 默认为可拖拽模式
-	hiddenOnMobile: true, // 默认在移动设备上隐藏
-	dialog: {
-		welcome: "Welcome to Mizuki Website!", // 欢迎词
-		touch: [
-			"What are you doing?",
-			"Stop touching me!",
-			"HENTAI!",
-			"Don't bully me like that!",
-		], // 触摸提示
-		home: "Click here to go back to homepage!", // 首页提示
-		skin: ["Want to see my new outfit?", "The new outfit looks great~"], // 换装提示
-		close: "QWQ See you next time~", // 关闭提示
-		link: "https://github.com/LyraVoid/Mizuki", // 关于链接
+// Live2D 看板娘配置
+export const live2dConfig = {
+	enable: true,
+	mobile: true,
+	drag: false,
+	logLevel: "warn",
+	modelId: 5, // 初始模型 ID（仅在 localStorage 没有 modelId 时生效）
+	modelTexturesId: 12, // 初始衣服/贴图 ID（仅在 localStorage 没有 modelTexturesId 时生效）
+	tools: [
+		"home",
+		"hitokoto",
+		// "asteroids",
+		"switch-model",
+		"switch-texture",
+		"photo",
+		"quit",
+	],
+	paths: {
+		waifuCss: "/assets/live2d/waifu.css", // Live2D 样式文件（对应：src/layouts/Layout.astro）
+		waifuTipsJs: "/assets/live2d/waifu-tips.js", // Live2D 主脚本（对应：src/components/features/live2d/Live2D.svelte）
+		waifuTipsJson: "/assets/live2d/waifu-tips.json", // 提示词与模型清单（对应：src/components/features/live2d/Live2D.svelte -> waifuPath）
+		cubism2Core: "/assets/live2d/live2d.min.js", // Cubism2 内核（对应：src/components/features/live2d/Live2D.svelte -> cubism2Path）
+		cubism5Core:
+			"https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js", // Cubism5 内核（对应：src/components/features/live2d/Live2D.svelte -> cubism5Path）
+		cdnPath: "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/", // 模型 CDN 根路径（对应：src/components/features/live2d/Live2D.svelte -> cdnPath）。默认留空，可直接注释此行保持本地/JSON 模式。
+		// 优先级：cdnPath 非空时，模型走 CDN 的 model_list.json；
+		// 否则走 waifuTipsJson 内 models[].paths。
+		// 注意：waifuTipsJson 的提示词/交互文案始终生效，不受 cdnPath 影响。
+		// 衣服切换说明：modelTexturesId 由 localStorage 优先；无缓存时使用上方 modelTexturesId。
 	},
-};
+	position: {
+		desktop: { side: "left", offset: "1rem", bottom: "0" },
+		mobile: { side: "left", offset: "0.5rem", bottom: "0" },
+		toggle: {
+			offset: "0",
+			hiddenOffset: "-100px",
+			activeOffset: "-45px",
+			hoverOffset: "-35px",
+			mobileActiveOffset: "-30px",
+		},
+	},
+} as const;
 
 // 相关文章配置
 export const relatedPostsConfig: RelatedPostsConfig = {
@@ -820,7 +839,7 @@ export const widgetConfigs = {
 	layout: sidebarLayoutConfig,
 	sakura: sakuraConfig,
 	fullscreenWallpaper: fullscreenWallpaperConfig,
-	pio: pioConfig,
+	live2d: live2dConfig,
 	share: shareConfig,
 	relatedPosts: relatedPostsConfig,
 	randomPosts: randomPostsConfig,
