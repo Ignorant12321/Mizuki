@@ -1,0 +1,587 @@
+---
+import { externalLinkConfirmConfig } from "@/config";
+import { externalLinkConfirmWhiteList } from "@/data/ExternalLinkConfirm-data";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+---
+
+{
+	externalLinkConfirmConfig.enable && (
+		<div id="external-link-confirm-root" class="ext-link-confirm-root" hidden>
+			<div id="external-link-confirm-mask" class="ext-link-confirm-mask"></div>
+			<div class="ext-link-confirm-panel-wrap">
+				<section
+					id="external-link-confirm-panel"
+					class="ext-link-confirm-panel"
+				>
+					{externalLinkConfirmConfig.background && (
+						<img
+							class="ext-link-confirm-bg"
+							src={externalLinkConfirmConfig.background}
+							alt="external link confirm background"
+							referrerpolicy="no-referrer"
+						/>
+					)}
+					<div class="ext-link-confirm-overlay"></div>
+					<div class="ext-link-confirm-content">
+						<div class="ext-link-confirm-head">
+							{externalLinkConfirmConfig.iconSvg && (
+								<img
+									class="ext-link-confirm-icon"
+									src={externalLinkConfirmConfig.iconSvg}
+									alt="external link confirm icon"
+								/>
+							)}
+							<h3 class="ext-link-confirm-title">
+								{externalLinkConfirmConfig.title}
+							</h3>
+						</div>
+						<p class="ext-link-confirm-desc">
+							{externalLinkConfirmConfig.description}
+						</p>
+						<div class="ext-link-confirm-url-wrap">
+							<p
+								id="external-link-confirm-url"
+								class="ext-link-confirm-url"
+							></p>
+							<button
+								type="button"
+								id="external-link-confirm-copy"
+								class="ext-link-confirm-copy-btn"
+								title={i18n(I18nKey.copyLink)}
+								aria-label={i18n(I18nKey.copyLink)}
+							>
+								<svg
+									class="ext-link-confirm-copy-icon ext-link-confirm-copy-icon-copy"
+									viewBox="0 0 24 24"
+									aria-hidden="true"
+								>
+									<path
+										fill="currentColor"
+										d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12zM19 5H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m0 16H8V7h11z"
+									></path>
+								</svg>
+								<svg
+									class="ext-link-confirm-copy-icon ext-link-confirm-copy-icon-success"
+									viewBox="0 0 24 24"
+									aria-hidden="true"
+								>
+									<path
+										fill="currentColor"
+										d="M9 16.17L4.83 12 3.41 13.41 9 19l12-12-1.41-1.41z"
+									></path>
+								</svg>
+								<span class="ext-link-confirm-copy-text">
+									{i18n(I18nKey.copied)}
+								</span>
+							</button>
+						</div>
+						<p class="ext-link-confirm-warning">
+							{externalLinkConfirmConfig.warningText}
+						</p>
+						<div class="ext-link-confirm-actions">
+							<button
+								type="button"
+								id="external-link-confirm-cancel"
+								class="ext-link-confirm-btn ext-link-confirm-btn-cancel"
+							>
+								{externalLinkConfirmConfig.cancelText}
+							</button>
+							<button
+								type="button"
+								id="external-link-confirm-ok"
+								class="ext-link-confirm-btn ext-link-confirm-btn-ok"
+							>
+								{externalLinkConfirmConfig.confirmText}
+							</button>
+						</div>
+					</div>
+				</section>
+			</div>
+		</div>
+	)
+}
+
+<script
+	is:inline
+	define:vars={{
+		whiteListSite: externalLinkConfirmWhiteList.whiteListSite,
+		whiteListPage: externalLinkConfirmWhiteList.whiteListPage,
+		copyLinkText: i18n(I18nKey.copyLink),
+		copiedText: i18n(I18nKey.copied),
+	}}
+>
+	(() => {
+		const stateKey = "__mizukiExternalLinkConfirm";
+		const existingState = window[stateKey];
+		if (existingState && existingState.initialized) {
+			existingState.syncDom?.();
+			return;
+		}
+
+		const state = {
+			initialized: true,
+			pendingUrl: "",
+			pendingTarget: "_blank",
+			isOpening: false,
+			domBound: false,
+			copyResetTimer: 0,
+			root: null,
+			urlEl: null,
+			syncDom: null,
+		};
+		window[stateKey] = state;
+
+		const normalizePath = (value) => {
+			if (!value) {
+				return "/";
+			}
+			return value.startsWith("/") ? value : `/${value}`;
+		};
+
+		const isPageWhiteListed = () => {
+			const currentPath = window.location.pathname || "/";
+			return whiteListPage.some((item) => {
+				const target = normalizePath(String(item).trim());
+				if (target === "/") {
+					return currentPath === "/";
+				}
+				return (
+					currentPath === target ||
+					currentPath.startsWith(target.endsWith("/") ? target : `${target}/`)
+				);
+			});
+		};
+
+		const isSiteWhiteListed = (targetUrl) => {
+			return whiteListSite.some((item) => {
+				const raw = String(item).trim().toLowerCase();
+				if (!raw) {
+					return false;
+				}
+
+				try {
+					const refUrl = new URL(raw.includes("://") ? raw : `https://${raw}`);
+					const hostname = refUrl.hostname.toLowerCase();
+					return (
+						targetUrl.hostname.toLowerCase() === hostname ||
+						targetUrl.hostname.toLowerCase().endsWith(`.${hostname}`) ||
+						targetUrl.href.toLowerCase().startsWith(raw)
+					);
+				} catch {
+					return (
+						targetUrl.hostname.toLowerCase() === raw ||
+						targetUrl.hostname.toLowerCase().endsWith(`.${raw}`) ||
+						targetUrl.href.toLowerCase().startsWith(raw)
+					);
+				}
+			});
+		};
+
+		const closeModal = () => {
+			if (!state.root) {
+				return;
+			}
+			state.root.hidden = true;
+			state.pendingUrl = "";
+			state.pendingTarget = "_blank";
+			const copyButton = document.getElementById("external-link-confirm-copy");
+			copyButton?.classList.remove("is-copied");
+			copyButton?.setAttribute("title", copyLinkText);
+			copyButton?.setAttribute("aria-label", copyLinkText);
+			if (state.copyResetTimer) {
+				window.clearTimeout(state.copyResetTimer);
+				state.copyResetTimer = 0;
+			}
+		};
+
+		const openModal = (url, target) => {
+			if (!state.root || !state.urlEl) {
+				return;
+			}
+			state.pendingUrl = url;
+			state.pendingTarget = target || "_self";
+			state.urlEl.textContent = url;
+			state.root.hidden = false;
+		};
+
+		const openPendingLink = () => {
+			if (!state.pendingUrl || state.isOpening) {
+				return;
+			}
+			state.isOpening = true;
+			const target = state.pendingTarget || "_self";
+			if (target === "_self") {
+				window.location.href = state.pendingUrl;
+			} else {
+				window.open(state.pendingUrl, target, "noopener,noreferrer");
+			}
+			closeModal();
+			window.setTimeout(() => {
+				state.isOpening = false;
+			}, 400);
+		};
+
+		const getAnchorFromEvent = (event) => {
+			const target = event.target;
+			if (!(target instanceof Element)) {
+				return null;
+			}
+			const anchor = target.closest("a");
+			if (!(anchor instanceof HTMLAnchorElement)) {
+				return null;
+			}
+			return anchor;
+		};
+
+		const shouldIgnoreAnchor = (anchor) => {
+			if (!anchor.href || anchor.hasAttribute("download")) {
+				return true;
+			}
+			if (anchor.dataset.externalConfirmIgnore === "true") {
+				return true;
+			}
+			const rawHref = anchor.getAttribute("href") || "";
+			if (!rawHref || rawHref.startsWith("#")) {
+				return true;
+			}
+			return false;
+		};
+
+		const handleDocumentClick = (event) => {
+			if (
+				event.defaultPrevented ||
+				event.button !== 0 ||
+				event.metaKey ||
+				event.ctrlKey ||
+				event.shiftKey ||
+				event.altKey
+			) {
+				return;
+			}
+
+			if (isPageWhiteListed()) {
+				return;
+			}
+
+			const anchor = getAnchorFromEvent(event);
+			if (!anchor || shouldIgnoreAnchor(anchor)) {
+				return;
+			}
+
+			let targetUrl = null;
+			try {
+				targetUrl = new URL(anchor.href, window.location.href);
+			} catch {
+				return;
+			}
+
+			if (!targetUrl || !/^https?:$/i.test(targetUrl.protocol)) {
+				return;
+			}
+			if (targetUrl.origin === window.location.origin) {
+				return;
+			}
+			if (isSiteWhiteListed(targetUrl)) {
+				return;
+			}
+
+			event.preventDefault();
+			event.stopPropagation();
+			openModal(targetUrl.href, anchor.target || "_self");
+		};
+
+		const bindDom = () => {
+			const nextRoot = document.getElementById("external-link-confirm-root");
+			const nextUrlEl = document.getElementById("external-link-confirm-url");
+			const sameRoot = state.root === nextRoot && state.domBound;
+
+			state.root = nextRoot;
+			state.urlEl = nextUrlEl;
+
+			if (sameRoot) {
+				return;
+			}
+
+			const cancelButton = document.getElementById(
+				"external-link-confirm-cancel",
+			);
+			const okButton = document.getElementById("external-link-confirm-ok");
+			const copyButton = document.getElementById("external-link-confirm-copy");
+			const mask = document.getElementById("external-link-confirm-mask");
+			const panel = document.getElementById("external-link-confirm-panel");
+			const panelWrap = panel?.parentElement;
+
+			cancelButton?.addEventListener("click", closeModal);
+			okButton?.addEventListener("click", openPendingLink);
+			mask?.addEventListener("click", closeModal);
+			panelWrap?.addEventListener("click", (event) => {
+				if (event.target === panelWrap) {
+					closeModal();
+				}
+			});
+			copyButton?.addEventListener("click", async () => {
+				if (!state.pendingUrl) {
+					return;
+				}
+				const showCopiedState = () => {
+					copyButton.classList.add("is-copied");
+					copyButton.setAttribute("title", copiedText);
+					copyButton.setAttribute("aria-label", copiedText);
+					if (state.copyResetTimer) {
+						window.clearTimeout(state.copyResetTimer);
+					}
+					state.copyResetTimer = window.setTimeout(() => {
+						copyButton.classList.remove("is-copied");
+						copyButton.setAttribute("title", copyLinkText);
+						copyButton.setAttribute("aria-label", copyLinkText);
+						state.copyResetTimer = 0;
+					}, 1600);
+				};
+				try {
+					await navigator.clipboard.writeText(state.pendingUrl);
+					showCopiedState();
+				} catch {
+					const textArea = document.createElement("textarea");
+					textArea.value = state.pendingUrl;
+					textArea.setAttribute("readonly", "");
+					textArea.style.position = "fixed";
+					textArea.style.opacity = "0";
+					document.body.appendChild(textArea);
+					textArea.select();
+					document.execCommand("copy");
+					document.body.removeChild(textArea);
+					showCopiedState();
+				}
+			});
+			state.domBound = true;
+		};
+
+		state.syncDom = bindDom;
+		bindDom();
+		document.addEventListener("click", handleDocumentClick, true);
+		document.addEventListener("keydown", (event) => {
+			if (event.key === "Escape") {
+				closeModal();
+			}
+		});
+	})();
+</script>
+
+<style>
+	.ext-link-confirm-root {
+		position: fixed;
+		inset: 0;
+		z-index: 9999;
+	}
+
+	.ext-link-confirm-mask {
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.55);
+		backdrop-filter: blur(4px);
+	}
+
+	.ext-link-confirm-panel-wrap {
+		position: relative;
+		display: flex;
+		height: 100%;
+		width: 100%;
+		align-items: center;
+		justify-content: center;
+		padding: 16px;
+	}
+
+	.ext-link-confirm-panel {
+		position: relative;
+		overflow: hidden;
+		width: min(560px, 100%);
+		border-radius: 16px;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		background: rgba(14, 21, 38, 0.92);
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+	}
+
+	.ext-link-confirm-bg {
+		position: absolute;
+		inset: 0;
+		height: 100%;
+		width: 100%;
+		object-fit: cover;
+		filter: blur(2px);
+		transform: scale(1.06);
+	}
+
+	.ext-link-confirm-overlay {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			180deg,
+			rgba(10, 15, 28, 0.78) 0%,
+			rgba(10, 15, 28, 0.92) 100%
+		);
+	}
+
+	.ext-link-confirm-content {
+		position: relative;
+		padding: 20px;
+		color: color-mix(in oklab, var(--card-bg) 8%, #fff 92%);
+	}
+
+	.ext-link-confirm-head {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 10px;
+		width: 100%;
+	}
+
+	.ext-link-confirm-icon {
+		width: 42px;
+		height: 42px;
+		flex-shrink: 0;
+	}
+
+	.ext-link-confirm-title {
+		font-size: 1.2rem;
+		font-weight: 700;
+		line-height: 1.3;
+		margin: 0;
+		color: var(--primary);
+		text-align: center;
+	}
+
+	.ext-link-confirm-desc {
+		margin-top: 8px;
+		font-size: 0.92rem;
+		opacity: 0.92;
+		text-align: center;
+	}
+
+	.ext-link-confirm-url-wrap {
+		margin-top: 10px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 10px;
+		border-radius: 14px;
+		background: color-mix(in oklab, var(--card-bg) 92%, #fff 8%);
+		border: 1px solid var(--line-divider);
+	}
+
+	.ext-link-confirm-url {
+		margin: 0;
+		max-height: 84px;
+		overflow: auto;
+		word-break: break-all;
+		flex: 1;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+			"Liberation Mono", "Courier New", monospace;
+		font-size: 0.82rem;
+		color: color-mix(in oklab, var(--primary) 62%, var(--btn-content) 38%);
+	}
+
+	.ext-link-confirm-copy-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		width: auto;
+		min-width: 30px;
+		height: 30px;
+		padding: 0 8px;
+		border-radius: 8px;
+		border: 0;
+		background: color-mix(in oklab, var(--primary) 10%, var(--btn-regular-bg) 90%);
+		color: var(--primary);
+		cursor: pointer;
+		transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+	}
+
+	.ext-link-confirm-copy-btn:hover {
+		background: color-mix(in oklab, var(--primary) 18%, var(--btn-regular-bg) 82%);
+	}
+
+	.ext-link-confirm-copy-btn:active {
+		transform: scale(0.95);
+	}
+
+	.ext-link-confirm-copy-icon {
+		width: 18px;
+		height: 18px;
+	}
+
+	.ext-link-confirm-copy-icon-success,
+	.ext-link-confirm-copy-text {
+		display: none;
+	}
+
+	.ext-link-confirm-copy-text {
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	.ext-link-confirm-copy-btn.is-copied {
+		color: var(--primary);
+		background: color-mix(in oklab, var(--primary) 18%, var(--btn-regular-bg) 82%);
+	}
+
+	.ext-link-confirm-copy-btn.is-copied .ext-link-confirm-copy-icon-copy {
+		display: none;
+	}
+
+	.ext-link-confirm-copy-btn.is-copied .ext-link-confirm-copy-icon-success,
+	.ext-link-confirm-copy-btn.is-copied .ext-link-confirm-copy-text {
+		display: block;
+	}
+
+	.ext-link-confirm-warning {
+		margin-top: 10px;
+		font-size: 0.82rem;
+		color: color-mix(in oklab, var(--primary) 88%, #ffffff 12%);
+		text-align: center;
+	}
+
+	.ext-link-confirm-actions {
+		margin-top: 16px;
+		display: flex;
+		justify-content: flex-end;
+		gap: 10px;
+	}
+
+	.ext-link-confirm-btn {
+		border: 0;
+		border-radius: 999px;
+		padding: 7px 14px;
+		font-size: 0.86rem;
+		cursor: pointer;
+		transition: transform 0.15s ease, opacity 0.15s ease;
+	}
+
+	.ext-link-confirm-btn:hover {
+		opacity: 0.9;
+	}
+
+	.ext-link-confirm-btn:active {
+		transform: scale(0.96);
+	}
+
+	.ext-link-confirm-btn-cancel {
+		background: var(--btn-regular-bg);
+		color: var(--btn-content);
+	}
+
+	.ext-link-confirm-btn-ok {
+		background: var(--primary);
+		color: #ffffff;
+	}
+
+	:global(html[data-theme*="dark"]) .ext-link-confirm-btn-ok {
+		color: var(--deep-text);
+	}
+	@media (max-width: 640px) {
+		.ext-link-confirm-content {
+			padding: 16px;
+		}
+	}
+</style>

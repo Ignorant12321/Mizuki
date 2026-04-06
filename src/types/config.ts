@@ -597,6 +597,20 @@ export interface ClickEffectConfig {
 }
 
 /**
+ * 外链二次确认弹窗配置
+ */
+export interface ExternalLinkConfirmConfig {
+	enable: boolean; // 是否启用外链确认功能
+	title: string; // 弹窗标题
+	description: string; // 描述文本（会在后面拼接目标地址）
+	warningText: string; // 警告文本
+	confirmText: string; // 确认按钮文本
+	cancelText: string; // 取消按钮文本
+	background?: string; // 背景图片地址（可选）
+	iconSvg?: string; // 图标地址（可选）
+}
+
+/**
  * 第三方统计配置（可能影响 Lighthouse 评分）
  */
 export interface ThirdPartyAnalyticsConfig {

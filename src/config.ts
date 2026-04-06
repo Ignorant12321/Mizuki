@@ -3,6 +3,7 @@
 	ClickEffectConfig,
 	CommentConfig,
 	ExpressiveCodeConfig,
+	ExternalLinkConfirmConfig,
 	FooterConfig,
 	FullscreenWallpaperConfig,
 	LicenseConfig,
@@ -33,6 +34,22 @@ export const clickEffectConfig: ClickEffectConfig = {
 			// "[data-no-click-effect]",
 		],
 	},
+};
+
+// 外链二次确认弹窗配置
+export const externalLinkConfirmConfig: ExternalLinkConfirmConfig = {
+	enable: true, // 是否启用外部链接确认功能
+	title: "喂！要出站啦！",
+	description: "要探险未知世界吗？目标地址是：",
+	warningText: "外面的世界很危险，大灰狼出没警告！",
+	confirmText: "我意已决",
+	cancelText: "点错了",
+	background:
+		"https://api.nekosapi.com/v4/images/random/file?rating=suggestive&10",
+	iconSvg: "/assets/icon/ExternLinkIcon.svg",
+	// 白名单在src/data/ExternalLinkConfirm-data.ts文件中配置
+	// whiteListSite: [],
+	// whiteListPage: [],
 };
 
 // 定义站点语言
