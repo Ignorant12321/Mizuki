@@ -133,6 +133,8 @@ import { i18n } from "@/i18n/translation";
 			isOpening: false,
 			domBound: false,
 			copyResetTimer: 0,
+			hideTimer: 0,
+			modalSeq: 0,
 			root: null,
 			urlEl: null,
 			syncDom: null,
@@ -195,29 +197,61 @@ import { i18n } from "@/i18n/translation";
 			if (!state.root) {
 				return;
 			}
-			state.root.hidden = true;
-			state.pendingUrl = "";
-			state.pendingTarget = "_blank";
-			const copyButton = document.getElementById(
-				"external-link-confirm-copy",
-			);
-			copyButton?.classList.remove("is-copied");
-			copyButton?.setAttribute("title", copyLinkText);
-			copyButton?.setAttribute("aria-label", copyLinkText);
-			if (state.copyResetTimer) {
-				window.clearTimeout(state.copyResetTimer);
-				state.copyResetTimer = 0;
+			state.modalSeq += 1;
+			state.root.classList.remove("is-open");
+			if (state.hideTimer) {
+				window.clearTimeout(state.hideTimer);
 			}
+			state.hideTimer = window.setTimeout(() => {
+				if (state.root && !state.root.classList.contains("is-open")) {
+					state.root.hidden = true;
+					state.pendingUrl = "";
+					state.pendingTarget = "_blank";
+					const copyButton = document.getElementById(
+						"external-link-confirm-copy",
+					);
+					copyButton?.classList.remove("is-copied");
+					copyButton?.setAttribute("title", copyLinkText);
+					copyButton?.setAttribute("aria-label", copyLinkText);
+					if (state.copyResetTimer) {
+						window.clearTimeout(state.copyResetTimer);
+						state.copyResetTimer = 0;
+					}
+				}
+				state.hideTimer = 0;
+			}, 240);
 		};
 
 		const openModal = (url, target) => {
 			if (!state.root || !state.urlEl) {
 				return;
 			}
+			const nextSeq = state.modalSeq + 1;
+			state.modalSeq = nextSeq;
+			if (state.hideTimer) {
+				window.clearTimeout(state.hideTimer);
+				state.hideTimer = 0;
+			}
+			if (state.copyResetTimer) {
+				window.clearTimeout(state.copyResetTimer);
+				state.copyResetTimer = 0;
+			}
 			state.pendingUrl = url;
 			state.pendingTarget = target || "_self";
 			state.urlEl.textContent = url;
 			state.root.hidden = false;
+			const copyButton = document.getElementById(
+				"external-link-confirm-copy",
+			);
+			copyButton?.classList.remove("is-copied");
+			copyButton?.setAttribute("title", copyLinkText);
+			copyButton?.setAttribute("aria-label", copyLinkText);
+			state.root.offsetHeight;
+			requestAnimationFrame(() => {
+				if (state.modalSeq === nextSeq && state.root && !state.root.hidden) {
+					state.root.classList.add("is-open");
+				}
+			});
 		};
 
 		const openPendingLink = () => {
@@ -390,6 +424,15 @@ import { i18n } from "@/i18n/translation";
 		position: fixed;
 		inset: 0;
 		z-index: 9999;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.24s ease;
+		will-change: opacity;
+	}
+
+	.ext-link-confirm-root.is-open {
+		opacity: 1;
+		pointer-events: auto;
 	}
 
 	.ext-link-confirm-mask {
@@ -397,6 +440,8 @@ import { i18n } from "@/i18n/translation";
 		inset: 0;
 		background: rgba(0, 0, 0, 0.55);
 		backdrop-filter: blur(4px);
+		opacity: 0;
+		transition: opacity 0.24s ease;
 	}
 
 	.ext-link-confirm-panel-wrap {
@@ -417,6 +462,21 @@ import { i18n } from "@/i18n/translation";
 		border: 1px solid rgba(255, 255, 255, 0.2);
 		background: rgba(14, 21, 38, 0.92);
 		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+		opacity: 0;
+		transform: translateY(18px) scale(0.96);
+		transition:
+			opacity 0.24s ease,
+			transform 0.24s ease;
+		will-change: opacity, transform;
+	}
+
+	.ext-link-confirm-root.is-open .ext-link-confirm-mask {
+		opacity: 1;
+	}
+
+	.ext-link-confirm-root.is-open .ext-link-confirm-panel {
+		opacity: 1;
+		transform: translateY(0) scale(1);
 	}
 
 	.ext-link-confirm-bg {
@@ -618,6 +678,16 @@ import { i18n } from "@/i18n/translation";
 	@media (max-width: 640px) {
 		.ext-link-confirm-content {
 			padding: 16px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ext-link-confirm-root,
+		.ext-link-confirm-mask,
+		.ext-link-confirm-panel,
+		.ext-link-confirm-copy-btn,
+		.ext-link-confirm-btn {
+			transition: none !important;
 		}
 	}
 </style>

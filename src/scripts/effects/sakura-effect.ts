@@ -5,6 +5,7 @@
 
 import type { SakuraConfig } from "../../types/config";
 import { initSakura } from "../../utils/sakura-manager";
+const MOBILE_BREAKPOINT = 768;
 
 /**
  * Sakura 特效处理器类
@@ -19,7 +20,7 @@ export class SakuraEffectHandler {
 	 */
 	init(widgetConfigs: any): void {
 		const sakuraConfig = widgetConfigs?.sakura;
-		if (!sakuraConfig || !sakuraConfig.enable) {
+		if (!sakuraConfig || !this.isSakuraEnabled(sakuraConfig)) {
 			return;
 		}
 
@@ -32,6 +33,26 @@ export class SakuraEffectHandler {
 		initSakura(sakuraConfig);
 		this.initialized = true;
 		(window as any).sakuraInitialized = true;
+	}
+
+	private isSakuraEnabled(config: SakuraConfig): boolean {
+		if (!config.enable) {
+			return false;
+		}
+		if (!this.isMobileDevice()) {
+			return true;
+		}
+		return config.mobile ?? true;
+	}
+
+	private isMobileDevice(): boolean {
+		const hasCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
+		const hasNoHover = window.matchMedia("(hover: none)").matches;
+		const isSmallViewport = window.innerWidth < MOBILE_BREAKPOINT;
+		const hasTouchEvents =
+			"ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+		return isSmallViewport || (hasTouchEvents && (hasCoarsePointer || hasNoHover));
 	}
 
 	/**

@@ -483,6 +483,7 @@ export interface SidebarLayoutConfig {
 
 export interface SakuraConfig {
 	enable: boolean; // 是否启用樱花特效
+	mobile?: boolean; // 是否在移动端启用樱花特效（默认 true）
 	sakuraNum: number; // 樱花数量，默认21
 	limitTimes: number; // 樱花越界限制次数，-1为无限循环
 	size: {
@@ -571,10 +572,8 @@ export interface PageProgressBarConfig {
  * 页面点击特效配置
  */
 export interface ClickEffectConfig {
-	enable: {
-		desktop: boolean; // 桌面端启用
-		mobile: boolean; // 移动端启用
-	};
+	enable: boolean; // 是否启用点击特效
+	mobile?: boolean; // 是否在移动端启用点击特效（默认 false）
 	blacklist?: {
 		paths?: string[]; // 页面路径黑名单
 		selectors?: string[]; // 元素选择器黑名单

@@ -23,10 +23,8 @@ import { LinkPreset } from "./types/config";
 // 移除i18n导入以避免循环依赖
 
 export const clickEffectConfig: ClickEffectConfig = {
-	enable: {
-		desktop: true, // 桌面端启用点击特效
-		mobile: false, // 移动端默认关闭，避免触屏场景过于频繁
-	},
+	enable: true, // 启用点击特效
+	mobile: false, // 移动端默认关闭，避免触屏场景过于频繁
 	blacklist: {
 		paths: [], // "/about" 精确匹配，"/posts/" 匹配该前缀下所有页面
 		selectors: [
@@ -743,6 +741,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 
 export const sakuraConfig: SakuraConfig = {
 	enable: false, // 默认关闭樱花特效
+	mobile: true, // 移动端启用
 	sakuraNum: 21, // 樱花数量
 	limitTimes: -1, // 樱花越界限制次数，-1为无限循环
 	size: {

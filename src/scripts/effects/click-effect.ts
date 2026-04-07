@@ -124,9 +124,11 @@ class ClickEffectController {
 			return false;
 		}
 
-		return this.isMobileDevice()
-			? this.config.enable.mobile
-			: this.config.enable.desktop;
+		if (!this.config.enable) {
+			return false;
+		}
+
+		return this.isMobileDevice() ? this.config.mobile ?? false : true;
 	}
 
 	private isMobileDevice() {
@@ -270,12 +272,32 @@ function readClickEffectConfig(): ValidatedConfig | null {
 	if (!rawConfig) return null;
 
 	try {
-		const parsedConfig = JSON.parse(rawConfig) as ClickEffectConfig;
+		const parsedConfig = JSON.parse(rawConfig) as
+			| ClickEffectConfig
+			| {
+					enable?: boolean | { desktop?: boolean; mobile?: boolean };
+					mobile?: boolean;
+					blacklist?: {
+						paths?: string[];
+						selectors?: string[];
+					};
+			  };
+		const legacyEnable =
+			typeof parsedConfig.enable === "object" && parsedConfig.enable
+				? parsedConfig.enable
+				: null;
+		const normalizedEnable =
+			typeof parsedConfig.enable === "boolean"
+				? parsedConfig.enable
+				: (legacyEnable?.desktop ?? true);
+		const normalizedMobile =
+			typeof parsedConfig.mobile === "boolean"
+				? parsedConfig.mobile
+				: (legacyEnable?.mobile ?? false);
+
 		return {
-			enable: {
-				desktop: parsedConfig.enable?.desktop ?? true,
-				mobile: parsedConfig.enable?.mobile ?? false,
-			},
+			enable: normalizedEnable,
+			mobile: normalizedMobile,
 			blacklist: {
 				paths: normalizePathList(parsedConfig.blacklist?.paths),
 				selectors: validateSelectorList(
