@@ -4,6 +4,10 @@
 	import { onMount } from "svelte";
 
 	import { sidebarLayoutConfig, siteConfig } from "../../config";
+	import {
+		getStoredPostListLayout,
+		setStoredPostListLayout,
+	} from "@utils/setting-utils";
 
 	type LayoutMode = "list" | "grid";
 
@@ -34,17 +38,8 @@
 		}
 	}
 
-	// 辅助函数：同时更新两种存储
-	// sessionStorage 用于判断当前会话状态（关闭标签页失效）
-	// localStorage 用于兼容其他组件（如 PostPage.astro）
-	// TODO: 使用 sessionStorage 存储状态，关闭标签页即销毁。不应把缓存数据存在访客本地电脑上
 	function updateStorage(layout: LayoutMode) {
-		sessionStorage.setItem("postListLayout", layout);
-		localStorage.setItem("postListLayout", layout);
-	}
-
-	function getSavedSessionLayout(): LayoutMode | null {
-		return sessionStorage.getItem("postListLayout") as LayoutMode;
+		setStoredPostListLayout(layout);
 	}
 
 	function switchLayout() {
@@ -71,20 +66,7 @@
 	onMount(() => {
 		mounted = true;
 
-		const sessionLayout = getSavedSessionLayout();
-		const defaultLayout = siteConfig.postListLayout
-			.defaultMode as LayoutMode;
-
-		if (sessionLayout === "list" || sessionLayout === "grid") {
-			userPreference = sessionLayout;
-
-			if (localStorage.getItem("postListLayout") !== sessionLayout) {
-				localStorage.setItem("postListLayout", sessionLayout);
-			}
-		} else {
-			userPreference = defaultLayout;
-			updateStorage(defaultLayout);
-		}
+		userPreference = getStoredPostListLayout();
 
 		mediaQueryList = window.matchMedia(`(min-width: ${BREAKPOINT}px)`);
 		handleMediaQueryChange(mediaQueryList);
@@ -105,13 +87,7 @@
 
 		const handleSwupEvent = () => {
 			setTimeout(() => {
-				const saved = getSavedSessionLayout();
-				if (saved === "list" || saved === "grid") {
-					userPreference = saved;
-				} else {
-					userPreference = siteConfig.postListLayout
-						.defaultMode as LayoutMode;
-				}
+				userPreference = getStoredPostListLayout();
 			}, 200);
 		};
 

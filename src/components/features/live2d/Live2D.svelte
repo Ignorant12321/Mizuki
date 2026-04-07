@@ -1,7 +1,11 @@
 <script lang="ts">
-	import { onDestroy, onMount } from "svelte";
+import { onDestroy, onMount } from "svelte";
 
-	import { live2dConfig } from "@/config";
+import { live2dConfig } from "@/config";
+import {
+	DISPLAY_SETTINGS_CHANGED_EVENT,
+	getStoredLive2dEnabled,
+} from "@utils/setting-utils";
 
 	type Side = "left" | "right";
 	const LIVE2D_BASE_WIDTH_PX = 300;
@@ -305,6 +309,10 @@
 		if (!mounted || typeof window === "undefined") {
 			return;
 		}
+		if (!getStoredLive2dEnabled()) {
+			removeCurrentWaifuDom();
+			return;
+		}
 		if (document.getElementById("waifu")) {
 			return;
 		}
@@ -337,7 +345,7 @@
 				modelId: live2dConfig.modelId,
 				logLevel: live2dConfig.logLevel,
 				drag: live2dConfig.drag,
-				mobile: live2dConfig.mobile,
+				mobile: live2dConfig.mobile || getStoredLive2dEnabled(),
 			};
 			const rawCdnPath =
 				"cdnPath" in live2dConfig.paths
@@ -466,20 +474,27 @@
 			});
 	}
 
-	onMount(() => {
-		if (!live2dConfig.enable) {
+	function syncLive2dState() {
+		if (!getStoredLive2dEnabled()) {
+			removeCurrentWaifuDom();
 			return;
 		}
+		if (!document.getElementById("waifu")) {
+			initLive2d();
+		}
+	}
+
+	onMount(() => {
 		mounted = true;
 		applyPositionVars();
 		exposeLive2dConsoleFunction();
 
 		const onSwupPageView = () => {
-			if (!document.getElementById("waifu")) {
-				initLive2d();
-			}
+			syncLive2dState();
 		};
 		document.addEventListener("swup:page:view", onSwupPageView);
+		window.addEventListener(DISPLAY_SETTINGS_CHANGED_EVENT, syncLive2dState);
+		window.addEventListener("storage", syncLive2dState);
 
 		const runBootstrap = () => {
 			bootstrapTimer = null;
@@ -495,6 +510,11 @@
 
 		return () => {
 			document.removeEventListener("swup:page:view", onSwupPageView);
+			window.removeEventListener(
+				DISPLAY_SETTINGS_CHANGED_EVENT,
+				syncLive2dState,
+			);
+			window.removeEventListener("storage", syncLive2dState);
 		};
 	});
 

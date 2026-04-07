@@ -5,6 +5,7 @@ import type {
 	WALLPAPER_FULLSCREEN,
 	WALLPAPER_NONE,
 } from "../constants/constants";
+import type I18nKey from "../i18n/i18nKey";
 
 export interface SiteConfig {
 	title: string;
@@ -250,6 +251,7 @@ export enum LinkPreset {
 
 export interface NavBarLink {
 	name: string;
+	nameKey?: I18nKey;
 	url: string;
 	external?: boolean;
 	icon?: string; // 菜单项图标

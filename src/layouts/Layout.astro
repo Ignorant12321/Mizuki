@@ -18,6 +18,7 @@ import "../styles/mobile-navbar.css";
 import "../styles/wallpaper-navbar-transparent.css";
 import "../styles/fancybox-custom.css";
 import "../styles/expressive-code.css";
+import "../styles/display-settings.css";
 import "../styles/panel-animations.css";
 
 // 导入新提取的 Head 组件
@@ -197,13 +198,9 @@ if (siteConfig.font) {
 		></style>
 
 		<!-- Live2D 看板娘样式 - 非渲染阻塞加载 -->
-		{
-			live2dConfig.enable && (
-				<Fragment
-					set:html={`<link rel="stylesheet" href="${live2dConfig.paths.waifuCss}" media="print" onload="this.media='all'" />`}
-				/>
-			)
-		}
+		<Fragment
+			set:html={`<link rel="stylesheet" href="${live2dConfig.paths.waifuCss}" media="print" onload="this.media='all'" />`}
+		/>
 
 		<link
 			rel="alternate"
@@ -244,7 +241,7 @@ if (siteConfig.font) {
 		<MusicPlayer client:idle />
 
 		<!-- Live2D 看板娘组件 -->
-		{live2dConfig.enable && <Live2D client:idle />}
+		<Live2D client:idle />
 
 		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
 		<div id="page-height-extend" class="hidden h-[300vh]"></div>

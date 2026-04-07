@@ -1,4 +1,5 @@
-﻿import type {
+﻿import I18nKey from "./i18n/i18nKey";
+import type {
 	AnnouncementConfig,
 	ClickEffectConfig,
 	CommentConfig,
@@ -19,8 +20,6 @@
 	SiteConfig,
 } from "./types/config";
 import { LinkPreset } from "./types/config";
-
-// 移除i18n导入以避免循环依赖
 
 export const clickEffectConfig: ClickEffectConfig = {
 	enable: true, // 启用点击特效
@@ -173,7 +172,7 @@ export const siteConfig: SiteConfig = {
 		// 注意：如果侧边栏配置启用了"both"双侧边栏，则无法使用文章列表"grid"网格（双列）布局
 		defaultMode: "list",
 		// 是否允许用户切换布局
-		allowSwitch: true,
+		allowSwitch: false,
 		// 首页文章分页大小
 		pageSize: 8,
 		// 文章列表页分类导航条配置
@@ -272,7 +271,7 @@ export const siteConfig: SiteConfig = {
 	},
 	toc: {
 		enable: true, // 总开关，启用目录功能
-		mobileTop: true, // 手机端顶部 TOC 按钮
+		mobileTop: false, // 手机端顶部 TOC 按钮
 		desktopSidebar: true, // 电脑端右侧边栏 TOC
 		floating: true, // 悬浮 TOC 按钮
 		depth: 2, // 目录深度，1-6，1 表示只显示 h1 标题，2 表示显示 h1 和 h2 标题，依此类推
@@ -354,6 +353,7 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Diary,
 		{
 			name: "津渡",
+			nameKey: I18nKey.navigation,
 			url: "/navigation/",
 			icon: "material-symbols:map-search",
 		},
@@ -385,27 +385,32 @@ export const navBarConfig: NavBarConfig = {
 		// },
 		{
 			name: "私馆",
+			nameKey: I18nKey.navMy,
 			url: "/content/",
 			icon: "material-symbols:person",
 			children: [
 				{
 					name: "逐影",
+					nameKey: I18nKey.albums,
 					url: "/albums/",
 					icon: "material-symbols:photo-library",
 				},
 				{
 					name: "逐影",
+					nameKey: I18nKey.anime,
 					url: "/anime/",
 					icon: "material-symbols:movie",
 				},
 				{
 					name: "物志",
+					nameKey: I18nKey.devices,
 					url: "/devices/",
 					icon: "material-symbols:devices",
 					external: false,
 				},
 				{
 					name: "时语",
+					nameKey: I18nKey.news,
 					url: "/news/",
 					icon: "material-symbols:article",
 				},

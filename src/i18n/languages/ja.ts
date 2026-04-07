@@ -73,6 +73,28 @@ export const ja: Translation = {
 	[Key.postsCount]: "件の投稿",
 
 	[Key.themeColor]: "テーマの色",
+	[Key.displaySettings]: "テーマパネル",
+	[Key.resetThemeColor]: "テーマ色をリセット",
+	[Key.resetWallpaperMode]: "壁紙モードをリセット",
+	[Key.resetWallpaperTransparency]: "透明設定をリセット",
+	[Key.resetEffectsSettings]: "エフェクトをリセット",
+	[Key.resetLayoutSettings]: "レイアウトをリセット",
+	[Key.wallpaperModeTitle]: "壁紙モード",
+	[Key.wallpaperTransparencySettings]: "透明設定",
+	[Key.wallpaperOpacity]: "不透明度",
+	[Key.wallpaperBlur]: "背景ぼかし",
+	[Key.effectsSettings]: "エフェクト",
+	[Key.effectLive2d]: "Live2D",
+	[Key.effectLive2dDesc]: "看板娘を表示します",
+	[Key.effectClick]: "クリック効果",
+	[Key.effectClickDesc]: "クリック時の粒子演出",
+	[Key.effectWave]: "波紋効果",
+	[Key.effectWaveDesc]: "バナーの波アニメーション",
+	[Key.effectSakura]: "桜エフェクト",
+	[Key.effectSakuraDesc]: "桜が舞い落ちる演出",
+	[Key.layoutSettings]: "記事レイアウト",
+	[Key.layoutListMode]: "リスト表示",
+	[Key.layoutGridMode]: "グリッド表示",
 
 	[Key.lightMode]: "ライト",
 	[Key.darkMode]: "ダーク",
@@ -255,9 +277,9 @@ export const ja: Translation = {
 		"コピーに失敗しました。リンクを手動で追加してください。",
 
 	// 壁紙モード
-	[Key.wallpaperBanner]: "バナーモード",
-	[Key.wallpaperFullscreen]: "フルスクリーンモード",
-	[Key.wallpaperNone]: "壁紙を非表示",
+	[Key.wallpaperBanner]: "バナー",
+	[Key.wallpaperFullscreen]: "フルスクリーン",
+	[Key.wallpaperNone]: "単色",
 
 	// スキルページ
 	[Key.skills]: "スキル",

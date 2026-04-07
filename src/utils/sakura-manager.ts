@@ -361,7 +361,9 @@ export class SakuraManager {
 			this.stop();
 		}
 		this.config = newConfig;
-		if (wasRunning && newConfig.enable) {
+		// Support turning sakura on from the settings panel even when the
+		// manager was created in a disabled state during initial page load.
+		if (newConfig.enable) {
 			this.init();
 		}
 	}

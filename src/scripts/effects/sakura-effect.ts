@@ -5,7 +5,7 @@
 
 import type { SakuraConfig } from "../../types/config";
 import { initSakura } from "../../utils/sakura-manager";
-const MOBILE_BREAKPOINT = 768;
+import { getStoredSakuraEnabled } from "../../utils/setting-utils";
 
 /**
  * Sakura 特效处理器类
@@ -14,45 +14,51 @@ const MOBILE_BREAKPOINT = 768;
 export class SakuraEffectHandler {
 	private initialized = false;
 	private config: SakuraConfig | null = null;
+	private widgetConfigs: any = null;
+	private settingsListenerRegistered = false;
 
 	/**
 	 * 初始化 Sakura 特效
 	 */
 	init(widgetConfigs: any): void {
-		const sakuraConfig = widgetConfigs?.sakura;
-		if (!sakuraConfig || !this.isSakuraEnabled(sakuraConfig)) {
+		this.widgetConfigs = widgetConfigs;
+		const sakuraConfig = this.getEffectiveConfig(widgetConfigs);
+		if (!sakuraConfig) {
 			return;
 		}
 
-		// 避免重复初始化
-		if ((window as any).sakuraInitialized) {
+		if (!this.settingsListenerRegistered) {
+			window.addEventListener("display-settings:changed", () => {
+				this.sync();
+			});
+			this.settingsListenerRegistered = true;
+		}
+
+		this.sync();
+	}
+
+	private sync(): void {
+		const sakuraConfig = this.getEffectiveConfig(this.widgetConfigs);
+		if (!sakuraConfig) {
 			return;
 		}
 
 		this.config = sakuraConfig;
 		initSakura(sakuraConfig);
 		this.initialized = true;
-		(window as any).sakuraInitialized = true;
+		(window as any).sakuraInitialized = sakuraConfig.enable;
 	}
 
-	private isSakuraEnabled(config: SakuraConfig): boolean {
-		if (!config.enable) {
-			return false;
+	private getEffectiveConfig(widgetConfigs: any): SakuraConfig | null {
+		const sakuraConfig = widgetConfigs?.sakura as SakuraConfig | undefined;
+		if (!sakuraConfig) {
+			return null;
 		}
-		if (!this.isMobileDevice()) {
-			return true;
-		}
-		return config.mobile ?? true;
-	}
 
-	private isMobileDevice(): boolean {
-		const hasCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
-		const hasNoHover = window.matchMedia("(hover: none)").matches;
-		const isSmallViewport = window.innerWidth < MOBILE_BREAKPOINT;
-		const hasTouchEvents =
-			"ontouchstart" in window || navigator.maxTouchPoints > 0;
-
-		return isSmallViewport || (hasTouchEvents && (hasCoarsePointer || hasNoHover));
+		return {
+			...sakuraConfig,
+			enable: getStoredSakuraEnabled(),
+		};
 	}
 
 	/**

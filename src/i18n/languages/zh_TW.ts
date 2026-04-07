@@ -70,6 +70,28 @@ export const zh_TW: Translation = {
 	[Key.postsCount]: "篇文章",
 
 	[Key.themeColor]: "主題色",
+	[Key.displaySettings]: "主題面板",
+	[Key.resetThemeColor]: "重置主題色",
+	[Key.resetWallpaperMode]: "重置壁紙模式",
+	[Key.resetWallpaperTransparency]: "重置透明設定",
+	[Key.resetEffectsSettings]: "重置效果",
+	[Key.resetLayoutSettings]: "重置佈局",
+	[Key.wallpaperModeTitle]: "壁紙模式",
+	[Key.wallpaperTransparencySettings]: "透明設定",
+	[Key.wallpaperOpacity]: "透明度",
+	[Key.wallpaperBlur]: "背景模糊",
+	[Key.effectsSettings]: "效果開關",
+	[Key.effectLive2d]: "Live2D",
+	[Key.effectLive2dDesc]: "顯示看板娘",
+	[Key.effectClick]: "點擊效果",
+	[Key.effectClickDesc]: "頁面點擊粒子",
+	[Key.effectWave]: "水波紋",
+	[Key.effectWaveDesc]: "Banner 波浪動畫",
+	[Key.effectSakura]: "櫻花效果",
+	[Key.effectSakuraDesc]: "飄落櫻花特效",
+	[Key.layoutSettings]: "文章佈局",
+	[Key.layoutListMode]: "列表模式",
+	[Key.layoutGridMode]: "網格模式",
 
 	[Key.lightMode]: "亮色",
 	[Key.darkMode]: "暗色",
@@ -322,9 +344,9 @@ export const zh_TW: Translation = {
 	[Key.second]: "秒",
 
 	// 壁紙模式
-	[Key.wallpaperBanner]: "橫幅模式",
-	[Key.wallpaperFullscreen]: "全屏模式",
-	[Key.wallpaperNone]: "隱藏壁紙",
+	[Key.wallpaperBanner]: "橫幅",
+	[Key.wallpaperFullscreen]: "全螢幕",
+	[Key.wallpaperNone]: "純色",
 
 	// 站點統計
 	[Key.siteStats]: "站點統計",

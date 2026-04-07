@@ -74,6 +74,28 @@ export const en: Translation = {
 	[Key.postsCount]: "posts",
 
 	[Key.themeColor]: "Theme Color",
+	[Key.displaySettings]: "Theme Panel",
+	[Key.resetThemeColor]: "Reset Theme Color",
+	[Key.resetWallpaperMode]: "Reset Wallpaper Mode",
+	[Key.resetWallpaperTransparency]: "Reset Transparency Settings",
+	[Key.resetEffectsSettings]: "Reset Effects",
+	[Key.resetLayoutSettings]: "Reset Layout",
+	[Key.wallpaperModeTitle]: "Wallpaper Mode",
+	[Key.wallpaperTransparencySettings]: "Transparency Settings",
+	[Key.wallpaperOpacity]: "Opacity",
+	[Key.wallpaperBlur]: "Background Blur",
+	[Key.effectsSettings]: "Effects",
+	[Key.effectLive2d]: "Live2D",
+	[Key.effectLive2dDesc]: "Show the mascot character",
+	[Key.effectClick]: "Click Effect",
+	[Key.effectClickDesc]: "Particle burst on clicks",
+	[Key.effectWave]: "Wave Effect",
+	[Key.effectWaveDesc]: "Banner wave animation",
+	[Key.effectSakura]: "Sakura Effect",
+	[Key.effectSakuraDesc]: "Falling cherry blossom effect",
+	[Key.layoutSettings]: "Post Layout",
+	[Key.layoutListMode]: "List Mode",
+	[Key.layoutGridMode]: "Grid Mode",
 
 	[Key.lightMode]: "Light",
 	[Key.darkMode]: "Dark",
@@ -253,9 +275,9 @@ export const en: Translation = {
 	[Key.atomCopyFailed]: "Copy failed, please copy the link manually",
 
 	// Wallpaper mode
-	[Key.wallpaperBanner]: "Banner Mode",
-	[Key.wallpaperFullscreen]: "Fullscreen Mode",
-	[Key.wallpaperNone]: "Hide Wallpaper",
+	[Key.wallpaperBanner]: "Banner",
+	[Key.wallpaperFullscreen]: "Fullscreen",
+	[Key.wallpaperNone]: "Solid",
 
 	// Skills Page
 	[Key.skills]: "Skills",

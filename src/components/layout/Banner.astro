@@ -561,61 +561,96 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 	)}
 
 	<!-- 水波纹效果 -->
-	{showWave && (
-		<div
-			class="waves absolute -bottom-[1px] h-[10vh] max-h-[9.375rem] min-h-[3.125rem] w-full md:h-[15vh]"
-			id="header-waves"
-			style="transform: translateZ(0); will-change: fill;"
+	<div
+		id="header-waves"
+		data-default-enabled={showWave ? "true" : "false"}
+		class:list={[
+			"waves absolute -bottom-[1px] h-[10vh] max-h-[9.375rem] min-h-[3.125rem] w-full md:h-[15vh]",
+			{ hidden: !showWave },
+		]}
+		style="transform: translateZ(0); will-change: fill;"
+	>
+		<svg
+			class="waves"
+			xmlns="http://www.w3.org/2000/svg"
+			xmlns:xlink="http://www.w3.org/1999/xlink"
+			viewBox="0 20 150 32"
+			preserveAspectRatio="none"
+			shape-rendering="auto"
+			style="transform: translateZ(0); backface-visibility: hidden;"
 		>
-			<svg
-				class="waves"
-				xmlns="http://www.w3.org/2000/svg"
-				xmlns:xlink="http://www.w3.org/1999/xlink"
-				viewBox="0 20 150 32"
-				preserveAspectRatio="none"
-				shape-rendering="auto"
-				style="transform: translateZ(0); backface-visibility: hidden;"
-			>
-				<defs>
-					<path
-						id="gentle-wave"
-						d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v48h-352z"
-					>
-					</path>
-				</defs>
-				<g class="parallax" style="transform: translateZ(0);">
-					<use
-						xlink:href="#gentle-wave"
-						x="48"
-						y="0"
-						class="opacity-25 fill-[var(--page-bg)]"
-						style="animation-delay: -2s; animation-duration: 7s; will-change: transform;"
-					></use>
-					<use
-						xlink:href="#gentle-wave"
-						x="48"
-						y="3"
-						class="opacity-50 fill-[var(--page-bg)]"
-						style="animation-delay: -3s; animation-duration: 10s; will-change: transform;"
-					></use>
-					<use
-						xlink:href="#gentle-wave"
-						x="48"
-						y="5"
-						class="opacity-75 fill-[var(--page-bg)]"
-						style="animation-delay: -4s; animation-duration: 13s; will-change: transform;"
-					></use>
-					<use
-						xlink:href="#gentle-wave"
-						x="48"
-						y="7"
-						class="fill-[var(--page-bg)]"
-						style="animation-delay: -5s; animation-duration: 20s; will-change: transform;"
-					></use>
-				</g>
-			</svg>
-		</div>
-	)}
+			<defs>
+				<path
+					id="gentle-wave"
+					d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v48h-352z"
+				>
+				</path>
+			</defs>
+			<g class="parallax" style="transform: translateZ(0);">
+				<use
+					xlink:href="#gentle-wave"
+					x="48"
+					y="0"
+					class="opacity-25 fill-[var(--page-bg)]"
+					style="animation-delay: -2s; animation-duration: 7s; will-change: transform;"
+				></use>
+				<use
+					xlink:href="#gentle-wave"
+					x="48"
+					y="3"
+					class="opacity-50 fill-[var(--page-bg)]"
+					style="animation-delay: -3s; animation-duration: 10s; will-change: transform;"
+				></use>
+				<use
+					xlink:href="#gentle-wave"
+					x="48"
+					y="5"
+					class="opacity-75 fill-[var(--page-bg)]"
+					style="animation-delay: -4s; animation-duration: 13s; will-change: transform;"
+				></use>
+				<use
+					xlink:href="#gentle-wave"
+					x="48"
+					y="7"
+					class="fill-[var(--page-bg)]"
+					style="animation-delay: -5s; animation-duration: 20s; will-change: transform;"
+				></use>
+			</g>
+		</svg>
+	</div>
+
+	<script is:inline>
+		(function () {
+			const STORAGE_KEY = "bannerWavesEnabled";
+			const waveEl = document.getElementById("header-waves");
+			if (!waveEl) return;
+
+			const defaultEnabled = waveEl.dataset.defaultEnabled !== "false";
+
+			function applyWaveVisibility() {
+				const stored = localStorage.getItem(STORAGE_KEY);
+				const enabled = stored === null ? defaultEnabled : stored === "true";
+				waveEl.style.display = enabled ? "" : "none";
+			}
+
+			applyWaveVisibility();
+
+			window.addEventListener("display-settings:changed", function (event) {
+				if (!event || !event.detail) {
+					return;
+				}
+				if (!event.detail.key || event.detail.key === STORAGE_KEY) {
+					applyWaveVisibility();
+				}
+			});
+
+			window.addEventListener("storage", function (event) {
+				if (event.key === STORAGE_KEY) {
+					applyWaveVisibility();
+				}
+			});
+		})();
+	</script>
 
 	<!-- Banner 图片来源标注 -->
 	{hasBannerCredit && (

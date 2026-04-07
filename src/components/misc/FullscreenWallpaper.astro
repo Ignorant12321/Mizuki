@@ -89,7 +89,9 @@ const renderGroups = [
 		"fixed inset-0 w-full h-full overflow-hidden pointer-events-none",
 		className
 	]}
-	style={`z-index: ${zIndex}; opacity: ${opacity}; transform: translateZ(0); perspective: 1000px;`}
+	style={`z-index: ${zIndex}; --fullscreen-wallpaper-opacity: ${opacity}; --fullscreen-wallpaper-blur: ${blurAmount}px; opacity: var(--fullscreen-wallpaper-opacity); transform: translateZ(0); perspective: 1000px;`}
+	data-default-opacity={opacity}
+	data-default-blur={blurAmount}
 	data-fullscreen-wallpaper
 >
 	<script is:inline>
@@ -111,7 +113,7 @@ const renderGroups = [
 						alt={`${group.key} wallpaper ${index + 1}`}
 						class={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}`}
 						data-carousel-item={index}
-						style={`transform: translateZ(0); backface-visibility: hidden; will-change: opacity; ${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ''}; opacity: ${index === 0 ? 1 : 0};`}
+				style={`transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--fullscreen-wallpaper-blur, 0px)); opacity: ${index === 0 ? 1 : 0};`}
 						decoding="async"
 						loading={index === 0 ? "eager" : "lazy"}
 						fetchpriority={index === 0 ? "high" : undefined}
@@ -152,7 +154,7 @@ const renderGroups = [
 								src="${desktopSrc}"
 								alt="desktop wallpaper"
 								class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}"
-								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; ${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ''} opacity: 1;"
+								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--fullscreen-wallpaper-blur, 0px)); opacity: 1;"
 								decoding="async"
 								loading="eager"
 								fetchpriority="high"
@@ -170,7 +172,7 @@ const renderGroups = [
 								src="${mobileSrc}"
 								alt="mobile wallpaper"
 								class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}"
-								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; ${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ''} opacity: 1;"
+								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--fullscreen-wallpaper-blur, 0px)); opacity: 1;"
 								decoding="async"
 								loading="eager"
 								fetchpriority="high"
@@ -183,6 +185,76 @@ const renderGroups = [
 		</div>
 	)}
 </div>
+
+<script is:inline>
+	(function () {
+		const STORAGE_MODE_KEY = "wallpaperMode";
+		const STORAGE_OPACITY_KEY = "wallpaperOpacity";
+		const STORAGE_BLUR_KEY = "wallpaperBlur";
+		const wallpaper = document.querySelector("[data-fullscreen-wallpaper]");
+		if (!wallpaper) return;
+
+		const defaultOpacity = Number.parseFloat(
+			wallpaper.getAttribute("data-default-opacity") || "0.8",
+		);
+		const defaultBlur = Number.parseFloat(
+			wallpaper.getAttribute("data-default-blur") || "0",
+		);
+
+		function applyWallpaperSettings() {
+			const mode = localStorage.getItem(STORAGE_MODE_KEY) || "banner";
+			const opacityRaw = localStorage.getItem(STORAGE_OPACITY_KEY);
+			const blurRaw = localStorage.getItem(STORAGE_BLUR_KEY);
+			const opacity =
+				opacityRaw === null
+					? defaultOpacity
+					: Number.parseFloat(opacityRaw);
+			const blur =
+				blurRaw === null ? defaultBlur : Number.parseFloat(blurRaw);
+
+			if (mode !== "fullscreen") {
+				wallpaper.style.display = "none";
+				return;
+			}
+
+			wallpaper.style.display = "block";
+			wallpaper.style.setProperty(
+				"--fullscreen-wallpaper-opacity",
+				Number.isFinite(opacity) ? String(opacity) : String(defaultOpacity),
+			);
+			wallpaper.style.setProperty(
+				"--fullscreen-wallpaper-blur",
+				`${Number.isFinite(blur) ? blur : defaultBlur}px`,
+			);
+		}
+
+		applyWallpaperSettings();
+
+		window.addEventListener("wallpaper-mode-change", applyWallpaperSettings);
+		window.addEventListener("display-settings:changed", function (event) {
+			if (!event || !event.detail) {
+				return;
+			}
+			if (
+				!event.detail.key ||
+				event.detail.key === STORAGE_MODE_KEY ||
+				event.detail.key === STORAGE_OPACITY_KEY ||
+				event.detail.key === STORAGE_BLUR_KEY
+			) {
+				applyWallpaperSettings();
+			}
+		});
+		window.addEventListener("storage", function (event) {
+			if (
+				event.key === STORAGE_MODE_KEY ||
+				event.key === STORAGE_OPACITY_KEY ||
+				event.key === STORAGE_BLUR_KEY
+			) {
+				applyWallpaperSettings();
+			}
+		});
+	})();
+</script>
 
 {isCarouselEnabled && (
 	<script is:inline define:vars={{ carouselInterval }}>

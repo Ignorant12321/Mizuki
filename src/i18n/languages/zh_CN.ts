@@ -69,7 +69,29 @@ export const zh_CN: Translation = {
 	[Key.postCount]: "篇文章",
 	[Key.postsCount]: "篇文章",
 
-	[Key.themeColor]: "主题色",
+	[Key.themeColor]: "主题色相",
+	[Key.displaySettings]: "主题面板",
+	[Key.resetThemeColor]: "重置主题色",
+	[Key.resetWallpaperMode]: "重置壁纸模式",
+	[Key.resetWallpaperTransparency]: "重置透明设置",
+	[Key.resetEffectsSettings]: "重置效果",
+	[Key.resetLayoutSettings]: "重置布局",
+	[Key.wallpaperModeTitle]: "壁纸模式",
+	[Key.wallpaperTransparencySettings]: "透明设置",
+	[Key.wallpaperOpacity]: "透明度",
+	[Key.wallpaperBlur]: "背景模糊",
+	[Key.effectsSettings]: "效果开关",
+	[Key.effectLive2d]: "Live2D",
+	[Key.effectLive2dDesc]: "显示看板娘",
+	[Key.effectClick]: "点击效果",
+	[Key.effectClickDesc]: "页面点击粒子",
+	[Key.effectWave]: "水波纹",
+	[Key.effectWaveDesc]: "Banner 波浪动画",
+	[Key.effectSakura]: "樱花效果",
+	[Key.effectSakuraDesc]: "飘落樱花特效",
+	[Key.layoutSettings]: "文章布局",
+	[Key.layoutListMode]: "列表模式",
+	[Key.layoutGridMode]: "网格模式",
 
 	[Key.lightMode]: "亮色",
 	[Key.darkMode]: "暗色",
@@ -320,9 +342,9 @@ export const zh_CN: Translation = {
 	[Key.atomCopyFailed]: "复制失败，请手动复制链接",
 
 	// 壁纸模式
-	[Key.wallpaperBanner]: "横幅模式",
-	[Key.wallpaperFullscreen]: "全屏模式",
-	[Key.wallpaperNone]: "隐藏壁纸",
+	[Key.wallpaperBanner]: "横幅",
+	[Key.wallpaperFullscreen]: "全屏",
+	[Key.wallpaperNone]: "纯色",
 
 	// 站点统计
 	[Key.siteStats]: "站点统计",

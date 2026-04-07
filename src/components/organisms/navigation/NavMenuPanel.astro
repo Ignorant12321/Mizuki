@@ -24,7 +24,10 @@ const navTitleMap: Record<string, string> = {
 	Friends: I18nKey.friends,
 };
 
-const getLocalizedName = (name: string): string => {
+const getLocalizedName = (name: string, nameKey?: I18nKey): string => {
+	if (nameKey) {
+		return i18n(nameKey);
+	}
 	const keyValue = navTitleMap[name];
 	if (keyValue) {
 		return i18n(keyValue as I18nKey);
@@ -73,7 +76,7 @@ const processedLinks: ProcessedNavBarLink[] = (
 										class="text-[1.1rem] mr-2"
 									/>
 								)}
-								{getLocalizedName(link.name)}
+								{getLocalizedName(link.name, link.nameKey)}
 							</div>
 							<Icon
 								name="material-symbols:keyboard-arrow-down-rounded"
@@ -99,7 +102,7 @@ const processedLinks: ProcessedNavBarLink[] = (
 												class="text-[1.1rem] mr-2"
 											/>
 										)}
-										{getLocalizedName(child.name)}
+										{getLocalizedName(child.name, child.nameKey)}
 									</div>
 									{child.external && (
 										<Icon
@@ -126,7 +129,7 @@ const processedLinks: ProcessedNavBarLink[] = (
 									class="text-[1.1rem] mr-2"
 								/>
 							)}
-							{getLocalizedName(link.name)}
+							{getLocalizedName(link.name, link.nameKey)}
 						</div>
 						{!link.external && (
 							<Icon

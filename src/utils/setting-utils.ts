@@ -2,11 +2,80 @@ import {
 	DARK_MODE,
 	DEFAULT_THEME,
 	LIGHT_MODE,
-	// WALLPAPER_BANNER,
 } from "@constants/constants";
 
-import { siteConfig } from "@/config";
-import type { LIGHT_DARK_MODE, WALLPAPER_MODE } from "@/types/config";
+import {
+	clickEffectConfig,
+	fullscreenWallpaperConfig,
+	live2dConfig,
+	sakuraConfig,
+	siteConfig,
+} from "@/config";
+import type {
+	ClickEffectConfig,
+	LIGHT_DARK_MODE,
+	WALLPAPER_MODE,
+} from "@/types/config";
+
+export const DISPLAY_SETTINGS_CHANGED_EVENT = "display-settings:changed";
+
+export const DISPLAY_SETTING_STORAGE_KEYS = {
+	theme: "theme",
+	hue: "hue",
+	wallpaperMode: "wallpaperMode",
+	wallpaperOpacity: "wallpaperOpacity",
+	wallpaperBlur: "wallpaperBlur",
+	postListLayout: "postListLayout",
+	clickEffectEnabled: "clickEffectEnabled",
+	sakuraEnabled: "sakuraEnabled",
+	live2dEnabled: "live2dEnabled",
+	bannerWavesEnabled: "bannerWavesEnabled",
+} as const;
+
+export type DisplaySettingStorageKey =
+	(typeof DISPLAY_SETTING_STORAGE_KEYS)[keyof typeof DISPLAY_SETTING_STORAGE_KEYS];
+
+function canUseStorage(): boolean {
+	return typeof window !== "undefined" && typeof localStorage !== "undefined";
+}
+
+function readStorage(key: DisplaySettingStorageKey): string | null {
+	if (!canUseStorage()) {
+		return null;
+	}
+	return localStorage.getItem(key);
+}
+
+function writeStorage(key: DisplaySettingStorageKey, value: string): void {
+	if (!canUseStorage()) {
+		return;
+	}
+	localStorage.setItem(key, value);
+}
+
+function clamp(value: number, min: number, max: number): number {
+	if (!Number.isFinite(value)) {
+		return min;
+	}
+	return Math.min(max, Math.max(min, value));
+}
+
+export function emitDisplaySettingsChanged(
+	key?: DisplaySettingStorageKey,
+	value?: unknown,
+): void {
+	if (typeof window === "undefined") {
+		return;
+	}
+	window.dispatchEvent(
+		new CustomEvent(DISPLAY_SETTINGS_CHANGED_EVENT, {
+			detail: {
+				key,
+				value,
+			},
+		}),
+	);
+}
 
 export function getDefaultHue(): number {
 	const fallback = "250";
@@ -18,18 +87,24 @@ export function getDefaultHue(): number {
 	return Number.parseInt(configCarrier.dataset.hue || fallback);
 }
 
+export function getDefaultWallpaperMode(): WALLPAPER_MODE {
+	return siteConfig.wallpaperMode.defaultMode;
+}
+
 export function getHue(): number {
-	const stored = localStorage.getItem("hue");
-	return stored ? Number.parseInt(stored) : getDefaultHue();
+	const stored = readStorage(DISPLAY_SETTING_STORAGE_KEYS.hue);
+	return stored === null ? getDefaultHue() : Number.parseInt(stored);
 }
 
 export function setHue(hue: number): void {
-	localStorage.setItem("hue", String(hue));
+	writeStorage(DISPLAY_SETTING_STORAGE_KEYS.hue, String(hue));
 	const r = document.querySelector(":root") as HTMLElement;
 	if (!r) {
+		emitDisplaySettingsChanged(DISPLAY_SETTING_STORAGE_KEYS.hue, hue);
 		return;
 	}
 	r.style.setProperty("--hue", String(hue));
+	emitDisplaySettingsChanged(DISPLAY_SETTING_STORAGE_KEYS.hue, hue);
 }
 
 export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
@@ -144,25 +219,203 @@ export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
 }
 
 export function setTheme(theme: LIGHT_DARK_MODE): void {
-	localStorage.setItem("theme", theme);
+	writeStorage(DISPLAY_SETTING_STORAGE_KEYS.theme, theme);
 	applyThemeToDocument(theme);
+	emitDisplaySettingsChanged(DISPLAY_SETTING_STORAGE_KEYS.theme, theme);
 }
 
 export function getStoredTheme(): LIGHT_DARK_MODE {
-	return (localStorage.getItem("theme") as LIGHT_DARK_MODE) || DEFAULT_THEME;
+	const stored = readStorage(DISPLAY_SETTING_STORAGE_KEYS.theme);
+	if (stored === LIGHT_MODE || stored === DARK_MODE) {
+		return stored;
+	}
+	return DEFAULT_THEME;
 }
 
 export function getStoredWallpaperMode(): WALLPAPER_MODE {
-	return (
-		(localStorage.getItem("wallpaperMode") as WALLPAPER_MODE) ||
-		siteConfig.wallpaperMode.defaultMode
-	);
+	const stored = readStorage(DISPLAY_SETTING_STORAGE_KEYS.wallpaperMode);
+	if (stored === "banner" || stored === "fullscreen" || stored === "none") {
+		return stored;
+	}
+	return getDefaultWallpaperMode();
 }
 
 export function setWallpaperMode(mode: WALLPAPER_MODE): void {
-	localStorage.setItem("wallpaperMode", mode);
+	writeStorage(DISPLAY_SETTING_STORAGE_KEYS.wallpaperMode, mode);
 	// 触发自定义事件通知其他组件壁纸模式已改变
 	window.dispatchEvent(
 		new CustomEvent("wallpaper-mode-change", { detail: { mode } }),
+	);
+	emitDisplaySettingsChanged(DISPLAY_SETTING_STORAGE_KEYS.wallpaperMode, mode);
+}
+
+export function getDefaultWallpaperOpacity(): number {
+	return fullscreenWallpaperConfig.opacity ?? 0.8;
+}
+
+export function getStoredWallpaperOpacity(): number {
+	const stored = readStorage(DISPLAY_SETTING_STORAGE_KEYS.wallpaperOpacity);
+	if (stored === null) {
+		return getDefaultWallpaperOpacity();
+	}
+	return clamp(Number.parseFloat(stored), 0, 1);
+}
+
+export function setWallpaperOpacity(opacity: number): void {
+	const nextOpacity = clamp(opacity, 0, 1);
+	writeStorage(
+		DISPLAY_SETTING_STORAGE_KEYS.wallpaperOpacity,
+		String(nextOpacity),
+	);
+	emitDisplaySettingsChanged(
+		DISPLAY_SETTING_STORAGE_KEYS.wallpaperOpacity,
+		nextOpacity,
+	);
+}
+
+export function getDefaultWallpaperBlur(): number {
+	return fullscreenWallpaperConfig.blur ?? 0;
+}
+
+export function getStoredWallpaperBlur(): number {
+	const stored = readStorage(DISPLAY_SETTING_STORAGE_KEYS.wallpaperBlur);
+	if (stored === null) {
+		return getDefaultWallpaperBlur();
+	}
+	return clamp(Number.parseFloat(stored), 0, 24);
+}
+
+export function setWallpaperBlur(blur: number): void {
+	const nextBlur = clamp(blur, 0, 24);
+	writeStorage(DISPLAY_SETTING_STORAGE_KEYS.wallpaperBlur, String(nextBlur));
+	emitDisplaySettingsChanged(
+		DISPLAY_SETTING_STORAGE_KEYS.wallpaperBlur,
+		nextBlur,
+	);
+}
+
+export function getStoredPostListLayout(): "list" | "grid" {
+	const stored = readStorage(DISPLAY_SETTING_STORAGE_KEYS.postListLayout);
+	if (stored === "list" || stored === "grid") {
+		return stored;
+	}
+	return getDefaultPostListLayout();
+}
+
+export function getDefaultPostListLayout(): "list" | "grid" {
+	return siteConfig.postListLayout.defaultMode || "list";
+}
+
+export function setStoredPostListLayout(layout: "list" | "grid"): void {
+	writeStorage(DISPLAY_SETTING_STORAGE_KEYS.postListLayout, layout);
+	emitDisplaySettingsChanged(
+		DISPLAY_SETTING_STORAGE_KEYS.postListLayout,
+		layout,
+	);
+	window.dispatchEvent(
+		new CustomEvent("layoutChange", {
+			detail: { layout },
+		}),
+	);
+}
+
+export function getStoredToggleSetting(
+	key: Exclude<
+		DisplaySettingStorageKey,
+		| "theme"
+		| "hue"
+		| "wallpaperMode"
+		| "wallpaperOpacity"
+		| "wallpaperBlur"
+		| "postListLayout"
+	>,
+	fallback: boolean,
+): boolean {
+	const stored = readStorage(key);
+	if (stored === null) {
+		return fallback;
+	}
+	return stored === "true";
+}
+
+export function setStoredToggleSetting(
+	key: Exclude<
+		DisplaySettingStorageKey,
+		| "theme"
+		| "hue"
+		| "wallpaperMode"
+		| "wallpaperOpacity"
+		| "wallpaperBlur"
+		| "postListLayout"
+	>,
+	enabled: boolean,
+): void {
+	writeStorage(key, String(enabled));
+	emitDisplaySettingsChanged(key, enabled);
+}
+
+export function getStoredClickEffectEnabled(): boolean {
+	return getStoredToggleSetting(
+		DISPLAY_SETTING_STORAGE_KEYS.clickEffectEnabled,
+		getDefaultClickEffectEnabled(),
+	);
+}
+
+export function getDefaultClickEffectEnabled(): boolean {
+	return (clickEffectConfig as ClickEffectConfig).enable;
+}
+
+export function setClickEffectEnabled(enabled: boolean): void {
+	setStoredToggleSetting(
+		DISPLAY_SETTING_STORAGE_KEYS.clickEffectEnabled,
+		enabled,
+	);
+}
+
+export function getStoredSakuraEnabled(): boolean {
+	return getStoredToggleSetting(
+		DISPLAY_SETTING_STORAGE_KEYS.sakuraEnabled,
+		getDefaultSakuraEnabled(),
+	);
+}
+
+export function getDefaultSakuraEnabled(): boolean {
+	return sakuraConfig.enable;
+}
+
+export function setSakuraEnabled(enabled: boolean): void {
+	setStoredToggleSetting(DISPLAY_SETTING_STORAGE_KEYS.sakuraEnabled, enabled);
+}
+
+export function getStoredLive2dEnabled(): boolean {
+	return getStoredToggleSetting(
+		DISPLAY_SETTING_STORAGE_KEYS.live2dEnabled,
+		getDefaultLive2dEnabled(),
+	);
+}
+
+export function getDefaultLive2dEnabled(): boolean {
+	return live2dConfig.enable;
+}
+
+export function setLive2dEnabled(enabled: boolean): void {
+	setStoredToggleSetting(DISPLAY_SETTING_STORAGE_KEYS.live2dEnabled, enabled);
+}
+
+export function getStoredBannerWavesEnabled(): boolean {
+	return getStoredToggleSetting(
+		DISPLAY_SETTING_STORAGE_KEYS.bannerWavesEnabled,
+		getDefaultBannerWavesEnabled(),
+	);
+}
+
+export function getDefaultBannerWavesEnabled(): boolean {
+	return siteConfig.banner.waves?.enable ?? true;
+}
+
+export function setBannerWavesEnabled(enabled: boolean): void {
+	setStoredToggleSetting(
+		DISPLAY_SETTING_STORAGE_KEYS.bannerWavesEnabled,
+		enabled,
 	);
 }

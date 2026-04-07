@@ -2,6 +2,8 @@ import type { ClickEffectConfig } from "@/types/config";
 
 const CLICK_EFFECT_CONFIG_ID = "click-effect-config";
 const GLOBAL_CONTROLLER_KEY = "__mizukiClickEffectController";
+const SETTINGS_LISTENER_KEY = "__mizukiClickEffectSettingsListener";
+const CLICK_EFFECT_STORAGE_KEY = "clickEffectEnabled";
 const MOBILE_BREAKPOINT = 768;
 const MAX_ACTIVE_PARTICLES = 64;
 const RING_PARTICLES = 8;
@@ -290,13 +292,20 @@ function readClickEffectConfig(): ValidatedConfig | null {
 			typeof parsedConfig.enable === "boolean"
 				? parsedConfig.enable
 				: (legacyEnable?.desktop ?? true);
+		const storedOverride = localStorage.getItem(CLICK_EFFECT_STORAGE_KEY);
+		const effectiveEnable =
+			storedOverride === null
+				? normalizedEnable
+				: storedOverride === "true";
 		const normalizedMobile =
-			typeof parsedConfig.mobile === "boolean"
-				? parsedConfig.mobile
-				: (legacyEnable?.mobile ?? false);
+			storedOverride === null
+				? (typeof parsedConfig.mobile === "boolean"
+						? parsedConfig.mobile
+						: (legacyEnable?.mobile ?? false))
+				: storedOverride === "true";
 
 		return {
-			enable: normalizedEnable,
+			enable: effectiveEnable,
 			mobile: normalizedMobile,
 			blacklist: {
 				paths: normalizePathList(parsedConfig.blacklist?.paths),
@@ -314,6 +323,19 @@ function readClickEffectConfig(): ValidatedConfig | null {
 export function initClickEffect() {
 	const config = readClickEffectConfig();
 	if (!config) return;
+
+	if (
+		!(window as typeof window & { [SETTINGS_LISTENER_KEY]?: boolean })[
+			SETTINGS_LISTENER_KEY
+		]
+	) {
+		window.addEventListener("display-settings:changed", () => {
+			initClickEffect();
+		});
+		(window as typeof window & { [SETTINGS_LISTENER_KEY]?: boolean })[
+			SETTINGS_LISTENER_KEY
+		] = true;
+	}
 
 	const existingController = (
 		window as typeof window & {
