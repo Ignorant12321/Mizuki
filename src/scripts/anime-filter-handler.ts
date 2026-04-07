@@ -23,13 +23,14 @@ export function initFilterHandler() {
 		window.animeFilterEventListeners = [];
 
 		filterTags.forEach((tag) => {
-			const clickHandler = function () {
-				if (this.classList.contains("anime-active")) {
+			const tagElement = tag as HTMLElement;
+			const clickHandler = () => {
+				if (tagElement.classList.contains("anime-active")) {
 					return;
 				}
 
 				filterTags.forEach((t) => t.classList.remove("anime-active"));
-				this.classList.add("anime-active");
+				tagElement.classList.add("anime-active");
 
 				if (
 					lazyStore &&
@@ -54,7 +55,7 @@ export function initFilterHandler() {
 					el.classList.remove("hidden", "initial-hidden");
 				});
 
-				const status = this.getAttribute("data-status");
+				const status = tagElement.getAttribute("data-status");
 				const animeItems = Array.from(listContainer.children).filter(
 					(item) => item.hasAttribute("data-anime-status"),
 				);
@@ -270,6 +271,10 @@ export function initFilterHandler() {
 
 declare global {
 	interface Window {
-		animeFilterEventListeners: [Element, string, () => void][];
+		animeFilterEventListeners: [
+			Element,
+			string,
+			EventListenerOrEventListenerObject,
+		][];
 	}
 }
