@@ -1,11 +1,7 @@
 <script lang="ts">
-import { onDestroy, onMount } from "svelte";
+	import { onDestroy, onMount } from "svelte";
 
-import { live2dConfig } from "@/config";
-import {
-	SETTING_CHANGE_EVENT,
-	getStoredLive2dEnabled,
-} from "@/utils/setting-utils";
+	import { live2dConfig } from "@/config";
 
 	type Side = "left" | "right";
 	const LIVE2D_BASE_WIDTH_PX = 300;
@@ -309,10 +305,6 @@ import {
 		if (!mounted || typeof window === "undefined") {
 			return;
 		}
-		if (!shouldEnableLive2d()) {
-			removeCurrentWaifuDom();
-			return;
-		}
 		if (document.getElementById("waifu")) {
 			return;
 		}
@@ -414,13 +406,6 @@ import {
 		}
 	}
 
-	function shouldEnableLive2d(): boolean {
-		const dataset = document.documentElement.dataset.live2dEnabled;
-		if (dataset === "true") return true;
-		if (dataset === "false") return false;
-		return getStoredLive2dEnabled();
-	}
-
 	async function applyLive2dByConsole(
 		modelId: number | null,
 		textureId: number,
@@ -495,18 +480,6 @@ import {
 			}
 		};
 		document.addEventListener("swup:page:view", onSwupPageView);
-		const onSettingChange = (event: Event) => {
-			const customEvent = event as CustomEvent<{ key?: string }>;
-			if (customEvent.detail?.key !== "live2dEnabled") {
-				return;
-			}
-			if (shouldEnableLive2d()) {
-				initLive2d();
-				return;
-			}
-			removeCurrentWaifuDom();
-		};
-		window.addEventListener(SETTING_CHANGE_EVENT, onSettingChange as EventListener);
 
 		const runBootstrap = () => {
 			bootstrapTimer = null;
@@ -522,10 +495,6 @@ import {
 
 		return () => {
 			document.removeEventListener("swup:page:view", onSwupPageView);
-			window.removeEventListener(
-				SETTING_CHANGE_EVENT,
-				onSettingChange as EventListener,
-			);
 		};
 	});
 

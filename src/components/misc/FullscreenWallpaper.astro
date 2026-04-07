@@ -89,7 +89,7 @@ const renderGroups = [
 		"fixed inset-0 w-full h-full overflow-hidden pointer-events-none",
 		className
 	]}
-	style={`z-index: ${zIndex}; --fullscreen-wallpaper-opacity: ${opacity}; --fullscreen-wallpaper-blur: ${blurAmount}px; opacity: var(--fullscreen-wallpaper-opacity); transform: translateZ(0); perspective: 1000px;`}
+	style={`z-index: ${zIndex}; opacity: ${opacity}; transform: translateZ(0); perspective: 1000px;`}
 	data-fullscreen-wallpaper
 >
 	<script is:inline>
@@ -111,7 +111,7 @@ const renderGroups = [
 						alt={`${group.key} wallpaper ${index + 1}`}
 						class={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}`}
 						data-carousel-item={index}
-						style={`transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--fullscreen-wallpaper-blur, ${blurAmount}px)); opacity: ${index === 0 ? 1 : 0};`}
+						style={`transform: translateZ(0); backface-visibility: hidden; will-change: opacity; ${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ''}; opacity: ${index === 0 ? 1 : 0};`}
 						decoding="async"
 						loading={index === 0 ? "eager" : "lazy"}
 						fetchpriority={index === 0 ? "high" : undefined}
@@ -152,7 +152,7 @@ const renderGroups = [
 								src="${desktopSrc}"
 								alt="desktop wallpaper"
 								class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}"
-								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--fullscreen-wallpaper-blur, ${blurAmount}px)); opacity: 1;"
+								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; ${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ''} opacity: 1;"
 								decoding="async"
 								loading="eager"
 								fetchpriority="high"
@@ -170,7 +170,7 @@ const renderGroups = [
 								src="${mobileSrc}"
 								alt="mobile wallpaper"
 								class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}"
-								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(var(--fullscreen-wallpaper-blur, ${blurAmount}px)); opacity: 1;"
+								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; ${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ''} opacity: 1;"
 								decoding="async"
 								loading="eager"
 								fetchpriority="high"
@@ -189,17 +189,6 @@ const renderGroups = [
 		function initFullscreenWallpaperCarousel() {
 			const container = document.querySelector('[data-fullscreen-wallpaper]');
 			if (!container) {return;}
-
-			const datasetValue = document.documentElement.dataset.wallpaperCarouselEnabled;
-			const storedValue = localStorage.getItem("wallpaperCarouselEnabled");
-			const carouselEnabled =
-				datasetValue === "true" ||
-				(datasetValue !== "false" &&
-					(storedValue === null || storedValue === "true"));
-			if (!carouselEnabled) {
-				window.__wallpaper_cleanup = () => {};
-				return;
-			}
 
 			if (window.__wallpaper_cleanup) {
 				window.__wallpaper_cleanup();
@@ -299,36 +288,5 @@ const renderGroups = [
 		} else {
 			initFullscreenWallpaperCarousel();
 		}
-
-		// 暴露初始化器，便于主题面板动态开关壁纸轮播
-		window.__initFullscreenWallpaperCarousel = initFullscreenWallpaperCarousel;
 	</script>
 )}
-
-<script is:inline>
-	window.addEventListener("mizuki:setting-change", function (event) {
-		const customEvent = event;
-		if (!customEvent || !customEvent.detail) return;
-		const key = customEvent.detail.key;
-
-		if (key === "wallpaperMode") {
-			const container = document.querySelector("[data-fullscreen-wallpaper]");
-			if (!container) return;
-			const mode = localStorage.getItem("wallpaperMode") || "banner";
-			container.style.display = mode === "fullscreen" ? "" : "none";
-			return;
-		}
-
-		if (key === "wallpaperCarouselEnabled") {
-			const enabled = customEvent.detail.value === true;
-			if (!enabled && window.__wallpaper_cleanup) {
-				window.__wallpaper_cleanup();
-				window.__wallpaper_cleanup = null;
-				return;
-			}
-			if (enabled && window.__initFullscreenWallpaperCarousel) {
-				window.__initFullscreenWallpaperCarousel();
-			}
-		}
-	});
-</script>

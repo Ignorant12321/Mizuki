@@ -4,11 +4,7 @@
  */
 
 import type { SakuraConfig } from "../../types/config";
-import { initSakura, stopSakura } from "../../utils/sakura-manager";
-import {
-	SETTING_CHANGE_EVENT,
-	getStoredSakuraEnabled,
-} from "../../utils/setting-utils";
+import { initSakura } from "../../utils/sakura-manager";
 
 /**
  * Sakura 特效处理器类
@@ -17,59 +13,23 @@ import {
 export class SakuraEffectHandler {
 	private initialized = false;
 	private config: SakuraConfig | null = null;
-	private boundSettingChangeHandler: ((event: Event) => void) | null = null;
 
 	/**
 	 * 初始化 Sakura 特效
 	 */
 	init(widgetConfigs: any): void {
 		const sakuraConfig = widgetConfigs?.sakura;
-		if (!sakuraConfig) {
+		if (!sakuraConfig || !sakuraConfig.enable) {
+			return;
+		}
+
+		// 避免重复初始化
+		if ((window as any).sakuraInitialized) {
 			return;
 		}
 
 		this.config = sakuraConfig;
-		this.syncWithSetting();
-		this.setupSettingListener();
-	}
-
-	private setupSettingListener(): void {
-		if (this.boundSettingChangeHandler) {
-			return;
-		}
-		this.boundSettingChangeHandler = (event: Event) => {
-			const customEvent = event as CustomEvent<{ key?: string }>;
-			if (customEvent.detail?.key !== "sakuraEnabled") {
-				return;
-			}
-			this.syncWithSetting();
-		};
-		window.addEventListener(
-			SETTING_CHANGE_EVENT,
-			this.boundSettingChangeHandler as EventListener,
-		);
-	}
-
-	private syncWithSetting(): void {
-		if (!this.config) {
-			return;
-		}
-		const datasetValue = document.documentElement.dataset.sakuraEnabled;
-		const enabledFromDataset =
-			datasetValue === "true" ||
-			(datasetValue !== "false" && getStoredSakuraEnabled());
-		if (!enabledFromDataset) {
-			stopSakura();
-			(window as any).sakuraInitialized = false;
-			this.initialized = false;
-			return;
-		}
-
-		const nextConfig: SakuraConfig = {
-			...this.config,
-			enable: true,
-		};
-		initSakura(nextConfig);
+		initSakura(sakuraConfig);
 		this.initialized = true;
 		(window as any).sakuraInitialized = true;
 	}
@@ -86,16 +46,6 @@ export class SakuraEffectHandler {
 	 */
 	getConfig(): SakuraConfig | null {
 		return this.config;
-	}
-
-	destroy(): void {
-		if (this.boundSettingChangeHandler) {
-			window.removeEventListener(
-				SETTING_CHANGE_EVENT,
-				this.boundSettingChangeHandler as EventListener,
-			);
-			this.boundSettingChangeHandler = null;
-		}
 	}
 }
 

@@ -240,25 +240,10 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 
 				if (mobileCount <= 1 && desktopCount <= 1) return;
 
-				function isCarouselSettingEnabled() {
-					var datasetValue = document.documentElement.dataset.wallpaperCarouselEnabled;
-					if (datasetValue === "true") return true;
-					if (datasetValue === "false") return false;
-					var storedValue = localStorage.getItem("wallpaperCarouselEnabled");
-					if (storedValue === null) return true;
-					return storedValue === "true";
-				}
-
 				// 清理上一次 Swup 导航遗留的监听器和定时器
 				if (window.__bannerCarouselCleanup) {
 					window.__bannerCarouselCleanup();
 					window.__bannerCarouselCleanup = null;
-				}
-
-				if (!isCarouselSettingEnabled()) {
-					window.__bannerCarouselCleanup = function() {};
-					window.__initBannerCarousel = initBannerCarousel;
-					return;
 				}
 
 				// 保存初始帧 HTML，供帧收集使用
@@ -538,8 +523,6 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 					container.removeEventListener('mouseleave', onMouseLeave);
 					isCrossfading = { mobile: false, desktop: false };
 				};
-
-				window.__initBannerCarousel = initBannerCarousel;
 			})();
 		</script>
 	)}
@@ -690,40 +673,3 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 		}
 	}
 </style>
-
-<script is:inline>
-	(function syncInitialWavesVisibility() {
-		const waves = document.getElementById("header-waves");
-		if (!waves) return;
-		const datasetValue = document.documentElement.dataset.wavesEnabled;
-		const storedValue = localStorage.getItem("wavesEnabled");
-		const enabled =
-			datasetValue === "true" ||
-			(datasetValue !== "false" &&
-				(storedValue === null || storedValue === "true"));
-		waves.style.display = enabled ? "" : "none";
-	})();
-
-	window.addEventListener("mizuki:setting-change", function (event) {
-		const customEvent = event;
-		if (!customEvent || !customEvent.detail) return;
-
-		if (customEvent.detail.key === "wavesEnabled") {
-			const waves = document.getElementById("header-waves");
-			if (!waves) return;
-			waves.style.display = customEvent.detail.value === true ? "" : "none";
-			return;
-		}
-
-		if (customEvent.detail.key === "wallpaperCarouselEnabled") {
-			const enabled = customEvent.detail.value === true;
-			if (!enabled && window.__bannerCarouselCleanup) {
-				window.__bannerCarouselCleanup();
-				return;
-			}
-			if (enabled && window.__initBannerCarousel) {
-				window.__initBannerCarousel();
-			}
-		}
-	});
-</script>

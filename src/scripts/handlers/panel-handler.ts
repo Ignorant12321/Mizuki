@@ -33,6 +33,10 @@ export class PanelHandler {
 			id: "mobile-toc-panel",
 			ignoreElements: ["mobile-toc-panel", "mobile-toc-switch"],
 		},
+		{
+			id: "wallpaper-mode-panel",
+			ignoreElements: ["wallpaper-mode-panel", "wallpaper-mode-switch"],
+		},
 	];
 
 	private panelManager: any = null;
