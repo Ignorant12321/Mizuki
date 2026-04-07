@@ -2,16 +2,16 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const zh_CN: Translation = {
-	[Key.home]: "主页",
+	[Key.home]: "隅角",
 	[Key.about]: "关于我们",
-	[Key.archive]: "归档",
+	[Key.archive]: "藏卷",
 	[Key.search]: "搜索",
 	[Key.other]: "其他",
 
 	// 导航栏标题
 	[Key.navLinks]: "链接",
-	[Key.navMy]: "我的",
-	[Key.navAbout]: "关于",
+	[Key.navMy]: "私馆",
+	[Key.navAbout]: "尘语",
 	[Key.navOthers]: "其他",
 
 	[Key.tags]: "标签",
@@ -35,12 +35,12 @@ export const zh_CN: Translation = {
 	[Key.friendsCopyLink]: "复制链接",
 	[Key.friendsCopySuccess]: "已复制",
 	[Key.friendsTags]: "标签",
-	[Key.navigation]: "导航",
+	[Key.navigation]: "津渡",
 	[Key.navigationSubtitle]: "发现并整理常用网站",
 	[Key.navigationSearchPlaceholder]: "搜索网站名称或描述...",
 	[Key.navigationFilterAll]: "全部",
 	[Key.navigationVisit]: "访问",
-	[Key.news]: "新闻",
+	[Key.news]: "时语",
 	[Key.newsSubtitle]: "聚合外部资讯源，快速浏览最新消息",
 	[Key.newsSource]: "来源",
 	[Key.newsSourceDescription]: "联合早报即时",
@@ -81,7 +81,7 @@ export const zh_CN: Translation = {
 	[Key.publishedAt]: "发布于",
 	[Key.license]: "许可协议",
 	[Key.anime]: "追番",
-	[Key.diary]: "日记",
+	[Key.diary]: "碎念",
 
 	// 番剧页面
 	[Key.animeTitle]: "我的追番记录",

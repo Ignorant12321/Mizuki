@@ -46,12 +46,19 @@ export default defineConfig({
 		swup({
 			theme: false,
 			animationClass: "transition-swup-",
-			containers: ["main"],
+			// Use a single stable container to avoid fallback full-page reloads.
+			containers: ["#content-wrapper"],
 			smoothScrolling: false, // 禁用平滑滚动以提升性能，避免与锚点导航冲突
 			cache: true,
 			preload: false, // 禁用预加载以提升性能
 			accessibility: true,
-			updateHead: process.env.NODE_ENV === "production",
+			updateHead:
+				process.env.NODE_ENV === "production"
+					? {
+							awaitAssets: true,
+							persistAssets: true,
+						}
+					: false,
 			updateBodyClass: false,
 			globalInstance: true,
 			// 滚动相关配置优化

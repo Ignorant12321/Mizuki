@@ -9,6 +9,7 @@
 
 <div class={`accordion-drawer ${className}`} class:open={show}>
 	<div class="accordion-inner">
+		<!-- svelte-ignore slot_element_deprecated -->
 		<slot />
 	</div>
 </div>

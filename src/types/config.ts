@@ -409,7 +409,14 @@ export interface MusicPlayerConfig {
 	enable: boolean; // 是否启用音乐播放器功能
 	showFloatingPlayer: boolean; // 是否显示悬浮播放器 UI
 	floatingEntryMode?: "default" | "fab"; // 悬浮入口模式：默认独立播放器或集成到 FAB 组
-	playlists: MusicPlaylistConfig[]; // 可切换的歌单列表
+	playlists?: MusicPlaylistConfig[]; // 可切换的歌单列表
+	// 兼容旧配置（pr-1）：当 playlists 为空时，会自动回退读取以下字段
+	mode?: "meting" | "local";
+	meting_api?: string;
+	id?: string;
+	server?: string;
+	type?: string;
+	legacyPlaylistName?: string;
 }
 
 export interface MusicPlaylistConfig {

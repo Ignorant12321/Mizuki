@@ -4,17 +4,14 @@
 
 	import Key from "../../../../i18n/i18nKey";
 	import { i18n } from "../../../../i18n/translation";
+	import type { ResolvedPlaylistConfig } from "../../../../stores/musicPlaylistConfig";
 	import PlaylistItem from "../atoms/PlaylistItem.svelte";
 	import PlaylistSwitcher from "../atoms/PlaylistSwitcher.svelte";
 	import type { Song } from "../types";
 
-	interface PlaylistOption {
-		name: string;
-	}
-
 	interface Props {
 		playlist: Song[];
-		playlists: PlaylistOption[];
+		playlists: ResolvedPlaylistConfig[];
 		currentPlaylistIndex: number;
 		isPlaylistLoading: boolean;
 		currentIndex: number;
@@ -149,10 +146,18 @@
 	}
 
 	.playlist-source-wrap {
+		position: relative;
+		z-index: 2;
+		overflow: visible;
 		padding: 0.16rem 0.22rem 0.4rem;
 		margin-bottom: 0.04rem;
 		border-bottom: 1px solid
 			color-mix(in oklab, var(--primary) 14%, transparent);
+	}
+
+	.playlist-content {
+		position: relative;
+		z-index: 1;
 	}
 
 	:global(.dark) .playlist-body {

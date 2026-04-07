@@ -13,9 +13,10 @@
 	import MiniPlayer from "./organisms/MiniPlayer.svelte";
 	import PlayerBar from "./organisms/PlayerBar.svelte";
 	import Playlist from "./organisms/Playlist.svelte";
-	import type { RepeatMode, Song } from "./types";
 
 	let state: MusicPlayerState = musicPlayerStore.getState();
+	let fabAnchorRight = 0;
+	let fabAnchorBottom = 0;
 	const showFloatingPlayer = musicPlayerConfig.showFloatingPlayer;
 	const floatingEntryMode = musicPlayerConfig.floatingEntryMode ?? "default";
 	const useFabEntry = floatingEntryMode === "fab";
@@ -190,19 +191,61 @@
 		return musicPlayerStore.canSkip();
 	}
 
+	function updateFabAnchorPosition() {
+		if (typeof window === "undefined") {
+			return;
+		}
+
+		const fabButton = document.getElementById("music-fab-btn");
+		if (!fabButton) {
+			return;
+		}
+
+		const rect = fabButton.getBoundingClientRect();
+		fabAnchorRight = Math.max(0, window.innerWidth - rect.left);
+		fabAnchorBottom = Math.max(0, window.innerHeight - rect.bottom);
+	}
+
+	function handleFloatingTocBeforeOpen() {
+		musicPlayerStore.setExpanded(false);
+	}
+
 	onMount(() => {
 		unsubscribe = musicPlayerStore.subscribe((nextState) => {
 			state = nextState;
 		});
 		musicPlayerStore.initialize();
+		updateFabAnchorPosition();
+		window.addEventListener("resize", updateFabAnchorPosition, {
+			passive: true,
+		});
+		window.addEventListener("scroll", updateFabAnchorPosition, {
+			passive: true,
+		});
+		window.addEventListener(
+			"floating-toc:before-open",
+			handleFloatingTocBeforeOpen,
+		);
 	});
 
 	onDestroy(() => {
 		if (unsubscribe) {
 			unsubscribe();
 		}
+		if (typeof window !== "undefined") {
+			window.removeEventListener("resize", updateFabAnchorPosition);
+			window.removeEventListener("scroll", updateFabAnchorPosition);
+			window.removeEventListener(
+				"floating-toc:before-open",
+				handleFloatingTocBeforeOpen,
+			);
+		}
 		musicPlayerStore.destroy();
 	});
+
+	$: if (useFabEntry && state.isExpanded) {
+		requestAnimationFrame(updateFabAnchorPosition);
+	}
 </script>
 
 <svelte:window on:keydown={handleVolumeKeyDown} />
@@ -228,13 +271,16 @@
 		</div>
 	{/if}
 
-	{#if useFabEntry}
-		{#if state.isExpanded}
-			<div class="music-player-fab-anchor fixed z-[55]">
+		{#if useFabEntry}
+			{#if state.isExpanded}
+			<div
+				class="music-player-fab-anchor fixed z-[55]"
+				style={`--music-fab-anchor-right:${fabAnchorRight}px;--music-fab-anchor-bottom:${fabAnchorBottom}px;`}
+			>
 				<div
 					class="music-player-fab-shell"
 					transition:fly={{
-						y: 16,
+						x: 16,
 						duration: 280,
 						opacity: 0.12,
 						easing: cubicOut,
@@ -324,17 +370,23 @@
 
 	<style>
 		.music-player-fab-anchor {
-			right: var(--fab-group-right, 1.5rem);
-			bottom: calc(
-				var(--fab-group-bottom, 10rem) +
-					(
-						var(--fab-button-size, 3rem) *
-							var(--fab-visible-count, 1)
-					) +
-					(
-						var(--fab-group-gap, 0.5rem) *
-							(var(--fab-visible-count, 1) - 1)
-					)
+			right: var(
+				--music-fab-anchor-right,
+				var(--fab-group-right, 1.5rem)
+			);
+			bottom: var(
+				--music-fab-anchor-bottom,
+				calc(
+					var(--fab-group-bottom, 10rem) +
+						(
+							var(--fab-button-size, 3rem) *
+								var(--fab-visible-count, 1)
+						) +
+						(
+							var(--fab-group-gap, 0.5rem) *
+								(var(--fab-visible-count, 1) - 1)
+						)
+				)
 			);
 			width: 0;
 			height: 0;
@@ -344,8 +396,9 @@
 		.music-player-fab-shell {
 			position: absolute;
 			right: 0;
-			bottom: 0.75rem;
-			transform-origin: bottom right;
+			bottom: 0;
+			margin-right: 0.75rem;
+			transform-origin: center right;
 			pointer-events: auto;
 			will-change: transform, opacity;
 		}
@@ -485,25 +538,151 @@
 			transition: transform 0.2s ease;
 		}
 
+		:global(.music-surface) {
+			position: relative;
+			overflow: hidden;
+			background: linear-gradient(
+				180deg,
+				color-mix(in oklab, var(--primary) 6%, var(--card-bg)) 0%,
+				var(--card-bg) 35%
+			) !important;
+			border: 1px solid
+				color-mix(in oklab, var(--primary) 20%, var(--line-color)) !important;
+			box-shadow:
+				0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent),
+				0 14px 32px color-mix(in oklab, black 18%, transparent) !important;
+			backdrop-filter: blur(10px);
+			-webkit-backdrop-filter: blur(10px);
+		}
+
+		:global(.music-surface::after) {
+			content: "";
+			position: absolute;
+			inset: 0;
+			pointer-events: none;
+			background:
+				repeating-linear-gradient(
+					0deg,
+					transparent 0 2px,
+					color-mix(in oklab, black 7%, transparent) 2px 3px
+				),
+				radial-gradient(
+					circle at 18% 12%,
+					color-mix(in oklab, white 18%, transparent) 0%,
+					transparent 36%
+				);
+			opacity: 0.28;
+			mix-blend-mode: soft-light;
+		}
+
+		:global(.music-action-btn) {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: var(--primary);
+			background: linear-gradient(
+				160deg,
+				color-mix(in oklab, var(--primary) 9%, var(--card-bg)) 0%,
+				color-mix(in oklab, var(--primary) 3%, var(--card-bg)) 100%
+			);
+			border: 1px solid transparent;
+			box-shadow: 0 0 0 1px
+				color-mix(in oklab, var(--primary) 10%, transparent);
+			transition:
+				transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+				background 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+				box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+				border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+
+		:global(.music-action-btn:hover) {
+			background: color-mix(
+				in oklab,
+				var(--primary) 10%,
+				var(--btn-regular-bg)
+			);
+			border-color: color-mix(in oklab, var(--primary) 20%, transparent);
+			box-shadow:
+				0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent),
+				0 6px 16px color-mix(in oklab, var(--primary) 20%, transparent);
+		}
+
+		:global(.music-action-btn:active) {
+			transform: scale(0.94);
+		}
+
+		:global(.play-main-btn) {
+			color: var(--primary);
+			background: linear-gradient(
+				160deg,
+				color-mix(in oklab, var(--primary) 12%, var(--card-bg)) 0%,
+				var(--card-bg) 80%
+			);
+			border: 1px solid
+				color-mix(in oklab, var(--primary) 18%, var(--line-color));
+			box-shadow:
+				0 0 0 1px color-mix(in oklab, var(--primary) 25%, transparent),
+				0 8px 24px color-mix(in oklab, var(--primary) 22%, transparent);
+			backdrop-filter: blur(8px);
+			-webkit-backdrop-filter: blur(8px);
+			transition:
+				transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+				box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+				background 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+
+		:global(.play-main-btn:hover:not(:disabled)) {
+			transform: scale(1.03);
+			box-shadow:
+				0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent),
+				0 12px 30px color-mix(in oklab, var(--primary) 30%, transparent);
+		}
+
+		:global(.play-main-btn:active:not(:disabled)) {
+			transform: scale(0.94);
+		}
+
+		:global(.music-track) {
+			background: color-mix(
+				in oklab,
+				var(--primary) 9%,
+				var(--line-color)
+			) !important;
+			border: 1px solid
+				color-mix(in oklab, var(--primary) 16%, transparent);
+		}
+
+		:global(.music-track-fill) {
+			background: color-mix(in oklab, var(--primary) 88%, white 12%) !important;
+		}
+
+		:global(.playlist-item-base) {
+			border: 1px solid transparent;
+			background: color-mix(in oklab, var(--primary) 4%, transparent);
+		}
+
+		:global(.playlist-item-base:hover) {
+			border-color: color-mix(in oklab, var(--primary) 18%, transparent);
+			box-shadow: inset 0 0 0 1px
+				color-mix(in oklab, var(--primary) 16%, transparent);
+		}
+
 		@media (max-width: 768px) {
 			.music-player-fab-anchor {
-				right: var(--fab-group-right, 0.75rem) !important;
-				bottom: calc(
-					var(--fab-group-bottom, 5rem) +
-						(
-							var(--fab-button-size, 2.75rem) *
-								var(--fab-visible-count, 1)
-						) +
-						(
-							var(--fab-group-gap, 0.5rem) *
-								(var(--fab-visible-count, 1) - 1)
-						)
+				right: var(
+					--music-fab-anchor-right,
+					var(--fab-group-right, 0.75rem)
+				) !important;
+				bottom: var(
+					--music-fab-anchor-bottom,
+					var(--fab-group-bottom, 5rem)
 				) !important;
 			}
 
 			.music-player-fab-shell {
 				right: 0 !important;
-				bottom: 0.75rem !important;
+				bottom: 0 !important;
+				margin-right: 0.5rem !important;
 			}
 
 			.music-player {
@@ -546,23 +725,20 @@
 
 		@media (max-width: 480px) {
 			.music-player-fab-anchor {
-				right: var(--fab-group-right, 0.5rem) !important;
-				bottom: calc(
-					var(--fab-group-bottom, 4.5rem) +
-						(
-							var(--fab-button-size, 2.5rem) *
-								var(--fab-visible-count, 1)
-						) +
-						(
-							var(--fab-group-gap, 0.5rem) *
-								(var(--fab-visible-count, 1) - 1)
-						)
+				right: var(
+					--music-fab-anchor-right,
+					var(--fab-group-right, 0.5rem)
+				) !important;
+				bottom: var(
+					--music-fab-anchor-bottom,
+					var(--fab-group-bottom, 4.5rem)
 				) !important;
 			}
 
 			.music-player-fab-shell {
 				right: 0 !important;
-				bottom: 0.75rem !important;
+				bottom: 0 !important;
+				margin-right: 0.5rem !important;
 			}
 
 			.music-player {
@@ -630,24 +806,6 @@
 			:global(.bottom-controls > div:nth-child(2)) {
 				height: 12px;
 			}
-		}
-
-		@keyframes spin-continuous {
-			from {
-				transform: rotate(0deg);
-			}
-			to {
-				transform: rotate(360deg);
-			}
-		}
-
-		:global(.cover-container img) {
-			animation: spin-continuous 3s linear infinite;
-			animation-play-state: paused;
-		}
-
-		:global(.cover-container img.spinning) {
-			animation-play-state: running;
 		}
 
 		:global(button.bg-\\[var\\(--primary\\)\\]) {

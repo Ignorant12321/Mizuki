@@ -37,5 +37,6 @@
 		onkeydown={onSliderKeyDown}
 		{ariaLabel}
 	/>
+	<!-- svelte-ignore slot_element_deprecated -->
 	<slot />
 </div>

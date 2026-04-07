@@ -2,21 +2,17 @@
 	import AccordionDrawer from "../../common/AccordionDrawer.svelte";
 	import PlaylistSwitcher from "../../music-player/atoms/PlaylistSwitcher.svelte";
 	import type { Song } from "../../music-player/types";
+	import type { ResolvedPlaylistConfig } from "../../../../stores/musicPlaylistConfig";
 	import TrackListItem from "./TrackListItem.svelte";
-
-	interface PlaylistOption {
-		name: string;
-	}
 
 	interface Props {
 		playlist: Song[];
-		playlists: PlaylistOption[];
+		playlists: ResolvedPlaylistConfig[];
 		currentPlaylistIndex: number;
 		isPlaylistLoading: boolean;
 		currentIndex: number;
 		isPlaying: boolean;
 		show: boolean;
-		onClose: () => void;
 		onPlaylistSourceSelect: (index: number) => void;
 		onPlaySong: (index: number) => void;
 	}
@@ -29,7 +25,6 @@
 		currentIndex,
 		isPlaying,
 		show,
-		onClose,
 		onPlaylistSourceSelect,
 		onPlaySong,
 	}: Props = $props();
@@ -48,19 +43,33 @@
 			</div>
 			<div
 				class="playlist-content"
+				class:is-loading={isPlaylistLoading}
 				role="listbox"
 				aria-label="Playlist"
 				aria-multiselectable="false"
 			>
-				{#each playlist as song, index}
-					<TrackListItem
-						{song}
-						{index}
-						isCurrent={index === currentIndex}
-						{isPlaying}
-						onclick={() => onPlaySong(index)}
-					/>
-				{/each}
+				{#if isPlaylistLoading}
+					{#each Array.from({ length: 4 }) as _, index}
+						<div class="track-skeleton" aria-hidden="true">
+							<div class="track-skeleton-index"></div>
+							<div class="track-skeleton-cover"></div>
+							<div class="track-skeleton-content">
+								<div class="track-skeleton-line title"></div>
+								<div class="track-skeleton-line artist"></div>
+							</div>
+						</div>
+					{/each}
+				{:else}
+					{#each playlist as song, index}
+						<TrackListItem
+							{song}
+							{index}
+							isCurrent={index === currentIndex}
+							{isPlaying}
+							onclick={() => onPlaySong(index)}
+						/>
+					{/each}
+				{/if}
 			</div>
 		</div>
 	</div>
@@ -74,46 +83,154 @@
 	.playlist-shell {
 		margin-top: 0.5rem;
 		padding-top: 0.4rem;
-		border-top: 1px solid color-mix(in oklab, var(--primary) 14%, transparent);
+		border-top: 1px solid color-mix(in oklab, var(--line-color) 88%, transparent);
 	}
 
 	.playlist-body {
-		padding: 0.28rem 0.28rem 0.28rem;
+		padding: 0.3rem 0.32rem 0.32rem;
 		border-radius: 0.9rem;
-		background: color-mix(in oklab, var(--primary) 5%, transparent);
-		border: 1px solid color-mix(in oklab, var(--primary) 10%, transparent);
+		background: color-mix(in oklab, var(--card-bg) 96%, white 4%);
+		border: 1px solid color-mix(in oklab, var(--line-color) 88%, transparent);
 	}
 
 	.playlist-source-wrap {
-		padding: 0.16rem 0.22rem 0.4rem;
-		margin-bottom: 0.04rem;
+		position: relative;
+		z-index: 2;
+		overflow: visible;
+		padding: 0.12rem 0.18rem 0.34rem;
+		margin-bottom: 0.02rem;
 		border-bottom: 1px solid
-			color-mix(in oklab, var(--primary) 14%, transparent);
+			color-mix(in oklab, var(--line-color) 82%, transparent);
 	}
 
 	.playlist-content {
+		position: relative;
+		z-index: 1;
 		overflow-y: auto;
 		max-height: 12rem;
-		padding: 0.32rem 0.25rem 0.22rem 0.08rem;
+		min-height: 9.8rem;
+		padding: 0.32rem 0.4rem 0.22rem 0.08rem;
 		display: flex;
 		flex-direction: column;
 		gap: 0.38rem;
+		scrollbar-gutter: stable;
 		scrollbar-width: thin;
-		scrollbar-color: color-mix(in oklab, var(--primary) 42%, transparent)
+		scrollbar-color: color-mix(in oklab, var(--line-color) 78%, transparent)
 			transparent;
 	}
 
 	.playlist-content::-webkit-scrollbar {
-		width: 5px;
+		width: 8px;
+	}
+
+	.playlist-content::-webkit-scrollbar-track {
+		background: transparent;
+		margin-block: 0.25rem;
 	}
 
 	.playlist-content::-webkit-scrollbar-thumb {
-		background: color-mix(in oklab, var(--primary) 38%, transparent);
+		background: color-mix(in oklab, var(--line-color) 70%, transparent);
+		border: 2px solid transparent;
+		background-clip: content-box;
 		border-radius: 9999px;
 	}
 
+	.playlist-content::-webkit-scrollbar-thumb:hover {
+		background: color-mix(in oklab, var(--primary) 30%, var(--line-color));
+		border: 2px solid transparent;
+		background-clip: content-box;
+	}
+
+	.track-skeleton {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.56rem 0.62rem;
+		border-radius: 0.92rem;
+		border: 1px solid color-mix(in oklab, var(--line-color) 86%, transparent);
+		background: color-mix(in oklab, var(--card-bg) 95%, white 5%);
+	}
+
+	.track-skeleton-index {
+		width: 1.35rem;
+		height: 0.7rem;
+		flex: 0 0 1.35rem;
+		border-radius: 9999px;
+		background: color-mix(in oklab, var(--line-color) 78%, transparent);
+	}
+
+	.track-skeleton-cover {
+		width: 2.28rem;
+		height: 2.28rem;
+		flex-shrink: 0;
+		border-radius: 0.62rem;
+		background: color-mix(in oklab, var(--line-color) 74%, transparent);
+	}
+
+	.track-skeleton-content {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+	}
+
+	.track-skeleton-line {
+		height: 0.58rem;
+		border-radius: 9999px;
+		background: color-mix(in oklab, var(--line-color) 72%, transparent);
+	}
+
+	.track-skeleton-line.title {
+		width: 66%;
+	}
+
+	.track-skeleton-line.artist {
+		width: 48%;
+	}
+
+	.playlist-content.is-loading .track-skeleton {
+		animation: playlistSkeletonPulse 1.2s ease-in-out infinite;
+	}
+
+	@keyframes playlistSkeletonPulse {
+		0%,
+		100% {
+			opacity: 0.55;
+		}
+		50% {
+			opacity: 1;
+		}
+	}
+
+	.playlist-source-wrap :global(.playlist-switcher-title) {
+		color: var(--content-meta);
+	}
+
+	.playlist-source-wrap :global(.playlist-trigger) {
+		border-color: color-mix(in oklab, var(--line-color) 82%, transparent);
+		background: color-mix(in oklab, var(--card-bg) 92%, white 8%);
+		color: var(--content-main);
+		box-shadow: none;
+	}
+
+	.playlist-source-wrap :global(.playlist-trigger:hover:not(:disabled)) {
+		border-color: color-mix(in oklab, var(--line-color) 70%, transparent);
+		background: color-mix(in oklab, var(--card-bg) 88%, white 12%);
+	}
+
+	.playlist-source-wrap :global(.playlist-menu) {
+		border-color: color-mix(in oklab, var(--line-color) 84%, transparent);
+		background: color-mix(in oklab, var(--card-bg) 98%, white 2%);
+		box-shadow: 0 8px 20px color-mix(in oklab, black 12%, transparent);
+	}
+
+	.playlist-source-wrap :global(.playlist-option.selected) {
+		background: color-mix(in oklab, var(--primary) 10%, transparent);
+	}
+
 	:global(.dark) .playlist-body {
-		background: color-mix(in oklab, var(--card-bg) 82%, black 18%);
-		border-color: color-mix(in oklab, var(--primary) 20%, transparent);
+		background: color-mix(in oklab, var(--card-bg) 86%, black 14%);
+		border-color: color-mix(in oklab, var(--line-color) 84%, transparent);
 	}
 </style>

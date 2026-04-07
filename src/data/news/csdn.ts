@@ -130,36 +130,34 @@ function extractCsdnSections(value: string): CsdnSections {
 		.trim();
 
 	const lines = splitLines(normalized);
+	const quickIndex = lines.findIndex((line) =>
+		line.includes("一分钟速览新闻点"),
+	);
+	const firstSectionIndex = lines.findIndex((line) =>
+		sectionMarkers.some((marker) => line === marker),
+	);
+	const intro =
+		quickIndex > 0
+			? lines.slice(0, quickIndex).slice(0, 4)
+			: lines.slice(0, Math.min(4, lines.length));
+	const tocStart = quickIndex >= 0 ? quickIndex + 1 : -1;
+	const tocEnd =
+		firstSectionIndex > tocStart ? firstSectionIndex : lines.length;
+	const toc =
+		tocStart >= 0 && tocStart < tocEnd
+			? uniqueLines(lines.slice(tocStart, tocEnd)).slice(0, 24)
+			: [];
+	const body =
+		firstSectionIndex >= 0
+			? lines.slice(firstSectionIndex)
+			: lines.slice(Math.max(quickIndex + 1, 0));
+
 	return {
-		intro: [],
-		toc: [],
-		body: [],
+		intro,
+		toc,
+		body,
 		sectionMarkers,
 		formatted: formatSections(lines, sectionMarkers),
-		...(() => {
-			const quickIndex = lines.findIndex((line) =>
-				line.includes("一分钟速览新闻点"),
-			);
-			const firstSectionIndex = lines.findIndex((line) =>
-				sectionMarkers.some((marker) => line === marker),
-			);
-			const intro =
-				quickIndex > 0
-					? lines.slice(0, quickIndex).slice(0, 4)
-					: lines.slice(0, Math.min(4, lines.length));
-			const tocStart = quickIndex >= 0 ? quickIndex + 1 : -1;
-			const tocEnd =
-				firstSectionIndex > tocStart ? firstSectionIndex : lines.length;
-			const toc =
-				tocStart >= 0 && tocStart < tocEnd
-					? uniqueLines(lines.slice(tocStart, tocEnd)).slice(0, 24)
-					: [];
-			const body =
-				firstSectionIndex >= 0
-					? lines.slice(firstSectionIndex)
-					: lines.slice(Math.max(quickIndex + 1, 0));
-			return { intro, toc, body, sectionMarkers };
-		})(),
 	};
 }
 
@@ -265,7 +263,7 @@ export function parseCsdnFeed(xml: string, source: NewsFeedSource): NewsItem[] {
 	const itemXmlList = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
 
 	return itemXmlList
-		.map((itemXml) => {
+		.map((itemXml: string) => {
 			const title =
 				stripNewsHtml(extractFirstTag(itemXml, "title")) || "无标题";
 			const link =

@@ -9,6 +9,9 @@
 	let unsubscribe: (() => void) | undefined;
 
 	function toggleControlCenter() {
+		if (!state.isExpanded) {
+			window.dispatchEvent(new CustomEvent("music-panel:before-open"));
+		}
 		musicPlayerStore.toggleExpanded();
 	}
 
@@ -32,6 +35,7 @@
 </script>
 
 <button
+	id="music-fab-btn"
 	type="button"
 	class:active={state.isExpanded}
 	class:playing={state.isPlaying}

@@ -55,8 +55,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 	.floating-toc-panel {
 		position: absolute;
-		bottom: calc(100% + 0.75rem);
-		right: 0;
+		right: calc(100% + 0.75rem);
+		bottom: 0;
 		width: 18rem;
 		max-height: 60vh;
 		background: var(--card-bg);
@@ -66,7 +66,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		overflow: hidden;
 		opacity: 0;
 		visibility: hidden;
-		transform: translateY(10px) scale(0.95);
+		transform: translateX(10px) scale(0.95);
 		transition: all 0.2s ease;
 		pointer-events: none;
 		z-index: 52;
@@ -75,7 +75,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 	.floating-toc-panel.show {
 		opacity: 1;
 		visibility: visible;
-		transform: translateY(0) scale(1);
+		transform: translateX(0) scale(1);
 		pointer-events: auto;
 	}
 
@@ -112,7 +112,8 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 		.floating-toc-panel {
 			width: 85vw;
 			max-width: 20rem;
-			right: 0;
+			right: calc(100% + 0.5rem);
+			bottom: 0;
 		}
 	}
 
@@ -233,6 +234,9 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 			this.bindEvents();
 			this.generateTOC();
 			this.observeContent();
+			window.addEventListener("music-panel:before-open", () => {
+				this.close();
+			});
 		}
 
 		observeContent() {
@@ -418,6 +422,7 @@ const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
 		const isHidden = !panel.classList.contains("show");
 		if (isHidden) {
+			window.dispatchEvent(new CustomEvent("floating-toc:before-open"));
 			panel.classList.add("show");
 			btn?.classList.add("active");
 		} else {

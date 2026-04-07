@@ -22,7 +22,7 @@
 
 {#if mode === "shuffle"}
 	<button
-		class="w-10 h-10 rounded-lg"
+		class="music-action-btn w-10 h-10 rounded-lg"
 		class:btn-regular={isActive}
 		class:btn-plain={!isActive}
 		{onclick}
@@ -32,7 +32,7 @@
 	</button>
 {:else}
 	<button
-		class="w-10 h-10 rounded-lg"
+		class="music-action-btn w-10 h-10 rounded-lg"
 		class:btn-regular={isActive}
 		class:btn-plain={!isActive}
 		{onclick}

@@ -2,9 +2,6 @@ import Key from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 
 import {
-	DEFAULT_METING_API,
-	DEFAULT_METING_SERVER,
-	DEFAULT_METING_TYPE,
 	DEFAULT_SONG,
 	LOCAL_PLAYLIST,
 	SKIP_ERROR_DELAY,
@@ -12,16 +9,11 @@ import {
 } from "@/components/widgets/music-player/constants";
 import type { RepeatMode, Song } from "@/components/widgets/music-player/types";
 import { musicPlayerConfig } from "@/config";
-import type { MusicPlaylistConfig } from "@/types/config";
-
-export interface ResolvedPlaylistConfig {
-	name: string;
-	mode: "meting" | "local";
-	meting_api: string;
-	id: string;
-	server: string;
-	type: string;
-}
+import {
+	buildPlaylistCacheKey,
+	resolvePlaylistsFromConfig,
+	type ResolvedPlaylistConfig,
+} from "./musicPlaylistConfig";
 
 export interface MusicPlayerState {
 	currentSong: Song;
@@ -272,7 +264,7 @@ class MusicPlayerStore {
 	}
 
 	private async loadPlaylist(): Promise<void> {
-		const playlists = this.normalizePlaylists(musicPlayerConfig.playlists);
+		const playlists = resolvePlaylistsFromConfig(musicPlayerConfig);
 		this.state.playlists = playlists;
 		this.state.currentPlaylistIndex = 0;
 		this.state.currentPlaylistName = playlists[0]?.name ?? "";
@@ -284,21 +276,6 @@ class MusicPlayerStore {
 		}
 
 		await this.loadPlaylistAtIndex(0, false);
-	}
-
-	private normalizePlaylists(
-		playlists: MusicPlaylistConfig[] | undefined,
-	): ResolvedPlaylistConfig[] {
-		return (playlists ?? [])
-			.filter((playlist) => !!playlist?.name)
-			.map((playlist) => ({
-				name: playlist.name,
-				mode: playlist.mode ?? "meting",
-				meting_api: playlist.meting_api ?? DEFAULT_METING_API,
-				id: playlist.id ?? "",
-				server: playlist.server ?? DEFAULT_METING_SERVER,
-				type: playlist.type ?? DEFAULT_METING_TYPE,
-			}));
 	}
 
 	private cloneSongs(songs: Song[]): Song[] {
@@ -328,7 +305,7 @@ class MusicPlayerStore {
 		const requestToken = ++this.playlistRequestToken;
 
 		if (source.mode === "local") {
-			const cacheKey = `${source.mode}:${source.meting_api}:${source.server}:${source.type}:${source.id}`;
+			const cacheKey = buildPlaylistCacheKey(source);
 			this.playlistCache.set(cacheKey, this.cloneSongs(LOCAL_PLAYLIST));
 			this.applyPlaylistSongs(
 				index,
@@ -340,7 +317,7 @@ class MusicPlayerStore {
 			return;
 		}
 
-		const cacheKey = `${source.mode}:${source.meting_api}:${source.server}:${source.type}:${source.id}`;
+		const cacheKey = buildPlaylistCacheKey(source);
 		const cachedSongs = this.playlistCache.get(cacheKey);
 		if (cachedSongs) {
 			this.applyPlaylistSongs(
@@ -666,10 +643,18 @@ class MusicPlayerStore {
 	}
 
 	toggleExpanded(): void {
-		this.state.isExpanded = !this.state.isExpanded;
+		this.setExpanded(!this.state.isExpanded);
+	}
+
+	setExpanded(expanded: boolean): void {
+		if (this.state.isExpanded === expanded) {
+			return;
+		}
+
+		this.state.isExpanded = expanded;
 		// 保持与原先 usePlayerState.toggleExpandedUI 一致的联动行为：
 		// 展开时强制取消隐藏，并关闭播放列表，避免状态组合异常
-		if (this.state.isExpanded) {
+		if (expanded) {
 			this.state.showPlaylist = false;
 			this.state.isHidden = false;
 		}

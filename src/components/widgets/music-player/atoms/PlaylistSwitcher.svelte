@@ -4,13 +4,10 @@
 
 	import Key from "../../../../i18n/i18nKey";
 	import { i18n } from "../../../../i18n/translation";
-
-	interface PlaylistOption {
-		name: string;
-	}
+	import type { ResolvedPlaylistConfig } from "../../../../stores/musicPlaylistConfig";
 
 	interface Props {
-		playlists: PlaylistOption[];
+		playlists: ResolvedPlaylistConfig[];
 		currentIndex: number;
 		isLoading?: boolean;
 		onSelect: (index: number) => void;
@@ -19,8 +16,9 @@
 	let { playlists, currentIndex, isLoading = false, onSelect }: Props =
 		$props();
 
-	let isOpen = false;
+	let isOpen = $state(false);
 	let rootEl: HTMLDivElement | null = null;
+	let triggerEl: HTMLButtonElement | null = null;
 
 	function getCurrentName(): string {
 		return playlists[currentIndex]?.name ?? "-";
@@ -37,8 +35,11 @@
 		isOpen = !isOpen;
 	}
 
-	function closeMenu(): void {
+	function closeMenu(focusTrigger = false): void {
 		isOpen = false;
+		if (focusTrigger) {
+			triggerEl?.focus();
+		}
 	}
 
 	function selectOption(index: number): void {
@@ -46,8 +47,12 @@
 		closeMenu();
 	}
 
-	function handleOptionPointerDown(event: PointerEvent, index: number): void {
-		event.preventDefault();
+	function handleTriggerClick(event: MouseEvent): void {
+		event.stopPropagation();
+		toggleMenu();
+	}
+
+	function handleOptionClick(event: MouseEvent, index: number): void {
 		event.stopPropagation();
 		selectOption(index);
 	}
@@ -55,7 +60,26 @@
 	function onTriggerKeyDown(event: KeyboardEvent): void {
 		if (event.key === "Escape") {
 			event.preventDefault();
-			closeMenu();
+			closeMenu(true);
+		}
+	}
+
+	function onOptionKeyDown(event: KeyboardEvent, index: number): void {
+		if (event.key === "Enter" || event.key === " ") {
+			event.preventDefault();
+			selectOption(index);
+			return;
+		}
+		if (event.key === "Escape") {
+			event.preventDefault();
+			closeMenu(true);
+		}
+	}
+
+	function onMenuKeyDown(event: KeyboardEvent): void {
+		if (event.key === "Escape") {
+			event.preventDefault();
+			closeMenu(true);
 		}
 	}
 
@@ -70,16 +94,26 @@
 			closeMenu();
 		};
 
-		window.addEventListener("pointerdown", handleWindowPointerDown);
+		window.addEventListener("pointerdown", handleWindowPointerDown, true);
 
 		return () => {
-			window.removeEventListener("pointerdown", handleWindowPointerDown);
+			window.removeEventListener(
+				"pointerdown",
+				handleWindowPointerDown,
+				true,
+			);
 		};
 	});
 
 	$effect(() => {
 		currentIndex;
 		isOpen = false;
+	});
+
+	$effect(() => {
+		if (!canOpen() && isOpen) {
+			isOpen = false;
+		}
 	});
 </script>
 
@@ -88,10 +122,9 @@
 		<Icon icon="material-symbols:queue-music-rounded" class="text-lg" />
 		<span>{i18n(Key.musicPlayerPlaylistSource)}</span>
 		{#if isLoading}
-			<Icon
-				icon="material-symbols:progress-activity-rounded"
-				class="switcher-loading"
-			/>
+			<span class="switcher-loading">
+				<Icon icon="material-symbols:progress-activity-rounded" />
+			</span>
 		{/if}
 	</div>
 
@@ -99,7 +132,8 @@
 		<button
 			type="button"
 			class="playlist-trigger"
-			onclick={toggleMenu}
+			bind:this={triggerEl}
+			onclick={handleTriggerClick}
 			onkeydown={onTriggerKeyDown}
 			disabled={!canOpen()}
 			aria-haspopup="listbox"
@@ -107,26 +141,36 @@
 			aria-label={i18n(Key.musicPlayerPlaylistSource)}
 		>
 			<span class="playlist-current-label">{getCurrentName()}</span>
-			<Icon
-				icon="material-symbols:keyboard-arrow-down-rounded"
-				class="playlist-arrow"
-				style="color: inherit"
-			/>
+			<span class="playlist-arrow">
+				<Icon
+					icon="material-symbols:keyboard-arrow-down-rounded"
+					style="color: inherit"
+				/>
+			</span>
 		</button>
 
 		{#if isOpen}
-			<div class="playlist-menu" role="listbox">
+			<div
+				class="playlist-menu"
+				role="listbox"
+				tabindex="-1"
+				onkeydown={onMenuKeyDown}
+			>
 				{#each playlists as playlist, index}
 					<button
 						type="button"
 						role="option"
 						class="playlist-option"
 						class:selected={index === currentIndex}
-						onpointerdown={(event) => handleOptionPointerDown(event, index)}
+						aria-selected={index === currentIndex}
+						onclick={(event) => handleOptionClick(event, index)}
+						onkeydown={(event) => onOptionKeyDown(event, index)}
 					>
 						<span class="playlist-option-label">{playlist.name}</span>
 						{#if index === currentIndex}
-							<Icon icon="material-symbols:check-rounded" class="playlist-check" />
+							<span class="playlist-check">
+								<Icon icon="material-symbols:check-rounded" />
+							</span>
 						{/if}
 					</button>
 				{/each}
@@ -154,6 +198,7 @@
 		color: var(--content-meta);
 	}
 
+	/* svelte-ignore css_unused_selector */
 	.switcher-loading {
 		margin-left: auto;
 		font-size: 0.95rem;
@@ -163,6 +208,7 @@
 
 	.playlist-dropdown {
 		position: relative;
+		z-index: 2;
 	}
 
 	.playlist-trigger {
@@ -213,6 +259,7 @@
 		color: var(--btn-content);
 	}
 
+	/* svelte-ignore css_unused_selector */
 	.playlist-arrow {
 		flex-shrink: 0;
 		font-size: 1rem;
@@ -221,6 +268,7 @@
 		transition: transform 180ms ease;
 	}
 
+	/* svelte-ignore css_unused_selector */
 	.playlist-dropdown.open .playlist-arrow {
 		transform: rotate(180deg);
 	}
@@ -240,7 +288,7 @@
 		border: 1px solid color-mix(in oklab, var(--primary) 24%, var(--line-color));
 		background: var(--float-panel-bg);
 		box-shadow: 0 10px 24px color-mix(in oklab, black 16%, transparent);
-		z-index: 30;
+		z-index: 80;
 		scrollbar-width: thin;
 		scrollbar-color: color-mix(in oklab, var(--primary) 40%, transparent)
 			transparent;
@@ -288,6 +336,7 @@
 		background: color-mix(in oklab, var(--primary) 22%, var(--btn-regular-bg));
 	}
 
+	/* svelte-ignore css_unused_selector */
 	.playlist-check {
 		flex-shrink: 0;
 		font-size: 0.95rem;

@@ -21,7 +21,7 @@
 </script>
 
 <div
-	class="flex-1 h-2 bg-[var(--btn-regular-bg)] rounded-full cursor-pointer touch-none"
+	class="music-track flex-1 h-2 bg-[var(--btn-regular-bg)] rounded-full cursor-pointer touch-none"
 	use:volumeBarRef
 	{onpointerdown}
 	{onkeydown}
@@ -33,7 +33,7 @@
 	aria-valuenow={volume * 100}
 >
 	<div
-		class="h-full bg-[var(--primary)] rounded-full transition-all"
+		class="music-track-fill h-full bg-[var(--primary)] rounded-full transition-all"
 		class:duration-100={!isVolumeDragging}
 		class:duration-0={isVolumeDragging}
 		style="width: {volume * 100}%"

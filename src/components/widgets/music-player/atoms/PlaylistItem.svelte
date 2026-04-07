@@ -33,7 +33,7 @@
 </script>
 
 <div
-	class="playlist-item"
+	class="playlist-item playlist-item-base"
 	class:item-active={isCurrent}
 	{onclick}
 	onkeydown={(e) => {
@@ -48,12 +48,13 @@
 >
 	<div class="song-order">
 		{#if isCurrent && isPlaying}
-			<Icon
-				icon="material-symbols:graphic-eq"
-				class="order-icon animate-pulse"
-			/>
+			<span class="order-icon animate-pulse">
+				<Icon icon="material-symbols:graphic-eq" />
+			</span>
 		{:else if isCurrent}
-			<Icon icon="material-symbols:pause" class="order-icon" />
+			<span class="order-icon">
+				<Icon icon="material-symbols:pause" />
+			</span>
 		{:else}
 			<span class="order-index">{index + 1}</span>
 		{/if}
@@ -119,6 +120,7 @@
 		color: var(--content-meta);
 	}
 
+	/* svelte-ignore css_unused_selector */
 	.order-icon {
 		font-size: 1.05rem;
 		color: var(--primary);
@@ -159,6 +161,10 @@
 		color: var(--primary);
 	}
 
+	:global(.dark) .playlist-item:hover .song-title {
+		color: var(--primary);
+	}
+
 	.song-artist {
 		font-size: 0.8rem;
 		margin-top: 0.18rem;
@@ -170,5 +176,9 @@
 
 	.item-active .song-artist {
 		color: color-mix(in oklab, var(--primary) 82%, var(--content-meta));
+	}
+
+	:global(.dark) .playlist-item:hover .song-artist {
+		color: color-mix(in oklab, var(--primary) 82%, white 18%);
 	}
 </style>

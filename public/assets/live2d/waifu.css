@@ -1,18 +1,18 @@
 #waifu-toggle {
   background-color: #fa0;
-  border-radius: 5px;
+  border-radius: calc(5px * var(--live2d-scale-current));
   bottom: 66px;
   cursor: pointer;
   display: flex;
   justify-content: flex-end;
   left: 0;
   margin-left: -100px;
-  padding: 5px;
+  padding: calc(5px * var(--live2d-scale-current));
   position: fixed;
   transition: margin-left 1s;
-  width: 60px;
+  width: calc(60px * var(--live2d-scale-current));
   color: inherit;
-  z-index: 3000;
+  z-index: 30;
 }
 
 #waifu-toggle.waifu-toggle-active {
@@ -25,10 +25,11 @@
 
 #waifu-toggle svg {
   fill: currentColor;
-  height: 25px;
+  height: calc(25px * var(--live2d-scale-current));
 }
 
 #waifu {
+  --live2d-scale-current: var(--live2d-scale-desktop, 1);
   bottom: -500px;
   color: inherit;
   left: 0;
@@ -37,7 +38,7 @@
   transition:
     transform 0.3s ease-in-out,
     bottom 3s ease-in-out;
-  z-index: 3000;
+  z-index: 30;
   left: auto;
   right: auto;
   bottom: var(--live2d-bottom-desktop, 0);
@@ -56,23 +57,24 @@
 }
 
 #waifu-tips {
+  z-index: 32;
   animation: waifu-shake 50s ease-in-out 5s infinite;
   background-color: var(--primary);
   border: 1px solid color-mix(in oklab, var(--primary) 72%, black 28%);
-  border-radius: 12px;
+  border-radius: calc(12px * var(--live2d-scale-current));
   box-shadow: 0 3px 15px 2px color-mix(in oklab, var(--primary) 30%, transparent);
   color: inherit;
-  font-size: 14px;
-  line-height: 24px;
-  margin: -30px 20px;
-  min-height: 70px;
+  font-size: calc(14px * var(--live2d-scale-current));
+  line-height: calc(24px * var(--live2d-scale-current));
+  margin: calc(-30px * var(--live2d-scale-current)) calc(20px * var(--live2d-scale-current));
+  min-height: calc(70px * var(--live2d-scale-current));
   opacity: 0;
   overflow: hidden;
-  padding: 5px 10px;
+  padding: calc(5px * var(--live2d-scale-current)) calc(10px * var(--live2d-scale-current));
   position: absolute;
   text-overflow: ellipsis;
   transition: opacity 1s;
-  width: 250px;
+  width: calc(250px * var(--live2d-scale-current));
   word-break: break-all;
 }
 
@@ -98,9 +100,9 @@
 
 #live2d {
   cursor: grab;
-  height: 300px;
+  height: calc(var(--live2d-base-height, 300px) * var(--live2d-scale-current));
   position: relative;
-  width: 300px;
+  width: calc(var(--live2d-base-width, 300px) * var(--live2d-scale-current));
 }
 
 #live2d:active {
@@ -109,21 +111,21 @@
 
 #waifu-tool {
   align-items: center;
-  background: rgb(255 255 255 / 92%);
-  border: 1px solid rgb(15 23 42 / 10%);
-  border-radius: 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   color: rgb(15 23 42 / 82%);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: calc(5px * var(--live2d-scale-current));
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  padding: 7px 6px;
+  padding: calc(7px * var(--live2d-scale-current)) calc(6px * var(--live2d-scale-current));
   position: absolute;
-  right: -10px;
-  top: 45px;
-  z-index: 3001;
+  right: calc(-10px * var(--live2d-scale-current));
+  top: calc(45px * var(--live2d-scale-current));
+  z-index: 31;
   transition: opacity 0.22s ease;
 }
 
@@ -137,16 +139,16 @@
   cursor: pointer;
   display: block;
   fill: currentColor;
-  height: 25px;
+  height: calc(25px * var(--live2d-scale-current));
   transition: fill 0.3s;
 }
 
 #waifu-tool span {
-  border-radius: 8px;
+  border-radius: calc(8px * var(--live2d-scale-current));
   cursor: pointer;
   display: flex;
   line-height: 0;
-  padding: 3px;
+  padding: calc(3px * var(--live2d-scale-current));
   transition: background-color 0.2s ease;
 }
 
@@ -159,8 +161,6 @@
 }
 
 html.dark #waifu-tool {
-  background: rgb(17 24 39 / 92%);
-  border-color: rgb(255 255 255 / 18%);
   color: rgb(255 255 255 / 86%);
 }
 
@@ -226,6 +226,10 @@ html[data-live2d-desktop-side="right"] #waifu-toggle:hover {
 }
 
 @media (max-width: 768px), (hover: none) {
+  #waifu {
+    --live2d-scale-current: var(--live2d-scale-mobile, 0.8);
+  }
+
   html[data-live2d-mobile-side="left"] #waifu {
     left: var(--live2d-offset-mobile, 0.5rem);
     right: auto;

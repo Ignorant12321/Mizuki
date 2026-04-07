@@ -78,7 +78,7 @@
 	</div>
 {:else if interactive}
 	<div
-		class={`${containerClasses[size]} cursor-pointer`}
+		class={`${containerClasses[size]} music-cover cursor-pointer`}
 		{onclick}
 		onkeydown={(e) => {
 			if (e.key === "Enter" || e.key === " ") {
@@ -92,17 +92,26 @@
 			? i18n(Key.musicPlayerPause)
 			: i18n(Key.musicPlayerPlay)}
 	>
-		<img
-			src={getAssetPath(cover)}
-			alt={i18n(Key.musicPlayerCover)}
-			loading="eager"
-			fetchpriority="high"
-			class="w-full h-full object-cover transition-transform duration-300"
-			class:spinning={isPlaying && !isLoading}
-			class:animate-pulse={isLoading}
-		/>
 		<div
-			class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+			class="cover-disc spinning"
+			class:paused={!isPlaying || isLoading}
+		></div>
+		<div
+			class="cover-label spinning"
+			class:paused={!isPlaying || isLoading}
+		>
+			<img
+				src={getAssetPath(cover)}
+				alt={i18n(Key.musicPlayerCover)}
+				loading="eager"
+				fetchpriority="high"
+				class="cover-art w-full h-full object-cover transition-transform duration-300"
+				class:animate-pulse={isLoading}
+			/>
+		</div>
+		<span class="cover-hole" aria-hidden="true"></span>
+		<div
+			class="cover-hover-mask absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
 		>
 			{#if isLoading}
 				<Icon icon="eos-icons:loading" class="text-white text-xl" />
@@ -120,28 +129,185 @@
 		</div>
 	</div>
 {:else}
-	<div class={containerClasses[size]}>
-		<img
-			src={getAssetPath(cover)}
-			alt={i18n(Key.musicPlayerCover)}
-			loading="eager"
-			fetchpriority="high"
-			class="w-full h-full object-cover transition-transform duration-300"
-			class:spinning={isPlaying && !isLoading}
-			class:animate-pulse={isLoading}
-		/>
+	<div class={`${containerClasses[size]} music-cover`}>
+		<div
+			class="cover-disc spinning"
+			class:paused={!isPlaying || isLoading}
+		></div>
+		<div
+			class="cover-label spinning"
+			class:paused={!isPlaying || isLoading}
+		>
+			<img
+				src={getAssetPath(cover)}
+				alt={i18n(Key.musicPlayerCover)}
+				loading="eager"
+				fetchpriority="high"
+				class="cover-art w-full h-full object-cover transition-transform duration-300"
+				class:animate-pulse={isLoading}
+			/>
+		</div>
+		<span class="cover-hole" aria-hidden="true"></span>
 	</div>
 {/if}
 
 <style>
-	.cover-container img {
-		animation: spin-continuous 3s linear infinite;
-		animation-play-state: paused;
-		transform-origin: center;
+	.music-cover {
+		isolation: isolate;
+		border: 1px solid color-mix(in oklab, white 16%, var(--line-color));
+		background: radial-gradient(
+			circle at 50% 50%,
+			color-mix(in oklab, white 10%, var(--card-bg)) 0% 15%,
+			color-mix(in oklab, black 54%, var(--card-bg)) 16% 56%,
+			color-mix(in oklab, black 70%, var(--card-bg)) 57% 100%
+		);
+		box-shadow:
+			0 8px 16px color-mix(in oklab, black 30%, transparent),
+			inset 0 0 0 1px color-mix(in oklab, white 16%, transparent),
+			inset 0 0 16px color-mix(in oklab, black 20%, transparent);
+		transition:
+			transform 0.25s ease,
+			box-shadow 0.25s ease,
+			border-color 0.25s ease;
 	}
 
-	.cover-container img.spinning {
+	.music-cover:hover {
+		transform: translateY(-1px) scale(1.02);
+		border-color: color-mix(in oklab, var(--primary) 24%, var(--line-color));
+		box-shadow:
+			0 8px 18px color-mix(in oklab, black 34%, transparent),
+			inset 0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent),
+			inset 0 0 18px color-mix(in oklab, black 32%, transparent);
+	}
+
+	.music-cover:active {
+		transform: scale(0.98);
+	}
+
+	.cover-disc {
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		transform-origin: center;
+		will-change: transform;
+		background: radial-gradient(
+			circle at 50% 50%,
+			color-mix(in oklab, white 12%, var(--card-bg)) 0% 8%,
+			color-mix(in oklab, black 56%, var(--card-bg)) 9% 32%,
+			color-mix(in oklab, black 72%, var(--card-bg)) 33% 100%
+		);
+	}
+
+	.cover-disc::before,
+	.cover-disc::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+	}
+
+	.cover-disc::before {
+		inset: 2px;
+		background: repeating-radial-gradient(
+			circle at 50% 50%,
+			color-mix(in oklab, white 24%, transparent) 0 0.75px,
+			color-mix(in oklab, black 12%, transparent) 1.25px 2.75px
+		);
+		opacity: 0.42;
+		box-shadow: inset 0 0 0 1px color-mix(in oklab, white 12%, transparent);
+		z-index: 1;
+	}
+
+	.cover-disc::after {
+		background:
+			linear-gradient(
+				130deg,
+				color-mix(in oklab, white 36%, transparent) 0%,
+				transparent 42%
+			),
+			radial-gradient(
+				circle at 30% 24%,
+				color-mix(in oklab, white 22%, transparent) 0% 18%,
+				transparent 38%
+			);
+		mix-blend-mode: screen;
+		opacity: 0.52;
+		z-index: 4;
+	}
+
+	.cover-label {
+		position: absolute;
+		inset: 20%;
+		z-index: 2;
+		border-radius: 9999px;
+		overflow: hidden;
+		background: radial-gradient(
+			circle,
+			color-mix(in oklab, var(--primary) 20%, var(--card-bg)) 0%,
+			color-mix(in oklab, black 20%, var(--card-bg)) 100%
+		);
+		border: 1px solid color-mix(in oklab, white 26%, transparent);
+		box-shadow:
+			0 2px 6px color-mix(in oklab, black 26%, transparent),
+			inset 0 0 0 1px color-mix(in oklab, white 12%, transparent);
+		transform-origin: center;
+		will-change: transform;
+	}
+
+	.cover-label::after {
+		content: "";
+		position: absolute;
+		inset: 10%;
+		border-radius: inherit;
+		border: 1px solid color-mix(in oklab, white 24%, transparent);
+		pointer-events: none;
+		z-index: 3;
+	}
+
+	.cover-art {
+		position: relative;
+		z-index: 2;
+		transform: scale(1.08);
+		filter: saturate(1.08) contrast(1.05) brightness(1.04);
+		will-change: transform;
+	}
+
+	.cover-hole {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 10%;
+		height: 10%;
+		transform: translate(-50%, -50%);
+		z-index: 5;
+		border-radius: 9999px;
+		background: radial-gradient(
+			circle,
+			color-mix(in oklab, black 92%, transparent) 0% 60%,
+			color-mix(in oklab, white 24%, transparent) 61% 100%
+		);
+		box-shadow: 0 0 0 1px color-mix(in oklab, black 42%, transparent);
+	}
+
+	.cover-hover-mask {
+		z-index: 6;
+		background: radial-gradient(
+			circle at 50% 50%,
+			color-mix(in oklab, black 24%, transparent) 0% 35%,
+			color-mix(in oklab, black 62%, transparent) 100%
+		);
+	}
+
+	.cover-disc.spinning,
+	.cover-label.spinning {
+		animation: spin-continuous 5.2s linear infinite;
 		animation-play-state: running;
+	}
+
+	.cover-disc.paused,
+	.cover-label.paused {
+		animation-play-state: paused;
 	}
 
 	@keyframes spin-continuous {

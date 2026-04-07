@@ -77,9 +77,9 @@ export const siteConfig: SiteConfig = {
 		friends: true, // 友链页面开关
 		navigation: true, // 导航页面开关
 		news: true, // 新闻页面开关
-		projects: true, // 项目页面开关
-		skills: true, // 技能页面开关
-		timeline: true, // 时间线页面开关
+		projects: false, // 项目页面开关
+		skills: false, // 技能页面开关
+		timeline: false, // 时间线页面开关
 		albums: true, // 相册页面开关
 		devices: true, // 设备页面开关
 	},
@@ -353,6 +353,12 @@ export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
 		LinkPreset.Archive,
+		LinkPreset.Diary,
+		{
+			name: "津渡",
+			url: "/navigation/",
+			icon: "material-symbols:map-search",
+		},
 		// 支持自定义导航栏链接，支持多级菜单
 		// {
 		// 	name: "Links",
@@ -380,30 +386,30 @@ export const navBarConfig: NavBarConfig = {
 		// 	],
 		// },
 		{
-			name: "My",
+			name: "私馆",
 			url: "/content/",
 			icon: "material-symbols:person",
 			children: [
 				{
-					name: "Anime",
-					url: "/anime/",
-					icon: "material-symbols:movie",
-				},
-				{
-					name: "Diary",
-					url: "/diary/",
-					icon: "material-symbols:book",
-				},
-				{
-					name: "Gallery",
+					name: "逐影",
 					url: "/albums/",
 					icon: "material-symbols:photo-library",
 				},
 				{
-					name: "Devices",
+					name: "逐影",
+					url: "/anime/",
+					icon: "material-symbols:movie",
+				},
+				{
+					name: "物志",
 					url: "/devices/",
 					icon: "material-symbols:devices",
 					external: false,
+				},
+				{
+					name: "时语",
+					url: "/news/",
+					icon: "material-symbols:article",
 				},
 			],
 		},
@@ -413,7 +419,7 @@ export const navBarConfig: NavBarConfig = {
 			icon: "material-symbols:info",
 			children: [
 				{
-					name: "About",
+					name: "关于",
 					url: "/about/",
 					icon: "material-symbols:person",
 				},
@@ -421,38 +427,6 @@ export const navBarConfig: NavBarConfig = {
 					name: "Friends",
 					url: "/friends/",
 					icon: "material-symbols:group",
-				},
-				{
-					name: "Navigation",
-					url: "/navigation/",
-					icon: "material-symbols:map-search",
-				},
-			],
-		},
-		{
-			name: "Others",
-			url: "#",
-			icon: "material-symbols:more-horiz",
-			children: [
-				{
-					name: "Projects",
-					url: "/projects/",
-					icon: "material-symbols:work",
-				},
-				{
-					name: "Skills",
-					url: "/skills/",
-					icon: "material-symbols:psychology",
-				},
-				{
-					name: "Timeline",
-					url: "/timeline/",
-					icon: "material-symbols:timeline",
-				},
-				{
-					name: "News",
-					url: "/news/",
-					icon: "material-symbols:article",
 				},
 			],
 		},
@@ -672,7 +646,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件类型：分类组件
 			type: "categories",
 			// 组件位置："sticky" 表示粘性定位，可滚动
-			position: "sticky",
+			position: "top",
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
@@ -803,7 +777,7 @@ export const live2dConfig = {
 	modelId: 5, // 初始模型 ID（仅在 localStorage 没有 modelId 时生效）
 	modelTexturesId: 12, // 初始衣服/贴图 ID（仅在 localStorage 没有 modelTexturesId 时生效）
 	tools: [
-		"home",
+		// "home",
 		"hitokoto",
 		// "asteroids",
 		"switch-model",
@@ -818,15 +792,27 @@ export const live2dConfig = {
 		cubism2Core: "/assets/live2d/live2d.min.js", // Cubism2 内核（对应：src/components/features/live2d/Live2D.svelte -> cubism2Path）
 		cubism5Core:
 			"https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js", // Cubism5 内核（对应：src/components/features/live2d/Live2D.svelte -> cubism5Path）
-		cdnPath: "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/", // 模型 CDN 根路径（对应：src/components/features/live2d/Live2D.svelte -> cdnPath）。默认留空，可直接注释此行保持本地/JSON 模式。
+		cdnPath: "https://cdn.jsdelivr.net/gh/fghrsh/live2d_api/", // 模型 CDN 根路径（对应：src/components/features/live2d/Live2D.svelte -> cdnPath）。默认留空，可直接注释此行保持本地/JSON 模式。
 		// 优先级：cdnPath 非空时，模型走 CDN 的 model_list.json；
 		// 否则走 waifuTipsJson 内 models[].paths。
 		// 注意：waifuTipsJson 的提示词/交互文案始终生效，不受 cdnPath 影响。
 		// 衣服切换说明：modelTexturesId 由 localStorage 优先；无缓存时使用上方 modelTexturesId。
+		// live2d(2)      // 当前模型切到皮肤 2
+		// live2d(5, 3)   // 切到模型 5 + 皮肤 3
 	},
 	position: {
-		desktop: { side: "left", offset: "1rem", bottom: "0" },
-		mobile: { side: "left", offset: "0.5rem", bottom: "0" },
+		desktop: {
+			side: "left",
+			offset: "1rem",
+			bottom: "0",
+			scale: 1, // 基于 300x300 的桌面端缩放比例
+		},
+		mobile: {
+			side: "left",
+			offset: "0.5rem",
+			bottom: "0",
+			scale: 0.75, // 基于 300x300 的移动端缩放比例
+		},
 		toggle: {
 			offset: "0",
 			hiddenOffset: "-100px",

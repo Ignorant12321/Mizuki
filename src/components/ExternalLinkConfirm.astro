@@ -7,8 +7,15 @@ import { i18n } from "@/i18n/translation";
 
 {
 	externalLinkConfirmConfig.enable && (
-		<div id="external-link-confirm-root" class="ext-link-confirm-root" hidden>
-			<div id="external-link-confirm-mask" class="ext-link-confirm-mask"></div>
+		<div
+			id="external-link-confirm-root"
+			class="ext-link-confirm-root"
+			hidden
+		>
+			<div
+				id="external-link-confirm-mask"
+				class="ext-link-confirm-mask"
+			/>
 			<div class="ext-link-confirm-panel-wrap">
 				<section
 					id="external-link-confirm-panel"
@@ -22,7 +29,7 @@ import { i18n } from "@/i18n/translation";
 							referrerpolicy="no-referrer"
 						/>
 					)}
-					<div class="ext-link-confirm-overlay"></div>
+					<div class="ext-link-confirm-overlay" />
 					<div class="ext-link-confirm-content">
 						<div class="ext-link-confirm-head">
 							{externalLinkConfirmConfig.iconSvg && (
@@ -43,7 +50,7 @@ import { i18n } from "@/i18n/translation";
 							<p
 								id="external-link-confirm-url"
 								class="ext-link-confirm-url"
-							></p>
+							/>
 							<button
 								type="button"
 								id="external-link-confirm-copy"
@@ -59,7 +66,7 @@ import { i18n } from "@/i18n/translation";
 									<path
 										fill="currentColor"
 										d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12zM19 5H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m0 16H8V7h11z"
-									></path>
+									/>
 								</svg>
 								<svg
 									class="ext-link-confirm-copy-icon ext-link-confirm-copy-icon-success"
@@ -69,7 +76,7 @@ import { i18n } from "@/i18n/translation";
 									<path
 										fill="currentColor"
 										d="M9 16.17L4.83 12 3.41 13.41 9 19l12-12-1.41-1.41z"
-									></path>
+									/>
 								</svg>
 								<span class="ext-link-confirm-copy-text">
 									{i18n(I18nKey.copied)}
@@ -148,7 +155,9 @@ import { i18n } from "@/i18n/translation";
 				}
 				return (
 					currentPath === target ||
-					currentPath.startsWith(target.endsWith("/") ? target : `${target}/`)
+					currentPath.startsWith(
+						target.endsWith("/") ? target : `${target}/`,
+					)
 				);
 			});
 		};
@@ -161,11 +170,15 @@ import { i18n } from "@/i18n/translation";
 				}
 
 				try {
-					const refUrl = new URL(raw.includes("://") ? raw : `https://${raw}`);
+					const refUrl = new URL(
+						raw.includes("://") ? raw : `https://${raw}`,
+					);
 					const hostname = refUrl.hostname.toLowerCase();
 					return (
 						targetUrl.hostname.toLowerCase() === hostname ||
-						targetUrl.hostname.toLowerCase().endsWith(`.${hostname}`) ||
+						targetUrl.hostname
+							.toLowerCase()
+							.endsWith(`.${hostname}`) ||
 						targetUrl.href.toLowerCase().startsWith(raw)
 					);
 				} catch {
@@ -185,7 +198,9 @@ import { i18n } from "@/i18n/translation";
 			state.root.hidden = true;
 			state.pendingUrl = "";
 			state.pendingTarget = "_blank";
-			const copyButton = document.getElementById("external-link-confirm-copy");
+			const copyButton = document.getElementById(
+				"external-link-confirm-copy",
+			);
 			copyButton?.classList.remove("is-copied");
 			copyButton?.setAttribute("title", copyLinkText);
 			copyButton?.setAttribute("aria-label", copyLinkText);
@@ -292,8 +307,12 @@ import { i18n } from "@/i18n/translation";
 		};
 
 		const bindDom = () => {
-			const nextRoot = document.getElementById("external-link-confirm-root");
-			const nextUrlEl = document.getElementById("external-link-confirm-url");
+			const nextRoot = document.getElementById(
+				"external-link-confirm-root",
+			);
+			const nextUrlEl = document.getElementById(
+				"external-link-confirm-url",
+			);
 			const sameRoot = state.root === nextRoot && state.domBound;
 
 			state.root = nextRoot;
@@ -306,10 +325,16 @@ import { i18n } from "@/i18n/translation";
 			const cancelButton = document.getElementById(
 				"external-link-confirm-cancel",
 			);
-			const okButton = document.getElementById("external-link-confirm-ok");
-			const copyButton = document.getElementById("external-link-confirm-copy");
+			const okButton = document.getElementById(
+				"external-link-confirm-ok",
+			);
+			const copyButton = document.getElementById(
+				"external-link-confirm-copy",
+			);
 			const mask = document.getElementById("external-link-confirm-mask");
-			const panel = document.getElementById("external-link-confirm-panel");
+			const panel = document.getElementById(
+				"external-link-confirm-panel",
+			);
 			const panelWrap = panel?.parentElement;
 
 			cancelButton?.addEventListener("click", closeModal);
@@ -342,16 +367,8 @@ import { i18n } from "@/i18n/translation";
 					await navigator.clipboard.writeText(state.pendingUrl);
 					showCopiedState();
 				} catch {
-					const textArea = document.createElement("textarea");
-					textArea.value = state.pendingUrl;
-					textArea.setAttribute("readonly", "");
-					textArea.style.position = "fixed";
-					textArea.style.opacity = "0";
-					document.body.appendChild(textArea);
-					textArea.select();
-					document.execCommand("copy");
-					document.body.removeChild(textArea);
-					showCopiedState();
+					// Clipboard API 不可用时降级为手动复制提示，避免使用已弃用的 execCommand
+					window.prompt(copyLinkText, state.pendingUrl);
 				}
 			});
 			state.domBound = true;
@@ -459,6 +476,7 @@ import { i18n } from "@/i18n/translation";
 	}
 
 	.ext-link-confirm-url-wrap {
+		opacity: 0.5;
 		margin-top: 10px;
 		display: flex;
 		align-items: center;
@@ -475,7 +493,8 @@ import { i18n } from "@/i18n/translation";
 		overflow: auto;
 		word-break: break-all;
 		flex: 1;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		font-family:
+			ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
 			"Liberation Mono", "Courier New", monospace;
 		font-size: 0.82rem;
 		color: color-mix(in oklab, var(--primary) 62%, var(--btn-content) 38%);
@@ -492,14 +511,25 @@ import { i18n } from "@/i18n/translation";
 		padding: 0 8px;
 		border-radius: 8px;
 		border: 0;
-		background: color-mix(in oklab, var(--primary) 10%, var(--btn-regular-bg) 90%);
+		background: color-mix(
+			in oklab,
+			var(--primary) 10%,
+			var(--btn-regular-bg) 90%
+		);
 		color: var(--primary);
 		cursor: pointer;
-		transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+		transition:
+			transform 0.15s ease,
+			opacity 0.15s ease,
+			background 0.15s ease;
 	}
 
 	.ext-link-confirm-copy-btn:hover {
-		background: color-mix(in oklab, var(--primary) 18%, var(--btn-regular-bg) 82%);
+		background: color-mix(
+			in oklab,
+			var(--primary) 18%,
+			var(--btn-regular-bg) 82%
+		);
 	}
 
 	.ext-link-confirm-copy-btn:active {
@@ -523,7 +553,11 @@ import { i18n } from "@/i18n/translation";
 
 	.ext-link-confirm-copy-btn.is-copied {
 		color: var(--primary);
-		background: color-mix(in oklab, var(--primary) 18%, var(--btn-regular-bg) 82%);
+		background: color-mix(
+			in oklab,
+			var(--primary) 18%,
+			var(--btn-regular-bg) 82%
+		);
 	}
 
 	.ext-link-confirm-copy-btn.is-copied .ext-link-confirm-copy-icon-copy {
@@ -555,7 +589,9 @@ import { i18n } from "@/i18n/translation";
 		padding: 7px 14px;
 		font-size: 0.86rem;
 		cursor: pointer;
-		transition: transform 0.15s ease, opacity 0.15s ease;
+		transition:
+			transform 0.15s ease,
+			opacity 0.15s ease;
 	}
 
 	.ext-link-confirm-btn:hover {

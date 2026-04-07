@@ -41,11 +41,12 @@
 >
 	<div class="track-index">
 		{#if isCurrent && isPlaying}
-			<Icon
-				icon="material-symbols:graphic-eq-rounded"
-				class="now-playing"
-				style="color: var(--primary);"
-			/>
+			<span class="now-playing">
+				<Icon
+					icon="material-symbols:graphic-eq-rounded"
+					style="color: var(--primary);"
+				/>
+			</span>
 		{:else}
 			<span class="index-number">{index + 1}</span>
 		{/if}
@@ -73,26 +74,24 @@
 		padding: 0.56rem 0.62rem;
 		border-radius: 0.92rem;
 		cursor: pointer;
-		border: 1px solid transparent;
-		background: color-mix(in oklab, var(--primary) 3%, transparent);
+		border: 1px solid color-mix(in oklab, var(--line-color) 88%, transparent);
+		background: color-mix(in oklab, var(--card-bg) 95%, white 5%);
 		transition:
 			background-color 180ms ease,
 			border-color 180ms ease,
-			transform 180ms ease,
 			box-shadow 180ms ease;
 	}
 
 	.track-list-item:hover {
-		background: color-mix(in oklab, var(--primary) 8%, transparent);
-		border-color: color-mix(in oklab, var(--primary) 24%, transparent);
-		transform: translateY(-1px);
+		background: color-mix(in oklab, var(--card-bg) 88%, white 12%);
+		border-color: color-mix(in oklab, var(--line-color) 70%, transparent);
 	}
 
 	.track-list-item.is-current {
-		background: color-mix(in oklab, var(--primary) 12%, transparent);
-		border-color: color-mix(in oklab, var(--primary) 32%, transparent);
+		background: color-mix(in oklab, var(--primary) 8%, transparent);
+		border-color: color-mix(in oklab, var(--primary) 24%, transparent);
 		box-shadow: inset 0 0 0 1px
-			color-mix(in oklab, var(--primary) 18%, transparent);
+			color-mix(in oklab, var(--primary) 14%, transparent);
 	}
 
 	.track-index {
@@ -143,11 +142,15 @@
 
 	.track-list-item:hover .item-title,
 	.item-title.active {
-		color: var(--primary);
+		color: color-mix(in oklab, var(--primary) 84%, var(--content-main));
 	}
 
 	:global(.dark) .item-title {
 		color: rgb(229 229 229);
+	}
+
+	:global(.dark) .track-list-item:hover .item-title {
+		color: var(--primary);
 	}
 
 	.item-artist {
@@ -161,7 +164,7 @@
 
 	.item-artist.active,
 	.item-title.active {
-		color: var(--primary);
+		color: color-mix(in oklab, var(--primary) 84%, var(--content-main));
 	}
 
 	:global(.dark) .item-artist {
@@ -173,6 +176,7 @@
 		color: var(--primary);
 	}
 
+	/* svelte-ignore css_unused_selector */
 	.now-playing {
 		color: var(--primary);
 		fill: currentColor;
@@ -180,6 +184,7 @@
 		flex-shrink: 0;
 	}
 
+	/* svelte-ignore css_unused_selector */
 	:global(.dark) .now-playing {
 		color: var(--primary);
 	}

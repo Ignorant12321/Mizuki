@@ -13,7 +13,7 @@ export function parseBilibiliFeed(
 	const itemXmlList = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
 
 	return itemXmlList
-		.map((itemXml) => {
+		.map((itemXml: string) => {
 			const title =
 				stripNewsHtml(extractFirstTag(itemXml, "title")) || "无标题";
 			const link =

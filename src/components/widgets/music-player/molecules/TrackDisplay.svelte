@@ -71,7 +71,7 @@
 		</div>
 		<div class="flex items-center gap-1">
 			<button
-				class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
+				class="music-action-btn btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
 				onclick={(e) => {
 					e.stopPropagation();
 					onHideClick?.();
@@ -81,7 +81,7 @@
 				<Icon icon="material-symbols:visibility-off" class="text-lg" />
 			</button>
 			<button
-				class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
+				class="music-action-btn btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
 				onclick={(e) => {
 					e.stopPropagation();
 					onExpandClick?.();
@@ -97,11 +97,11 @@
 			{isLoading}
 			size="expanded"
 		/>
-		<TrackInfo {song} {currentTime} {duration} showTime size="expanded" />
+		<TrackInfo {song} {currentTime} {duration} size="expanded" />
 		{#if showControls}
 			<div class="flex items-center gap-1">
 				<button
-					class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
+					class="music-action-btn btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
 					onclick={onHideClick}
 					title={i18n(Key.musicPlayerHide)}
 				>
@@ -111,7 +111,7 @@
 					/>
 				</button>
 				<button
-					class="btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
+					class="music-action-btn btn-plain w-8 h-8 rounded-lg flex items-center justify-center"
 					class:text-[var(--primary)]={showPlaylist}
 					onclick={onPlaylistClick}
 					title={i18n(Key.musicPlayerPlaylist)}

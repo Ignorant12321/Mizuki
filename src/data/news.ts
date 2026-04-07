@@ -4,7 +4,6 @@ import { parseCsdnFeed } from "./news/csdn";
 import {
 	dedupeAndSort,
 	fetchXmlWithRetry,
-	formatNewsDate,
 	normalizeNewsFeedSource,
 } from "./news/common";
 import { parseGenericRss } from "./news/rss-generic";

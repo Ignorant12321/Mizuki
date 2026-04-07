@@ -4,10 +4,22 @@
 	import { live2dConfig } from "@/config";
 
 	type Side = "left" | "right";
+	const LIVE2D_BASE_WIDTH_PX = 300;
+	const LIVE2D_BASE_HEIGHT_PX = 300;
 
 	const DEFAULT_POSITION = {
-		desktop: { side: "right" as Side, offset: "1rem", bottom: "0" },
-		mobile: { side: "right" as Side, offset: "0.5rem", bottom: "0" },
+		desktop: {
+			side: "right" as Side,
+			offset: "1rem",
+			bottom: "0",
+			scale: 1,
+		},
+		mobile: {
+			side: "right" as Side,
+			offset: "0.5rem",
+			bottom: "0",
+			scale: 0.8,
+		},
 		toggle: {
 			offset: "0",
 			hiddenOffset: "-100px",
@@ -28,6 +40,11 @@
 			bottom:
 				live2dConfig.position?.desktop?.bottom ??
 				DEFAULT_POSITION.desktop.bottom,
+			scale:
+				toValidScale(
+					live2dConfig.position?.desktop?.scale,
+					DEFAULT_POSITION.desktop.scale,
+				),
 		},
 		mobile: {
 			side:
@@ -39,6 +56,11 @@
 			bottom:
 				live2dConfig.position?.mobile?.bottom ??
 				DEFAULT_POSITION.mobile.bottom,
+			scale:
+				toValidScale(
+					live2dConfig.position?.mobile?.scale,
+					DEFAULT_POSITION.mobile.scale,
+				),
 		},
 		toggle: {
 			offset:
@@ -58,6 +80,16 @@
 				DEFAULT_POSITION.toggle.mobileActiveOffset,
 		},
 	};
+
+	function toValidScale(value: unknown, fallback: number): number {
+		const parsed =
+			typeof value === "number"
+				? value
+				: typeof value === "string"
+					? Number(value)
+					: NaN;
+		return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+	}
 
 	let mounted = false;
 	let retryCount = 0;
@@ -111,6 +143,22 @@
 		root.style.setProperty(
 			"--live2d-toggle-mobile-active-offset",
 			position.toggle.mobileActiveOffset,
+		);
+		root.style.setProperty(
+			"--live2d-base-width",
+			`${LIVE2D_BASE_WIDTH_PX}px`,
+		);
+		root.style.setProperty(
+			"--live2d-base-height",
+			`${LIVE2D_BASE_HEIGHT_PX}px`,
+		);
+		root.style.setProperty(
+			"--live2d-scale-desktop",
+			String(position.desktop.scale),
+		);
+		root.style.setProperty(
+			"--live2d-scale-mobile",
+			String(position.mobile.scale),
 		);
 	}
 
@@ -341,6 +389,72 @@
 		}, 250);
 	}
 
+	function toNonNegativeInt(value: unknown): number | null {
+		const parsed = Number(value);
+		if (!Number.isInteger(parsed) || parsed < 0) {
+			return null;
+		}
+		return parsed;
+	}
+
+	function removeCurrentWaifuDom() {
+		cleanupToolVisibility?.();
+		cleanupToolVisibility = null;
+		const waifu = document.getElementById("waifu");
+		if (waifu) {
+			waifu.remove();
+		}
+	}
+
+	async function applyLive2dByConsole(
+		modelId: number | null,
+		textureId: number,
+	): Promise<void> {
+		if (typeof window === "undefined") {
+			return;
+		}
+		if (modelId !== null) {
+			localStorage.setItem("modelId", String(modelId));
+		}
+		localStorage.setItem("modelTexturesId", String(textureId));
+		localStorage.removeItem("waifu-display");
+		removeCurrentWaifuDom();
+		initLive2d();
+	}
+
+	function exposeLive2dConsoleFunction() {
+		(window as any).live2d = async (...args: unknown[]) => {
+			if (args.length === 1) {
+				const textureId = toNonNegativeInt(args[0]);
+				if (textureId === null) {
+					console.warn(
+						"live2d(texture) 参数必须是非负整数，例如 live2d(2)",
+					);
+					return;
+				}
+				await applyLive2dByConsole(null, textureId);
+				return;
+			}
+
+			if (args.length === 2) {
+				const modelId = toNonNegativeInt(args[0]);
+				const textureId = toNonNegativeInt(args[1]);
+				if (modelId === null || textureId === null) {
+					console.warn(
+						"live2d(modelId, texture) 参数必须是非负整数，例如 live2d(5, 2)",
+					);
+					return;
+				}
+				await applyLive2dByConsole(modelId, textureId);
+				return;
+			}
+
+			console.warn(
+				"用法：live2d(texture) 或 live2d(modelId, texture)，例如 live2d(2) / live2d(5, 2)",
+			);
+		};
+	}
+
 	function bootstrapLive2d() {
 		patchImageCrossOrigin();
 		loadScript(live2dConfig.paths.waifuTipsJs, "live2d-tips-script")
@@ -358,6 +472,7 @@
 		}
 		mounted = true;
 		applyPositionVars();
+		exposeLive2dConsoleFunction();
 
 		const onSwupPageView = () => {
 			if (!document.getElementById("waifu")) {
@@ -384,6 +499,9 @@
 	});
 
 	onDestroy(() => {
+		if (typeof window !== "undefined") {
+			delete (window as any).live2d;
+		}
 		mounted = false;
 		if (retryTimer) {
 			clearTimeout(retryTimer);

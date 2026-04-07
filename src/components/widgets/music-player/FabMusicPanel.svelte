@@ -115,7 +115,6 @@
 		currentIndex={state.currentIndex}
 		isPlaying={state.isPlaying}
 		show={showPlaylist}
-		onClose={togglePlaylistView}
 		onPlaylistSourceSelect={(index) => musicPlayerStore.selectPlaylist(index)}
 		onPlaySong={playIndex}
 	/>

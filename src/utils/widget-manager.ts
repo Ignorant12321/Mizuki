@@ -255,7 +255,12 @@ export class WidgetManager {
 	 * @param componentType 组件类型
 	 */
 	isSidebarComponent(componentType: WidgetComponentType): boolean {
-		return true;
+		const config = this.config.components;
+		return (
+			config.left.includes(componentType) ||
+			config.right.includes(componentType) ||
+			config.drawer.includes(componentType)
+		);
 	}
 }
 

@@ -260,6 +260,15 @@
 			) as HTMLInputElement;
 			input?.focus();
 		}}
+		onkeydown={(event) => {
+			if (event.key === "Enter" || event.key === " ") {
+				event.preventDefault();
+				const input = document.getElementById(
+					"search-input-desktop",
+				) as HTMLInputElement;
+				input?.focus();
+			}
+		}}
 	>
 		<Icon
 			icon="material-symbols:search"

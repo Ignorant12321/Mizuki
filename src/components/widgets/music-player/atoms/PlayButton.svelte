@@ -11,7 +11,7 @@
 </script>
 
 <button
-	class="btn-regular w-12 h-12 rounded-full"
+	class="play-main-btn btn-regular w-12 h-12 rounded-full"
 	class:opacity-50={isLoading}
 	disabled={isLoading}
 	aria-label={isPlaying ? "暂停" : "播放"}
