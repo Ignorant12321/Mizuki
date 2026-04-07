@@ -120,6 +120,11 @@ class ClickEffectController {
 			return false;
 		}
 
+		const datasetEnabled = document.documentElement.dataset.clickEffectEnabled;
+		if (datasetEnabled === "false") {
+			return false;
+		}
+
 		if (this.isPathBlacklisted(window.location.pathname)) {
 			return false;
 		}

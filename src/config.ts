@@ -2,6 +2,7 @@
 	AnnouncementConfig,
 	ClickEffectConfig,
 	CommentConfig,
+	DisplaySettingsConfig,
 	ExpressiveCodeConfig,
 	ExternalLinkConfirmConfig,
 	FooterConfig,
@@ -743,6 +744,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 
 export const sakuraConfig: SakuraConfig = {
 	enable: false, // 默认关闭樱花特效
+	mobile: false, // 是否在移动端启用（主题面板支持分端开关）
 	sakuraNum: 21, // 樱花数量
 	limitTimes: -1, // 樱花越界限制次数，-1为无限循环
 	size: {
@@ -822,6 +824,141 @@ export const live2dConfig = {
 		},
 	},
 } as const;
+
+const bannerSource = siteConfig.banner.src;
+const bannerDesktopSource =
+	typeof bannerSource === "object" &&
+	bannerSource !== null &&
+	!Array.isArray(bannerSource)
+		? bannerSource.desktop
+		: undefined;
+const bannerMobileSource =
+	typeof bannerSource === "object" &&
+	bannerSource !== null &&
+	!Array.isArray(bannerSource)
+		? bannerSource.mobile
+		: undefined;
+const bannerHasMultipleImages = Array.isArray(bannerSource)
+	? bannerSource.length > 1
+	: typeof bannerSource === "object" && bannerSource !== null
+		? (Array.isArray(bannerDesktopSource) &&
+				bannerDesktopSource.length > 1) ||
+			(Array.isArray(bannerMobileSource) && bannerMobileSource.length > 1)
+		: false;
+
+const fullscreenSource = fullscreenWallpaperConfig.src;
+const fullscreenDesktopSource =
+	typeof fullscreenSource === "object" &&
+	fullscreenSource !== null &&
+	!Array.isArray(fullscreenSource)
+		? fullscreenSource.desktop
+		: undefined;
+const fullscreenMobileSource =
+	typeof fullscreenSource === "object" &&
+	fullscreenSource !== null &&
+	!Array.isArray(fullscreenSource)
+		? fullscreenSource.mobile
+		: undefined;
+const fullscreenHasMultipleImages = Array.isArray(fullscreenSource)
+	? fullscreenSource.length > 1
+	: typeof fullscreenSource === "object" && fullscreenSource !== null
+		? (Array.isArray(fullscreenDesktopSource) &&
+				fullscreenDesktopSource.length > 1) ||
+			(Array.isArray(fullscreenMobileSource) &&
+				fullscreenMobileSource.length > 1)
+		: false;
+
+const hasPotentialWallpaperCarouselSources =
+	siteConfig.banner.imageApi?.enable === true ||
+	bannerHasMultipleImages ||
+	fullscreenHasMultipleImages;
+
+export const displaySettingsConfig: DisplaySettingsConfig = {
+	panel: {
+		fixed: true,
+		top: "6rem",
+		right: "1rem",
+		width: "20rem",
+		maxHeight: "calc(100vh - 7rem)",
+		zIndex: 120,
+	},
+	themeColor: {
+		enable: !siteConfig.themeColor.fixed,
+		allowReset: true,
+		min: 0,
+		max: 360,
+		step: 5,
+		defaultValue: siteConfig.themeColor.hue,
+	},
+	wallpaperMode: {
+		enable: true,
+		options: ["banner", "fullscreen", "none"],
+		defaultMode: siteConfig.wallpaperMode.defaultMode,
+	},
+	fullscreenWallpaper: {
+		opacity: {
+			enable: true,
+			min: 0,
+			max: 1,
+			step: 0.05,
+			defaultValue: fullscreenWallpaperConfig.opacity ?? 0.8,
+			unit: "%",
+		},
+		blur: {
+			enable: true,
+			min: 0,
+			max: 20,
+			step: 0.5,
+			defaultValue: fullscreenWallpaperConfig.blur ?? 0,
+			unit: "px",
+		},
+	},
+	effects: {
+		live2d: {
+			enable: live2dConfig.enable || live2dConfig.mobile,
+			allowSwitch: true,
+			defaultValue: live2dConfig.enable,
+		},
+		clickEffect: {
+			enable:
+				clickEffectConfig.enable.desktop ||
+				clickEffectConfig.enable.mobile === true,
+			allowSwitch: true,
+			defaultValue: clickEffectConfig.enable.desktop,
+		},
+		waves: {
+			enable: !!siteConfig.banner.waves,
+			allowSwitch: true,
+			defaultValue: siteConfig.banner.waves?.enable ?? false,
+		},
+		sakura: {
+			enable: sakuraConfig.enable || sakuraConfig.mobile === true,
+			allowSwitch: true,
+			defaultValue: sakuraConfig.enable,
+		},
+		wallpaperCarousel: {
+			enable:
+				hasPotentialWallpaperCarouselSources &&
+				Boolean(
+					siteConfig.banner.carousel?.enable ||
+						fullscreenWallpaperConfig.carousel?.enable,
+				),
+			allowSwitch: true,
+			defaultValue:
+				siteConfig.wallpaperMode.defaultMode === "fullscreen"
+					? (fullscreenWallpaperConfig.carousel?.enable ?? false)
+					: (siteConfig.banner.carousel?.enable ??
+						fullscreenWallpaperConfig.carousel?.enable ??
+						false),
+		},
+	},
+	postListLayout: {
+		enable: true,
+		allowSwitch: siteConfig.postListLayout.allowSwitch,
+		options: ["list", "grid"],
+		defaultMode: siteConfig.postListLayout.defaultMode,
+	},
+};
 
 // 相关文章配置
 export const relatedPostsConfig: RelatedPostsConfig = {

@@ -19,6 +19,7 @@ import "../styles/wallpaper-navbar-transparent.css";
 import "../styles/fancybox-custom.css";
 import "../styles/expressive-code.css";
 import "../styles/panel-animations.css";
+import "../styles/display-settings.css";
 
 // 导入新提取的 Head 组件
 import AnalyticsScripts from "./partials/AnalyticsScripts.astro";
@@ -326,8 +327,10 @@ if (siteConfig.font) {
 	// Swup 页面过渡管理器 - 统一入口
 	// 所有功能已重构为模块化架构，详见 src/scripts/ 目录
 	import { initSwupManager } from "../scripts/swup-manager";
+	import { applyAllStoredSettings } from "../utils/setting-utils";
 
 	// 初始化 Swup 管理器
+	applyAllStoredSettings();
 	initSwupManager();
 </script>
 

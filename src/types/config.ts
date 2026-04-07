@@ -6,6 +6,62 @@ import type {
 	WALLPAPER_NONE,
 } from "../constants/constants";
 
+export interface DisplaySettingsSliderConfig {
+	enable: boolean;
+	min: number;
+	max: number;
+	step: number;
+	defaultValue: number;
+	unit?: string;
+}
+
+export interface DisplaySettingsToggleConfig {
+	enable: boolean;
+	allowSwitch: boolean;
+	defaultValue: boolean;
+}
+
+export interface DisplaySettingsConfig {
+	panel: {
+		fixed: boolean;
+		top: string;
+		right: string;
+		width: string;
+		maxHeight: string;
+		zIndex: number;
+	};
+	themeColor: {
+		enable: boolean;
+		allowReset: boolean;
+		min: number;
+		max: number;
+		step: number;
+		defaultValue: number;
+	};
+	wallpaperMode: {
+		enable: boolean;
+		options: ("banner" | "fullscreen" | "none")[];
+		defaultMode: "banner" | "fullscreen" | "none";
+	};
+	fullscreenWallpaper: {
+		opacity: DisplaySettingsSliderConfig;
+		blur: DisplaySettingsSliderConfig;
+	};
+	effects: {
+		live2d: DisplaySettingsToggleConfig;
+		clickEffect: DisplaySettingsToggleConfig;
+		waves: DisplaySettingsToggleConfig;
+		sakura: DisplaySettingsToggleConfig;
+		wallpaperCarousel: DisplaySettingsToggleConfig;
+	};
+	postListLayout: {
+		enable: boolean;
+		allowSwitch: boolean;
+		options: ("list" | "grid")[];
+		defaultMode: "list" | "grid";
+	};
+}
+
 export interface SiteConfig {
 	title: string;
 	subtitle: string;
@@ -483,6 +539,7 @@ export interface SidebarLayoutConfig {
 
 export interface SakuraConfig {
 	enable: boolean; // 是否启用樱花特效
+	mobile?: boolean; // 是否在移动端启用（默认 false）
 	sakuraNum: number; // 樱花数量，默认21
 	limitTimes: number; // 樱花越界限制次数，-1为无限循环
 	size: {
