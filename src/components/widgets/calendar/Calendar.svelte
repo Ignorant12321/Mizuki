@@ -310,6 +310,7 @@
 			></div>
 			<div
 				class="flex flex-col gap-1 max-h-[9.375rem] overflow-y-auto custom-scrollbar"
+				data-scrollbar-tone="slim"
 			>
 				{#if displayedPosts.length > 0}
 					{#each displayedPosts as post (post.id)}
@@ -358,19 +359,3 @@
 		</div>
 	{/if}
 </div>
-
-<style>
-	.custom-scrollbar::-webkit-scrollbar {
-		width: 4px;
-	}
-	.custom-scrollbar::-webkit-scrollbar-track {
-		background: transparent;
-	}
-	.custom-scrollbar::-webkit-scrollbar-thumb {
-		background-color: rgba(156, 163, 175, 0.5);
-		border-radius: 2px;
-	}
-	.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-		background-color: rgba(156, 163, 175, 0.8);
-	}
-</style>

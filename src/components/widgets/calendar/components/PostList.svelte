@@ -46,6 +46,7 @@
 	></div>
 	<div
 		class="flex flex-col gap-1 max-h-[9.375rem] overflow-y-auto custom-scrollbar"
+		data-scrollbar-tone="slim"
 	>
 		{#if !isEmpty}
 			{#each posts as post (post.id)}

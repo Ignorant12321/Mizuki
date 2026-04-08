@@ -14,7 +14,10 @@ interface Props {
 const { class: className } = Astro.props;
 ---
 
-<table-of-contents class:list={[className, "group"]} id="toc">
+<table-of-contents
+	class:list={[className, "group", "toc-scroll-container", "custom-scrollbar"]}
+	data-scrollbar-tone="slim"
+	id="toc">
 </table-of-contents>
 
 <script>
@@ -336,13 +339,8 @@ const { class: className } = Astro.props;
 <style>
 	table-of-contents#toc {
 		max-height: 100%;
-		overflow: auto;
 		position: relative;
 		scroll-behavior: smooth;
 		display: block;
-	}
-
-	table-of-contents#toc::-webkit-scrollbar {
-		display: none;
 	}
 </style>

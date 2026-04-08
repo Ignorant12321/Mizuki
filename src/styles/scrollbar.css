@@ -1,44 +1,100 @@
 @reference "tailwindcss";
 
-.scrollbar-base.os-scrollbar {
-  @apply transition-all;
-  pointer-events: unset;
-
-  &.os-scrollbar-horizontal {
-    @apply py-1 px-2 h-4;
-    .os-scrollbar-track .os-scrollbar-handle {
-      @apply rounded-full h-1;
-    }
-    &:hover .os-scrollbar-track .os-scrollbar-handle {
-      @apply h-2;
-    }
-  }
-
-  &.os-scrollbar-vertical {
-    @apply px-1 py-1 w-4;
-    .os-scrollbar-track .os-scrollbar-handle {
-      @apply rounded-full w-1;
-    }
-    &:hover .os-scrollbar-track .os-scrollbar-handle {
-      @apply w-2;
-    }
-  }
+:root {
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: color-mix(in oklab, var(--content-meta) 34%, transparent);
+  --scrollbar-thumb-hover: color-mix(in oklab, var(--content-meta) 50%, transparent);
+  --scrollbar-thumb-active: color-mix(in oklab, var(--primary) 52%, var(--content-meta));
+  --scrollbar-corner: transparent;
+  --scrollbar-size: 0.75rem;
+  --scrollbar-size-slim: 0.625rem;
+  --scrollbar-radius: 999px;
 }
 
-.os-scrollbar {
-  &.scrollbar-auto {
-    --os-handle-bg: var(--scrollbar-bg);
-    --os-handle-bg-hover: var(--scrollbar-bg-hover);
-    --os-handle-bg-active: var(--scrollbar-bg-active);
-  }
-  &.scrollbar-dark {
-    --os-handle-bg: var(--scrollbar-bg-dark);
-    --os-handle-bg-hover: var(--scrollbar-bg-hover-dark);
-    --os-handle-bg-active: var(--scrollbar-bg-active-dark);
-  }
-  &.scrollbar-light {
-    --os-handle-bg: var(--scrollbar-bg-light);
-    --os-handle-bg-hover: var(--scrollbar-bg-hover-light);
-    --os-handle-bg-active: var(--scrollbar-bg-active-light);
-  }
+:root.dark {
+  --scrollbar-thumb: color-mix(in oklab, white 34%, transparent);
+  --scrollbar-thumb-hover: color-mix(in oklab, white 48%, transparent);
+  --scrollbar-thumb-active: color-mix(in oklab, var(--primary) 54%, white);
+}
+
+html,
+body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+.custom-scrollbar[data-scrollbar-tone="slim"]::-webkit-scrollbar {
+  width: var(--scrollbar-size-slim);
+  height: var(--scrollbar-size-slim);
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--scrollbar-radius);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  min-height: 2rem;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: content-box;
+}
+
+html::-webkit-scrollbar-thumb:active,
+body::-webkit-scrollbar-thumb:active,
+.custom-scrollbar::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-thumb-active);
+  background-clip: content-box;
+}
+
+html::-webkit-scrollbar-corner,
+body::-webkit-scrollbar-corner,
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: var(--scrollbar-corner);
+}
+
+.custom-scrollbar {
+  overflow: auto;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.custom-scrollbar.scrollbar-horizontal {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.custom-scrollbar.scrollbar-vertical {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.custom-scrollbar[data-scrollbar-tone="slim"] {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* 可选：给一些半透明面板用更柔和的边缘 */
+.scrollbar-fade-mask {
+  mask-image: linear-gradient(to bottom, transparent, black 0.75rem, black calc(100% - 0.75rem), transparent);
 }

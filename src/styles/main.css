@@ -4,6 +4,8 @@
 @import "./albums.css";
 /* 导入追番页面样式 */
 @import "./anime.css";
+/* 导入统一滚动条样式 */
+@import "./scrollbar.css";
 /* 导入动画样式 */
 @import "./transition.css";
 @import "./animation-enhancements.css";

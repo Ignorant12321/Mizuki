@@ -239,7 +239,8 @@
 
 <div
 	id="mobile-toc-panel"
-	class="float-panel float-panel-closed mobile-toc-panel absolute md:w-[20rem] w-[calc(100vw-2rem)] top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4"
+	class="float-panel float-panel-closed mobile-toc-panel custom-scrollbar absolute md:w-[20rem] w-[calc(100vw-2rem)] top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-4"
+	data-scrollbar-tone="slim"
 >
 	<div class="flex items-center justify-between mb-4">
 		<h3 class="text-lg font-bold text-[var(--primary)]">
@@ -517,20 +518,4 @@
 		color: rgba(255, 255, 255, 0.75);
 	}
 
-	.mobile-toc-panel::-webkit-scrollbar {
-		width: 4px;
-	}
-
-	.mobile-toc-panel::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.mobile-toc-panel::-webkit-scrollbar-thumb {
-		background: var(--line-color);
-		border-radius: 2px;
-	}
-
-	.mobile-toc-panel::-webkit-scrollbar-thumb:hover {
-		background: var(--text-color-25);
-	}
 </style>

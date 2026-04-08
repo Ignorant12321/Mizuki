@@ -55,6 +55,7 @@
 <div
 	bind:this={containerEl}
 	class="w-full h-full p-2 grid grid-cols-4 gap-2 content-start overflow-y-auto custom-scrollbar"
+	data-scrollbar-tone="slim"
 >
 	{#each years() as year (year)}
 		{@const hasPost = stats.hasPostInYear[year]}
