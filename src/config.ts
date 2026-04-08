@@ -778,8 +778,8 @@ export const live2dConfig = {
 	mobile: true,
 	drag: false,
 	logLevel: "warn",
-	modelId: 5, // 初始模型 ID（仅在 localStorage 没有 modelId 时生效）
-	modelTexturesId: 12, // 初始衣服/贴图 ID（仅在 localStorage 没有 modelTexturesId 时生效）
+	modelId: 2, // 初始模型 ID（仅在 localStorage 没有 modelId 时生效）
+	modelTexturesId: 17, // 初始衣服/贴图 ID（仅在 localStorage 没有 modelTexturesId 时生效）
 	tools: [
 		// "home",
 		"hitokoto",
@@ -796,11 +796,16 @@ export const live2dConfig = {
 		cubism2Core: "/assets/live2d/live2d.min.js", // Cubism2 内核（对应：src/components/features/live2d/Live2D.svelte -> cubism2Path）
 		cubism5Core:
 			"https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js", // Cubism5 内核（对应：src/components/features/live2d/Live2D.svelte -> cubism5Path）
-		cdnPath: "https://cdn.jsdelivr.net/gh/fghrsh/live2d_api/", // 模型 CDN 根路径（对应：src/components/features/live2d/Live2D.svelte -> cdnPath）。默认留空，可直接注释此行保持本地/JSON 模式。
+		// cdnPath: "https://cdn.jsdelivr.net/gh/fghrsh/live2d_api/", // 模型 CDN 根路径（对应：src/components/features/live2d/Live2D.svelte -> cdnPath）。默认留空，可直接注释此行保持本地/JSON 模式。
 		// 优先级：cdnPath 非空时，模型走 CDN 的 model_list.json；
-		// 否则走 waifuTipsJson 内 models[].paths。
+		// 否则走 waifuTipsJson 内 models[].model + models[].textures，
+		// 或 models[].variants[].model + models[].variants[].textures。
 		// 注意：waifuTipsJson 的提示词/交互文案始终生效，不受 cdnPath 影响。
-		// 衣服切换说明：modelTexturesId 由 localStorage 优先；无缓存时使用上方 modelTexturesId。
+		// 本地真皮肤格式示例：
+		// { model: "/assets/live2d/model/Pio/index.json", textures: ["textures/default.png", "textures/maid.png"] }
+		// 本地角色变体示例：
+		// { name: "Shizuku", variants: [{ name: "48", model: "/assets/live2d/model/ShizukuTalk/shizuku-48/index.json" }, { name: "Pajama", model: "/assets/live2d/model/ShizukuTalk/shizuku-pajama/index.json" }] }
+		// 衣服切换说明：modelTexturesId 由 localStorage 优先；本地模式下它表示当前角色内的“外观索引”（可对应皮肤或变体）。
 		// live2d(2)      // 当前模型切到皮肤 2
 		// live2d(5, 3)   // 切到模型 5 + 皮肤 3
 	},

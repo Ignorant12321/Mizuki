@@ -120,8 +120,12 @@ class c {
 			}
 		} else
 			(s.modelId >= s.models.length && (s.modelId = 0),
-				s.modelTexturesId >= s.models[s.modelId].paths.length &&
-					(s.modelTexturesId = 0));
+				(() => {
+					const e = s.getLocalAppearances(s.models[s.modelId]);
+					(s.modelTexturesId < 0 ||
+						(e.length > 0 && s.modelTexturesId >= e.length)) &&
+						(s.modelTexturesId = 0);
+				})());
 		return s;
 	}
 	set modelId(e) {
@@ -159,7 +163,19 @@ class c {
 		return 3 === e.Version || e.FileReferences ? 3 : 2;
 	}
 	async loadLive2D(e, t) {
-		if (this.loading) a.warn("Still loading. Abort.");
+		if (this.loading)
+			return (
+				a.warn("Still loading. Abort."),
+				void i(
+					[
+						"等等嘛~我还在换装呢",
+						"人家也要一点时间整理衣服呀~",
+						"换装中，马上就好啦~",
+					],
+					2500,
+					11,
+				)
+			);
 		else {
 			this.loading = !0;
 			try {
@@ -212,6 +228,79 @@ class c {
 			)) || []
 		);
 	}
+	getLocalVariants(e = this.models[this.modelId]) {
+		return Array.isArray(e?.variants) && e.variants.length > 0
+			? e.variants
+			: e
+				? [e]
+				: [];
+	}
+	getLocalAppearances(e = this.models[this.modelId]) {
+		const t = [];
+		for (const s of this.getLocalVariants(e)) {
+			const e = Array.isArray(s?.textures) ? s.textures : [];
+			if (e.length > 0)
+				for (let o = 0; o < e.length; o += 1)
+					t.push({ variant: s, textureIndex: o, textures: e });
+			else t.push({ variant: s, textureIndex: 0, textures: [] });
+		}
+		return t;
+	}
+	getCurrentLocalAppearance() {
+		const e = this.getLocalAppearances();
+		if (!e.length) return null;
+		const t =
+			this.modelTexturesId < 0 || this.modelTexturesId >= e.length
+				? 0
+				: this.modelTexturesId;
+		return e[t];
+	}
+	getCurrentModelLabel() {
+		if (this.useCDN) {
+			const e = this.modelList?.models?.[this.modelId];
+			if (Array.isArray(e)) {
+				return (
+					e[this.modelTexturesId] || e[0] || `model#${this.modelId}`
+				);
+			}
+			return e || `model#${this.modelId}`;
+		}
+		const e = this.models[this.modelId];
+		if (!e) return `model#${this.modelId}`;
+		const t = this.getCurrentLocalAppearance()?.variant;
+		return t?.name && t.name !== e.name ? `${e.name} / ${t.name}` : e.name;
+	}
+	getCurrentTextureLabel() {
+		const e = (t) =>
+			String(t ?? "")
+				.split("/")
+				.pop()
+				?.replace(/\.[^.]+$/, "") || `texture#${this.modelTexturesId}`;
+		if (this.useCDN) {
+			const t = this.modelList?.models?.[this.modelId];
+			if (Array.isArray(t)) {
+				return e(t[this.modelTexturesId] || t[0]);
+			}
+			const i =
+				this.modelJSONCache[`${this.cdnPath}model/${t}/textures.cache`];
+			if (Array.isArray(i) && i.length > 0) {
+				let t = i[this.modelTexturesId];
+				return Array.isArray(t) ? e(t[0]) : e(t);
+			}
+			return "default";
+		}
+		const i = this.getCurrentLocalAppearance();
+		if (i?.textures?.length > 0) {
+			let t = i.textures[i.textureIndex];
+			return Array.isArray(t) ? e(t[0]) : e(t);
+		}
+		return i?.variant?.name || "default";
+	}
+	logCurrentSelection() {
+		console.info(
+			`[Live2D] model=${this.modelId} (${this.getCurrentModelLabel()}) texture=${this.modelTexturesId} (${this.getCurrentTextureLabel()})`,
+		);
+	}
 	async loadModel(e) {
 		let t, s;
 		if (this.useCDN) {
@@ -226,10 +315,21 @@ class c {
 					("string" == typeof e && (e = [e]), (s.textures = e));
 				}
 			}
-		} else
-			((t = this.models[this.modelId].paths[this.modelTexturesId]),
-				(s = await this.fetchWithCache(t)));
-		(await this.loadLive2D(t, s), i(e, 4e3, 10));
+		} else {
+			const e = this.getCurrentLocalAppearance();
+			if (!e?.variant?.model)
+				return void a.error(
+					`No local model configured for modelId=${this.modelId}.`,
+				);
+			((t = e.variant.model), (s = await this.fetchWithCache(t)));
+			if (2 === this.checkModelVersion(s) && e.textures.length > 0) {
+				let t = e.textures[e.textureIndex];
+				("string" == typeof t && (t = [t]), (s.textures = t));
+			}
+		}
+		(await this.loadLive2D(t, s),
+			this.logCurrentSelection(),
+			i(e, 4e3, 10));
 	}
 	async loadRandTexture(e = "", s = "") {
 		const { modelId: o } = this;
@@ -251,13 +351,12 @@ class c {
 							));
 				} else n = !0;
 			}
-		} else
-			1 === this.models[o].paths.length
+		} else {
+			const e = this.getLocalAppearances(this.models[o]);
+			e.length <= 1
 				? (n = !0)
-				: (this.modelTexturesId = t(
-						this.models[o].paths.length,
-						this.modelTexturesId,
-					));
+				: (this.modelTexturesId = t(e.length, this.modelTexturesId));
+		}
 		n ? i(s, 4e3, 10) : await this.loadModel(e);
 	}
 	async loadNextModel() {

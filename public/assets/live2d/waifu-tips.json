@@ -526,50 +526,409 @@
 	"models": [
 		{
 			"name": "Potion-Maker/Pio",
-			"paths": [
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/Potion-Maker/Pio/index.json"
+			"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/Potion-Maker/Pio/index.json",
+			"textures": [
+				"textures/animal-costume-racoon.png",
+				"textures/animal-costume.png",
+				"textures/bunny-girl-costume-red.png",
+				"textures/bunny-girl-costume.png",
+				"textures/cake-costume-choco.png",
+				"textures/cake-costume-cream.png",
+				"textures/default-costume.png",
+				"textures/dress-costume-brown.png",
+				"textures/dress-costume.png",
+				"textures/elementary-school-costume-navy.png",
+				"textures/elementary-school-costume.png",
+				"textures/fall-dress-costume-beige.png",
+				"textures/fall-dress-costume-brown.png",
+				"textures/frill-bikini-costume-green.png",
+				"textures/frill-bikini-costume-purple.png",
+				"textures/frill-blouse-costume-green.png",
+				"textures/frill-blouse-costume-red.png",
+				"textures/furisode-costume.png",
+				"textures/halloween-costume.png",
+				"textures/hanbok-costume-pink.png",
+				"textures/hanbok-costume-red.png",
+				"textures/hanbok-costume-skyblue.png",
+				"textures/hanbok-costume-yellow.png",
+				"textures/hanbok-costume.png",
+				"textures/healer-costume.png",
+				"textures/kids-costume-navy.png",
+				"textures/kids-costume.png",
+				"textures/maid-costume-red.png",
+				"textures/maid-costume.png",
+				"textures/new2015-costume-pajamas.png",
+				"textures/new2015-costume.png",
+				"textures/night-witch-costume-black.png",
+				"textures/night-witch-costume-gray.png",
+				"textures/nightsky-costume.png",
+				"textures/overalls-costume-white.png",
+				"textures/overalls-costume.png",
+				"textures/pajamas-costume-pink.png",
+				"textures/pajamas-costume.png",
+				"textures/party-dress-costume-brown.png",
+				"textures/party-dress-costume-purple.png",
+				"textures/qipao-costume-pink.png",
+				"textures/qipao-costume-red.png",
+				"textures/ribbon-dress-costume-red.png",
+				"textures/ribbon-dress-costume-yellow.png",
+				"textures/sailor-costume-black.png",
+				"textures/sailor-costume.png",
+				"textures/sakura-costume-navy.png",
+				"textures/sakura-costume.png",
+				"textures/santa-costume-green.png",
+				"textures/santa-costume.png",
+				"textures/sarori-costume.png",
+				"textures/school-2017-costume-gray.png",
+				"textures/school-2017-costume-yellow.png",
+				"textures/school-costume-red.png",
+				"textures/school-costume.png",
+				"textures/sfc-uniform-costume-red.png",
+				"textures/sfc-uniform-costume-yellow.png",
+				"textures/shaman-costume-black.png",
+				"textures/shaman-costume-blue.png",
+				"textures/sinsiroad-shop-costume-junior.png",
+				"textures/sinsiroad-shop-costume-senior.png",
+				"textures/sorceress-costume.png",
+				"textures/sporty-hood-costume-black.png",
+				"textures/sporty-hood-costume-blue.png",
+				"textures/star-witch-costume-brown.png",
+				"textures/star-witch-costume.png",
+				"textures/succubus-costume-black.png",
+				"textures/succubus-costume-red.png",
+				"textures/sukumizu-costume-white.png",
+				"textures/sukumizu-costume.png",
+				"textures/summer-dress-costume-blue.png",
+				"textures/summer-dress-costume-white.png",
+				"textures/swimsuit-2017-costume-navy.png",
+				"textures/swimsuit-2017-costume-red.png",
+				"textures/tirami1-costume.png",
+				"textures/turtleneck-costume-red.png",
+				"textures/turtleneck-costume.png",
+				"textures/valentine-costume-brown.png",
+				"textures/valentine-costume-pink.png",
+				"textures/winter-coat-2017-costume-brown.png",
+				"textures/winter-coat-2017-costume-white.png",
+				"textures/winter-coat-costume-pink.png",
+				"textures/winter-coat-costume-white.png",
+				"textures/winter-costume-white.png",
+				"textures/winter-costume.png",
+				"textures/witch-costume-white.png",
+				"textures/witch-costume.png"
 			],
 			"message": "来自 Potion Maker 的 Pio 酱 ~"
 		},
 		{
 			"name": "Potion-Maker/Tia",
-			"paths": [
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/Potion-Maker/Tia/index.json"
+			"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/Potion-Maker/Tia/index.json",
+			"textures": [
+				"textures/default-costume.png",
+				"textures/jersey-costume-blue.png",
+				"textures/pajamas-costume-green.png",
+				"textures/bikini-costume-blue.png",
+				"textures/bikini-costume-pink.png",
+				"textures/blackcat-costume.png",
+				"textures/blazer-costume-black.png",
+				"textures/blazer-costume-brown.png",
+				"textures/blueround-costume.png",
+				"textures/bunny-girl-costume-red.png",
+				"textures/bunny-girl-costume.png",
+				"textures/cami-dress-costume-pink.png",
+				"textures/cute-pajamas-costume-purple.png",
+				"textures/cute-pajamas-costume-skyblue.png",
+				"textures/frill-blouse-costume-green.png",
+				"textures/frill-blouse-costume-red.png",
+				"textures/halloween-costume.png",
+				"textures/hanbok-costume-gorgeous.png",
+				"textures/hanbok-costume.png",
+				"textures/hood-costume-gray.png",
+				"textures/hood-costume-red.png",
+				"textures/jersey-costume-red.png",
+				"textures/knight-costume.png",
+				"textures/macaron-dress-costume-green.png",
+				"textures/macaron-dress-costume-pink.png",
+				"textures/magical-girl-costume.png",
+				"textures/maid-costume-black.png",
+				"textures/maid-costume-blue.png",
+				"textures/marine-costume-navy.png",
+				"textures/marine-costume.png",
+				"textures/nordic-costume-beige.png",
+				"textures/nordic-costume-navy.png",
+				"textures/nurse-costume-red.png",
+				"textures/nurse-costume.png",
+				"textures/pajamas-costume-blue.png",
+				"textures/pushcat-costume.png",
+				"textures/sabori-costume.png",
+				"textures/sailor-bikini-costume-black.png",
+				"textures/sailor-bikini-costume-white.png",
+				"textures/sailor-costume-black.png",
+				"textures/sailor-costume.png",
+				"textures/sakura-costume-navy.png",
+				"textures/sakura-costume.png",
+				"textures/santa-costume.png",
+				"textures/santa2016-costume.png",
+				"textures/sports-bikini-costume-green.png",
+				"textures/sports-bikini-costume-navy.png",
+				"textures/spring-dress-costume-brown.png",
+				"textures/spring-dress-costume-navy.png",
+				"textures/sukumizu-costume-white.png",
+				"textures/sukumizu-costume.png",
+				"textures/sulbim-costume-rainbow.png",
+				"textures/sulbim-costume-snowflake.png",
+				"textures/summer-uniform-costume-blue.png",
+				"textures/summer-uniform-costume-green.png",
+				"textures/thief-costume.png",
+				"textures/traveler-costume-brown.png",
+				"textures/traveler-costume-white.png",
+				"textures/vampire-costume-real.png",
+				"textures/vampire-costume.png",
+				"textures/warrior-costume.png",
+				"textures/whiteday-costume-purple.png",
+				"textures/whiteday-costume-red.png"
 			],
 			"message": "来自 Potion Maker 的 Tia 酱 ~"
 		},
 		{
 			"name": "HyperdimensionNeptunia",
-			"paths": [
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/blanc_classic/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/blanc_normal/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/blanc_swimwear/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/histoire/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/histoirenohover/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepgear/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepgear_extra/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepgearswim/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepmaid/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepnep/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepswim/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/neptune_classic/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/neptune_santa/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noir/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noir_classic/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noir_santa/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noireswim/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/vert_classic/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/vert_normal/index.json",
-				"https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/vert_swimwear/index.json"
-			],
-
-			"message": "Nep! Nep! 超次元游戏：海王星 系列"
+			"message": "Hyperdimension Neptunia 来啦 ~",
+			"variants": [
+				{
+					"name": "blanc_classic",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/blanc_classic/index.json",
+					"message": "Blanc 经典版 ~"
+				},
+				{
+					"name": "blanc_normal",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/blanc_normal/index.json",
+					"message": "Blanc 常服版 ~"
+				},
+				{
+					"name": "blanc_swimwear",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/blanc_swimwear/index.json",
+					"message": "Blanc 泳装版 ~"
+				},
+				{
+					"name": "histoire",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/histoire/index.json",
+					"message": "Histoire 来啦 ~"
+				},
+				{
+					"name": "histoirenohover",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/histoirenohover/index.json",
+					"message": "Histoire 无悬停版 ~"
+				},
+				{
+					"name": "nepgear",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepgear/index.json",
+					"message": "Nepgear 来啦 ~"
+				},
+				{
+					"name": "nepgear_extra",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepgear_extra/index.json",
+					"message": "Nepgear 特别版 ~"
+				},
+				{
+					"name": "nepgearswim",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepgearswim/index.json",
+					"message": "Nepgear 泳装版 ~"
+				},
+				{
+					"name": "nepmaid",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepmaid/index.json",
+					"message": "Nepgear 女仆版 ~"
+				},
+				{
+					"name": "nepnep",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepnep/index.json",
+					"message": "Neptune 来啦 ~"
+				},
+				{
+					"name": "nepswim",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepswim/index.json",
+					"message": "Neptune 泳装版 ~"
+				},
+				{
+					"name": "neptune_classic",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/neptune_classic/index.json",
+					"message": "Neptune 经典版 ~"
+				},
+				{
+					"name": "neptune_santa",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/neptune_santa/index.json",
+					"message": "Neptune 圣诞版 ~"
+				},
+				{
+					"name": "noir",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noir/index.json",
+					"message": "Noir 来啦 ~"
+				},
+				{
+					"name": "noir_classic",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noir_classic/index.json",
+					"message": "Noir 经典版 ~"
+				},
+				{
+					"name": "noir_santa",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noir_santa/index.json",
+					"message": "Noir 圣诞版 ~"
+				},
+				{
+					"name": "noireswim",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noireswim/index.json",
+					"message": "Noir 泳装版 ~"
+				},
+				{
+					"name": "vert_classic",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/vert_classic/index.json",
+					"message": "Vert 经典版 ~"
+				},
+				{
+					"name": "vert_normal",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/vert_normal/index.json",
+					"message": "Vert 常服版 ~"
+				},
+				{
+					"name": "vert_swimwear",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/vert_swimwear/index.json",
+					"message": "Vert 泳装版 ~"
+				}
+			]
+		},
+		{
+			"name": "ShizukuTalk/Shizuku",
+			"message": "Shizuku 来啦 ~",
+			"variants": [
+				{
+					"name": "48",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/ShizukuTalk/shizuku-48/index.json",
+					"message": "是 Shizuku 48 呢 ~"
+				},
+				{
+					"name": "Pajama",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/ShizukuTalk/shizuku-pajama/index.json",
+					"message": "穿着睡衣的 Shizuku 来啦 ~"
+				}
+			]
+		},
+		{
+			"name": "bilibili-live",
+			"message": "Bilibili Live 来啦 ~",
+			"variants": [
+				{
+					"name": "22",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/bilibili-live/22/index.json",
+					"textures": [
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/default-upper.png",
+							"texture_02/default-lower.png",
+							"texture_03/default-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/newyear-upper.png",
+							"texture_02/newyear-lower.png",
+							"texture_03/newyear-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/school2017-upper.png",
+							"texture_02/school2017-lower.png",
+							"texture_03/school2017-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/spring-2018-upper.png",
+							"texture_02/spring-2018-lower.png",
+							"texture_03/spring-2018-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/summer2017-high-upper.png",
+							"texture_02/summer2017-high-lower.png",
+							"texture_03/summer2017-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/tomo-high-upper.png",
+							"texture_02/tomo-high-lower.png",
+							"texture_03/tomo-high-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/vdays-upper.png",
+							"texture_02/vdays-lower.png",
+							"texture_03/vdays-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/xmas-upper.png",
+							"texture_02/xmas-lower.png",
+							"texture_03/xmas-hat.png"
+						]
+					],
+					"message": "Bilibili Live 22 号来啦 ~"
+				},
+				{
+					"name": "33",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/bilibili-live/33/index.json",
+					"textures": [
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/default-upper.png",
+							"texture_02/default-lower.png",
+							"texture_03/default-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/cba-normal-upper.png",
+							"texture_02/cba-normal-lower.png",
+							"texture_03/cba-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/newyear-upper.png",
+							"texture_02/newyear-lower.png",
+							"texture_03/newyear-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/school2017-upper.png",
+							"texture_02/school2017-lower.png",
+							"texture_03/school2017-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/spring-2018-upper.png",
+							"texture_02/spring-2018-lower.png",
+							"texture_03/spring-2018-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/summer2017-low-upper.png",
+							"texture_02/summer2017-low-lower.png",
+							"texture_03/summer2017-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/tomo-low-upper.png",
+							"texture_02/tomo-low-lower.png",
+							"texture_03/tomo-low-hat.png"
+						],
+						[
+							"texture_00/closet-default-v2.png",
+							"texture_01/xmas-upper.png",
+							"texture_02/xmas-lower.png",
+							"texture_03/xmas-headwear.png"
+						]
+					],
+					"message": "Bilibili Live 33 号也来了 ~"
+				}
+			]
 		},
 		{
 			"name": "Hiyori",
-			"paths": [
-				"https://fastly.jsdelivr.net/gh/Live2D/CubismWebSamples/Samples/Resources/Hiyori/Hiyori.model3.json"
-			],
+			"model": "https://fastly.jsdelivr.net/gh/Live2D/CubismWebSamples/Samples/Resources/Hiyori/Hiyori.model3.json",
 			"message": "是 Hiyori 哦 ~"
 		}
 	]

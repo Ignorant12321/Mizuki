@@ -251,8 +251,8 @@ import {
 	}
 
 	function setupToolVisibility() {
-		const { waifu, tool, canvas } = getWaifuElements();
-		if (!waifu || !tool || !canvas) {
+		const { waifu } = getWaifuElements();
+		if (!waifu) {
 			return () => {};
 		}
 
@@ -277,13 +277,21 @@ import {
 		};
 
 		const onPointerDown = (event: Event) => {
+			const currentTool = waifu.querySelector("#waifu-tool");
+			const currentCanvas =
+				waifu.querySelector("#live2d") ??
+				waifu.querySelector("#waifu-canvas");
 			const target = event.target;
-			if (!(target instanceof Element)) {
+			if (
+				!(target instanceof Element) ||
+				!(currentTool instanceof HTMLElement) ||
+				!(currentCanvas instanceof HTMLElement)
+			) {
 				return;
 			}
 			const inWaifu = waifu.contains(target);
-			const inTool = tool.contains(target);
-			const inCanvas = canvas.contains(target);
+			const inTool = currentTool.contains(target);
+			const inCanvas = currentCanvas.contains(target);
 
 			if (inWaifu && (inTool || inCanvas)) {
 				showTools();
