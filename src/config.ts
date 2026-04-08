@@ -86,7 +86,7 @@ export const siteConfig: SiteConfig = {
 		// - "json" -> src/data/diary-data.json
 		// - "md" -> src/content/diary/*.md
 		dataSource: "md", // "json" | "md"
-		pageSize: 1, // 日记分页大小
+		pageSize: 3, // 日记分页大小
 	},
 
 	news: {

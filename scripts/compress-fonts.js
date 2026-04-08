@@ -71,6 +71,221 @@ async function getConfig() {
 	return { lang, fonts };
 }
 
+function addTextFromContent(content, textSet) {
+	// 统一提取字符串字面量，既适用于 TS/JS，也适用于 JSON 文本源
+	const patterns = [
+		/"([^"\\]|\\.|\\n|\\t)*"/g,
+		/'([^'\\]|\\.|\\n|\\t)*'/g,
+		/`([^`\\]|\\.|\\n|\\t)*`/g,
+	];
+
+	for (const pattern of patterns) {
+		const matches = content.match(pattern);
+		if (!matches) {
+			continue;
+		}
+
+		for (const match of matches) {
+			let text = match;
+
+			if (
+				(text.startsWith('"') && text.endsWith('"')) ||
+				(text.startsWith("'") && text.endsWith("'")) ||
+				(text.startsWith("`") && text.endsWith("`"))
+			) {
+				text = text.slice(1, -1);
+			}
+
+			text = text
+				.replace(/\\n/g, "\n")
+				.replace(/\\t/g, "\t")
+				.replace(/\\"/g, '"')
+				.replace(/\\'/g, "'");
+
+			for (const char of text) {
+				textSet.add(char);
+			}
+		}
+	}
+
+	const stringMatches = content.match(/["'`]([^"'`]+)["'`]/g);
+	if (stringMatches) {
+		for (const match of stringMatches) {
+			const text = match.slice(1, -1);
+			for (const char of text) {
+				textSet.add(char);
+			}
+		}
+	}
+}
+
+function addTextFromFile(filePath, textSet) {
+	if (!fs.existsSync(filePath)) {
+		return;
+	}
+
+	const content = fs.readFileSync(filePath, "utf-8");
+	addTextFromContent(content, textSet);
+}
+
+function extractArrayBlock(content, propertyName) {
+	const propertyIndex = content.indexOf(`${propertyName}:`);
+	if (propertyIndex === -1) {
+		return null;
+	}
+
+	const arrayStart = content.indexOf("[", propertyIndex);
+	if (arrayStart === -1) {
+		return null;
+	}
+
+	let depth = 0;
+	let inString = null;
+	let escaped = false;
+
+	for (let i = arrayStart; i < content.length; i += 1) {
+		const char = content[i];
+
+		if (inString) {
+			if (escaped) {
+				escaped = false;
+				continue;
+			}
+			if (char === "\\") {
+				escaped = true;
+				continue;
+			}
+			if (char === inString) {
+				inString = null;
+			}
+			continue;
+		}
+
+		if (char === '"' || char === "'" || char === "`") {
+			inString = char;
+			continue;
+		}
+
+		if (char === "[") {
+			depth += 1;
+		} else if (char === "]") {
+			depth -= 1;
+			if (depth === 0) {
+				return content.slice(arrayStart + 1, i);
+			}
+		}
+	}
+
+	return null;
+}
+
+function splitTopLevelObjects(arrayBlock) {
+	const objects = [];
+	let depth = 0;
+	let inString = null;
+	let escaped = false;
+	let objectStart = -1;
+
+	for (let i = 0; i < arrayBlock.length; i += 1) {
+		const char = arrayBlock[i];
+
+		if (inString) {
+			if (escaped) {
+				escaped = false;
+				continue;
+			}
+			if (char === "\\") {
+				escaped = true;
+				continue;
+			}
+			if (char === inString) {
+				inString = null;
+			}
+			continue;
+		}
+
+		if (char === '"' || char === "'" || char === "`") {
+			inString = char;
+			continue;
+		}
+
+		if (char === "{") {
+			if (depth === 0) {
+				objectStart = i;
+			}
+			depth += 1;
+		} else if (char === "}") {
+			depth -= 1;
+			if (depth === 0 && objectStart !== -1) {
+				objects.push(arrayBlock.slice(objectStart, i + 1));
+				objectStart = -1;
+			}
+		}
+	}
+
+	return objects;
+}
+
+function getStringField(source, fieldName) {
+	const match = source.match(
+		new RegExp(`${fieldName}:\\s*["']([^"']+)["']`, "m"),
+	);
+	return match ? match[1] : "";
+}
+
+function extractGithubReposFromMarkdown(content) {
+	const repos = new Set();
+	const directiveRegex =
+		/::+:github\{[^}]*repo\s*=\s*["']([^"']+)["'][^}]*\}/g;
+	let match;
+
+	while ((match = directiveRegex.exec(content)) !== null) {
+		if (match[1]) {
+			repos.add(match[1]);
+		}
+	}
+
+	return repos;
+}
+
+const githubRepoDescriptionCache = new Map();
+
+async function fetchGithubRepoDescription(repo) {
+	if (!repo || !repo.includes("/")) {
+		return "";
+	}
+
+	if (githubRepoDescriptionCache.has(repo)) {
+		return githubRepoDescriptionCache.get(repo);
+	}
+
+	try {
+		const response = await fetch(`https://api.github.com/repos/${repo}`, {
+			headers: {
+				Accept: "application/vnd.github+json",
+				"User-Agent": "Mizuki-font-compressor",
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+		}
+
+		const data = await response.json();
+		const description = data.description
+			? String(data.description).replace(/:[a-zA-Z0-9_]+:/g, "")
+			: "";
+		githubRepoDescriptionCache.set(repo, description);
+		return description;
+	} catch (error) {
+		console.log(
+			`⚠ Failed to fetch GitHub repo description for ${repo}: ${error.message}`,
+		);
+		githubRepoDescriptionCache.set(repo, "");
+		return "";
+	}
+}
+
 // 递归读取目录下所有文件
 function readFilesRecursively(dir, fileList = []) {
 	const files = fs.readdirSync(dir);
@@ -209,132 +424,106 @@ async function fetchMetingPlaylistText() {
 			return new Set();
 		}
 
-		// 提取音乐播放器配置（使用默认值，因为配置可能不完整）
-		// 在实际的音乐播放器组件中，如果配置中没有指定模式，默认使用 "meting"
-		const musicConfigMatch = configContent.match(
-			/musicPlayerConfig:\s*MusicPlayerConfig\s*=\s*\{([\s\S]*?)\}/,
-		);
-		let mode = "meting"; // 默认模式
-		let meting_api =
-			"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r";
-		let meting_id = "14164869977";
-		let meting_server = "netease";
-		let meting_type = "playlist";
-
-		if (musicConfigMatch) {
-			const configStr = musicConfigMatch[1];
-
-			const modeMatch = configStr.match(/mode:\s*["']([^"']+)["']/);
-			if (modeMatch) {
-				mode = modeMatch[1];
-			}
-
-			const apiMatch = configStr.match(/meting_api:\s*["']([^"']+)["']/);
-			if (apiMatch) {
-				meting_api = apiMatch[1];
-			}
-
-			const idMatch = configStr.match(/id:\s*["']([^"']+)["']/);
-			if (idMatch) {
-				meting_id = idMatch[1];
-			}
-
-			const serverMatch = configStr.match(/server:\s*["']([^"']+)["']/);
-			if (serverMatch) {
-				meting_server = serverMatch[1];
-			}
-
-			const typeMatch = configStr.match(/type:\s*["']([^"']+)["']/);
-			if (typeMatch) {
-				meting_type = typeMatch[1];
-			}
-		}
-
-		if (mode !== "meting") {
-			console.log(
-				'ℹ Music player mode is not "meting", skipping API text collection',
-			);
-			return new Set();
-		}
-
-		// 构建 API URL
-		const apiUrl = meting_api
-			.replace(":server", meting_server)
-			.replace(":type", meting_type)
-			.replace(":id", meting_id)
-			.replace(":auth", "")
-			.replace(":r", Date.now().toString());
-
-		console.log("ℹ Fetching music playlist from Meting API...");
-		console.log(`  URL: ${apiUrl}`);
-
-		// 设置请求超时
-		const controller = new AbortController();
-		const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
-
 		const textSet = new Set();
 
-		try {
-			const response = await fetch(apiUrl, {
-				signal: controller.signal,
-				headers: {
-					"User-Agent":
-						"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-				},
-			});
-			clearTimeout(timeoutId);
+		const playlistsBlock = extractArrayBlock(configContent, "playlists");
+		if (!playlistsBlock) {
+			console.log("ℹ No music playlists found, skipping Meting API text collection");
+			return textSet;
+		}
 
-			if (!response.ok) {
-				throw new Error(
-					`HTTP ${response.status}: ${response.statusText}`,
-				);
+		const playlists = splitTopLevelObjects(playlistsBlock);
+		if (playlists.length === 0) {
+			console.log("ℹ Music playlist list is empty, skipping Meting API text collection");
+			return textSet;
+		}
+
+		console.log(`ℹ Found ${playlists.length} music playlist config(s)`);
+
+		for (const playlistConfig of playlists) {
+			const name = getStringField(playlistConfig, "name") || "未命名歌单";
+			const mode = getStringField(playlistConfig, "mode") || "meting";
+			if (mode !== "meting") {
+				continue;
 			}
 
-			const playlist = await response.json();
+			const meting_api =
+				getStringField(playlistConfig, "meting_api") ||
+				"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r";
+			const meting_id = getStringField(playlistConfig, "id");
+			const meting_server = getStringField(playlistConfig, "server") || "netease";
+			const meting_type = getStringField(playlistConfig, "type") || "playlist";
 
-			if (!Array.isArray(playlist)) {
-				throw new Error("API response is not an array");
+			if (!meting_id) {
+				console.log(`⚠ Skip music playlist "${name}" because id is empty`);
+				continue;
 			}
 
-			console.log(
-				`✓ Successfully fetched ${playlist.length} songs from Meting API`,
-			);
+			const apiUrl = meting_api
+				.replace(":server", meting_server)
+				.replace(":type", meting_type)
+				.replace(":id", meting_id)
+				.replace(":auth", "")
+				.replace(":r", Date.now().toString());
 
-			// 提取歌曲信息中的文字
-			let songCount = 0;
-			playlist.forEach((song) => {
-				const title = song.name ?? song.title ?? "";
-				const artist = song.artist ?? song.author ?? "";
+			console.log(`ℹ Fetching music playlist "${name}" from Meting API...`);
+			console.log(`  URL: ${apiUrl}`);
 
-				// 只处理有效的歌曲信息
-				if (title.trim() || artist.trim()) {
-					songCount++;
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-					// 添加歌名中的字符
-					for (const char of title) {
-						textSet.add(char);
-					}
+			try {
+				const response = await fetch(apiUrl, {
+					signal: controller.signal,
+					headers: {
+						"User-Agent":
+							"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+					},
+				});
+				clearTimeout(timeoutId);
 
-					// 添加歌手名中的字符
-					for (const char of artist) {
-						textSet.add(char);
-					}
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 				}
-			});
-			if (songCount === 0) {
-				console.log("⚠ No valid song data found in API response");
-			}
-		} catch (fetchError) {
-			clearTimeout(timeoutId);
 
-			if (fetchError.name === "AbortError") {
+				const playlist = await response.json();
+				if (!Array.isArray(playlist)) {
+					throw new Error("API response is not an array");
+				}
+
 				console.log(
-					"⚠ Meting API request timeout (10s), skipping music text collection",
+					`✓ Successfully fetched ${playlist.length} songs from Meting API: ${name}`,
 				);
-			} else {
-				console.log(
-					`⚠ Failed to fetch Meting API data: ${fetchError.message}, skipping music text collection`,
-				);
+
+				let songCount = 0;
+				playlist.forEach((song) => {
+					const title = song.name ?? song.title ?? "";
+					const artist = song.artist ?? song.author ?? "";
+					if (title.trim() || artist.trim()) {
+						songCount += 1;
+						for (const char of title) {
+							textSet.add(char);
+						}
+						for (const char of artist) {
+							textSet.add(char);
+						}
+					}
+				});
+
+				if (songCount === 0) {
+					console.log(`⚠ No valid song data found in playlist: ${name}`);
+				}
+			} catch (fetchError) {
+				clearTimeout(timeoutId);
+				if (fetchError.name === "AbortError") {
+					console.log(
+						`⚠ Meting API request timeout (10s), skipping music playlist: ${name}`,
+					);
+				} else {
+					console.log(
+						`⚠ Failed to fetch Meting API data for "${name}": ${fetchError.message}, skipping music text collection`,
+					);
+				}
 			}
 		}
 
@@ -711,56 +900,7 @@ async function collectText() {
 	dataFiles.forEach((file) => {
 		if (file.endsWith(".ts") || file.endsWith(".js")) {
 			const content = fs.readFileSync(file, "utf-8");
-
-			// 改进的字符串匹配
-			const patterns = [
-				// 双引号字符串
-				/"([^"\\]|\\.|\\n|\\t)*"/g,
-				// 单引号字符串
-				/'([^'\\]|\\.|\\n|\\t)*'/g,
-				// 模板字符串
-				/`([^`\\]|\\.|\\n|\\t)*`/g,
-			];
-
-			patterns.forEach((pattern) => {
-				const matches = content.match(pattern);
-				if (matches) {
-					matches.forEach((match) => {
-						let text = match;
-
-						// 清理引号
-						if (
-							(text.startsWith('"') && text.endsWith('"')) ||
-							(text.startsWith("'") && text.endsWith("'")) ||
-							(text.startsWith("`") && text.endsWith("`"))
-						) {
-							text = text.slice(1, -1);
-						}
-
-						// 处理转义字符
-						text = text
-							.replace(/\\n/g, "\n")
-							.replace(/\\t/g, "\t")
-							.replace(/\\"/g, '"')
-							.replace(/\\'/g, "'");
-
-						for (const char of text) {
-							textSet.add(char);
-						}
-					});
-				}
-			});
-
-			// 简单正则作为补充
-			const stringMatches = content.match(/["'`]([^"'`]+)["'`]/g);
-			if (stringMatches) {
-				stringMatches.forEach((match) => {
-					const text = match.slice(1, -1);
-					for (const char of text) {
-						textSet.add(char);
-					}
-				});
-			}
+			addTextFromContent(content, textSet);
 		}
 	});
 
@@ -771,160 +911,36 @@ async function collectText() {
 	);
 	if (fs.existsSync(musicConstantsFile)) {
 		const content = fs.readFileSync(musicConstantsFile, "utf-8");
-
-		const patterns = [
-			/"([^"\\]|\\.|\\n|\\t)*"/g,
-			/'([^'\\]|\\.|\\n|\\t)*'/g,
-			/`([^`\\]|\\.|\\n|\\t)*`/g,
-		];
-
-		patterns.forEach((pattern) => {
-			const matches = content.match(pattern);
-			if (matches) {
-				matches.forEach((match) => {
-					let text = match;
-
-					if (
-						(text.startsWith('"') && text.endsWith('"')) ||
-						(text.startsWith("'") && text.endsWith("'")) ||
-						(text.startsWith("`") && text.endsWith("`"))
-					) {
-						text = text.slice(1, -1);
-					}
-
-					text = text
-						.replace(/\\n/g, "\n")
-						.replace(/\\t/g, "\t")
-						.replace(/\\"/g, '"')
-						.replace(/\\'/g, "'");
-
-					for (const char of text) {
-						textSet.add(char);
-					}
-				});
-			}
-		});
-
-		const stringMatches = content.match(/["'`]([^"'`]+)["'`]/g);
-		if (stringMatches) {
-			stringMatches.forEach((match) => {
-				const text = match.slice(1, -1);
-				for (const char of text) {
-					textSet.add(char);
-				}
-			});
-		}
+		addTextFromContent(content, textSet);
 	}
 
 	// 3. 读取 src/config.ts 文件
 	const configFile = path.join(__dirname, "../src/config.ts");
 	if (fs.existsSync(configFile)) {
 		const content = fs.readFileSync(configFile, "utf-8");
-
-		// 改进的字符串匹配
-		const patterns = [
-			// 双引号字符串
-			/"([^"\\]|\\.|\\n|\\t)*"/g,
-			// 单引号字符串
-			/'([^'\\]|\\.|\\n|\\t)*'/g,
-			// 模板字符串
-			/`([^`\\]|\\.|\\n|\\t)*`/g,
-		];
-
-		patterns.forEach((pattern) => {
-			const matches = content.match(pattern);
-			if (matches) {
-				matches.forEach((match) => {
-					// 清理引号和注释标记
-					let text = match;
-
-					// 移除字符串的引号
-					if (
-						(text.startsWith('"') && text.endsWith('"')) ||
-						(text.startsWith("'") && text.endsWith("'")) ||
-						(text.startsWith("`") && text.endsWith("`"))
-					) {
-						text = text.slice(1, -1);
-					}
-
-					// 处理转义字符
-					text = text
-						.replace(/\\n/g, "\n")
-						.replace(/\\t/g, "\t")
-						.replace(/\\"/g, '"')
-						.replace(/\\'/g, "'");
-
-					// 提取所有字符（包括中文）
-					for (const char of text) {
-						textSet.add(char);
-					}
-				});
-			}
-		});
-
-		// 作为补充，还用原来的简单正则再扫一遍，确保不遗漏
-		const simpleMatches = content.match(/["'`]([^"'`]+)["'`]/g);
-		if (simpleMatches) {
-			simpleMatches.forEach((match) => {
-				const text = match.slice(1, -1);
-				for (const char of text) {
-					textSet.add(char);
-				}
-			});
-		}
+		addTextFromContent(content, textSet);
 	}
 
 	// 4. 读取对应语言的 i18n 文件
 	const i18nFile = path.join(__dirname, `../src/i18n/languages/${lang}.ts`);
 	if (fs.existsSync(i18nFile)) {
 		const content = fs.readFileSync(i18nFile, "utf-8");
-
-		// 改进的字符串匹配
-		const patterns = [
-			/"([^"\\]|\\.|\\n|\\t)*"/g,
-			/'([^'\\]|\\.|\\n|\\t)*'/g,
-			/`([^`\\]|\\.|\\n|\\t)*`/g,
-		];
-
-		patterns.forEach((pattern) => {
-			const matches = content.match(pattern);
-			if (matches) {
-				matches.forEach((match) => {
-					let text = match;
-
-					if (
-						(text.startsWith('"') && text.endsWith('"')) ||
-						(text.startsWith("'") && text.endsWith("'")) ||
-						(text.startsWith("`") && text.endsWith("`"))
-					) {
-						text = text.slice(1, -1);
-					}
-
-					// 处理转义字符
-					text = text
-						.replace(/\\n/g, "\n")
-						.replace(/\\t/g, "\t")
-						.replace(/\\"/g, '"')
-						.replace(/\\'/g, "'");
-
-					for (const char of text) {
-						textSet.add(char);
-					}
-				});
-			}
-		});
-
-		// 简单正则作为补充
-		const stringMatches = content.match(/["'`]([^"'`]+)["'`]/g);
-		if (stringMatches) {
-			stringMatches.forEach((match) => {
-				const text = match.slice(1, -1);
-				for (const char of text) {
-					textSet.add(char);
-				}
-			});
-		}
+		addTextFromContent(content, textSet);
 	}
+
+	// 4.5 读取额外补字表以及 Live2D 相关文案
+	addTextFromFile(
+		path.join(__dirname, "../src/data/compress-fonts-data.ts"),
+		textSet,
+	);
+	addTextFromFile(
+		path.join(__dirname, "../src/components/features/live2d/Live2D.svelte"),
+		textSet,
+	);
+	addTextFromFile(
+		path.join(__dirname, "../public/assets/live2d/waifu-tips.json"),
+		textSet,
+	);
 
 	// 5. 读取 content 目录（根据环境变量决定路径）
 	let contentDir;
@@ -945,6 +961,7 @@ async function collectText() {
 		console.log("  Skipping content text collection");
 	} else {
 		const contentFiles = readFilesRecursively(contentDir);
+		const githubRepos = new Set();
 
 		contentFiles.forEach((file) => {
 			const ext = path.extname(file);
@@ -961,8 +978,29 @@ async function collectText() {
 						textSet.add(char);
 					}
 				}
+
+				if (ext === ".md" || ext === ".mdx") {
+					const repos = extractGithubReposFromMarkdown(content);
+					for (const repo of repos) {
+						githubRepos.add(repo);
+					}
+				}
 			}
 		});
+
+		if (githubRepos.size > 0) {
+			console.log(
+				`ℹ Fetching GitHub card descriptions from ${githubRepos.size} repo(s)`,
+			);
+			for (const repo of githubRepos) {
+				const description = await fetchGithubRepoDescription(repo);
+				if (description) {
+					for (const char of description) {
+						textSet.add(char);
+					}
+				}
+			}
+		}
 	}
 
 	// 添加常用标点符号和数字
@@ -1017,15 +1055,6 @@ async function collectText() {
 		console.log(
 			`✓ Added ${bilibiliTextSet.size} unique characters from Bilibili anime data`,
 		);
-	}
-
-	// 漏网之鱼（如散落在各处未纳入统计的UI文本等）
-	const otherWords = ["示例", "歌曲", "艺术家"];
-
-	for (const term of otherWords) {
-		for (const char of term) {
-			textSet.add(char);
-		}
 	}
 
 	const allText = Array.from(textSet).sort().join("");
