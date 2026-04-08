@@ -147,21 +147,51 @@ const textData = Array.isArray(text) ? JSON.stringify(text) : text;
 		}
 	}
 
-	// 初始化所有打字机效果
-	document.addEventListener("DOMContentLoaded", () => {
-		const typewriterElements = document.querySelectorAll(".typewriter");
-		typewriterElements.forEach((element) => {
-			new TypewriterEffect(element as HTMLElement);
-		});
-	});
+	type TypewriterManager = {
+		instances: WeakMap<HTMLElement, TypewriterEffect>;
+		initAll: () => void;
+	};
 
-	// 支持页面切换时重新初始化
-	document.addEventListener("astro:after-swap", () => {
-		const typewriterElements = document.querySelectorAll(".typewriter");
-		typewriterElements.forEach((element) => {
-			new TypewriterEffect(element as HTMLElement);
-		});
-	});
+	type TypewriterWindow = Window & {
+		__mizukiTypewriterManager?: TypewriterManager;
+	};
+
+	const typewriterWindow = window as TypewriterWindow;
+
+	if (!typewriterWindow.__mizukiTypewriterManager) {
+		const instances = new WeakMap<HTMLElement, TypewriterEffect>();
+
+		const initAll = () => {
+			const typewriterElements = document.querySelectorAll(".typewriter");
+			typewriterElements.forEach((element) => {
+				const htmlElement = element as HTMLElement;
+				if (instances.has(htmlElement)) {
+					return;
+				}
+				instances.set(htmlElement, new TypewriterEffect(htmlElement));
+			});
+		};
+
+		typewriterWindow.__mizukiTypewriterManager = {
+			instances,
+			initAll,
+		};
+
+		const runInit = () => {
+			requestAnimationFrame(initAll);
+		};
+
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", runInit, {
+				once: true,
+			});
+		} else {
+			runInit();
+		}
+
+		// 支持页面切换时重新初始化，但只初始化新插入的元素
+		document.addEventListener("astro:after-swap", runInit);
+	}
 </script>
 
 <style>

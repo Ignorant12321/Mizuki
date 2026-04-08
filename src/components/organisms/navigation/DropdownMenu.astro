@@ -169,72 +169,113 @@ const hasChildren = children.length > 0;
 </style>
 
 <script>
-	document.addEventListener("DOMContentLoaded", () => {
-		const dropdowns = document.querySelectorAll("[data-dropdown]");
+	type DropdownManager = {
+		init: () => void;
+	};
 
-		dropdowns.forEach((dropdown) => {
-			const trigger = dropdown.querySelector(
-				"[data-dropdown-trigger]",
-			) as HTMLElement;
-			const menu = dropdown.querySelector(
-				"[data-dropdown-menu]",
-			) as HTMLElement;
-			const items = dropdown.querySelectorAll(
-				".dropdown-item",
-			) as NodeListOf<HTMLElement>;
+	type DropdownWindow = Window & {
+		__mizukiDropdownManager?: DropdownManager;
+	};
 
-			if (!trigger || !menu) {
-				return;
-			}
+	const dropdownWindow = window as DropdownWindow;
 
-			const closeMenu = () => {
-				trigger.setAttribute("aria-expanded", "false");
-			};
+	if (!dropdownWindow.__mizukiDropdownManager) {
+		const init = () => {
+			const dropdowns = document.querySelectorAll("[data-dropdown]");
 
-			const toggleMenu = () => {
-				const isExpanded =
-					trigger.getAttribute("aria-expanded") === "true";
-				trigger.setAttribute("aria-expanded", String(!isExpanded));
-			};
-
-			trigger.addEventListener("keydown", (e) => {
-				if (e.key === "Enter" || e.key === " ") {
-					e.preventDefault();
-					toggleMenu();
-				} else if (e.key === "ArrowDown") {
-					e.preventDefault();
-					trigger.setAttribute("aria-expanded", "true");
-					if (items.length > 0) {
-						items[0].focus();
-					}
-				} else if (e.key === "Escape") {
-					closeMenu();
+			dropdowns.forEach((dropdown) => {
+				const htmlDropdown = dropdown as HTMLElement;
+				if (htmlDropdown.dataset.dropdownBound === "true") {
+					return;
 				}
-			});
 
-			items.forEach((item, index) => {
-				item.addEventListener("keydown", (e) => {
-					if (e.key === "ArrowDown") {
+				const trigger = htmlDropdown.querySelector(
+					"[data-dropdown-trigger]",
+				) as HTMLElement | null;
+				const menu = htmlDropdown.querySelector(
+					"[data-dropdown-menu]",
+				) as HTMLElement | null;
+				const items = htmlDropdown.querySelectorAll(
+					".dropdown-item",
+				) as NodeListOf<HTMLElement>;
+
+				if (!trigger || !menu) {
+					return;
+				}
+
+				const closeMenu = () => {
+					trigger.setAttribute("aria-expanded", "false");
+				};
+
+				const toggleMenu = () => {
+					const isExpanded =
+						trigger.getAttribute("aria-expanded") === "true";
+					trigger.setAttribute("aria-expanded", String(!isExpanded));
+				};
+
+				trigger.addEventListener("keydown", (e) => {
+					if (e.key === "Enter" || e.key === " ") {
 						e.preventDefault();
-						items[(index + 1) % items.length].focus();
-					} else if (e.key === "ArrowUp") {
+						toggleMenu();
+					} else if (e.key === "ArrowDown") {
 						e.preventDefault();
-						items[
-							(index - 1 + items.length) % items.length
-						].focus();
+						trigger.setAttribute("aria-expanded", "true");
+						if (items.length > 0) {
+							items[0].focus();
+						}
 					} else if (e.key === "Escape") {
-						e.preventDefault();
 						closeMenu();
-						trigger.focus();
 					}
 				});
-			});
 
-			document.addEventListener("click", (e) => {
-				if (!dropdown.contains(e.target as Node)) {
-					closeMenu();
+				items.forEach((item, index) => {
+					item.addEventListener("keydown", (e) => {
+						if (e.key === "ArrowDown") {
+							e.preventDefault();
+							items[(index + 1) % items.length].focus();
+						} else if (e.key === "ArrowUp") {
+							e.preventDefault();
+							items[
+								(index - 1 + items.length) % items.length
+							].focus();
+						} else if (e.key === "Escape") {
+							e.preventDefault();
+							closeMenu();
+							trigger.focus();
+						}
+					});
+				});
+
+				htmlDropdown.dataset.dropdownBound = "true";
+			});
+		};
+
+		dropdownWindow.__mizukiDropdownManager = { init };
+
+		document.addEventListener("click", (e) => {
+			const target = e.target as Node | null;
+			document.querySelectorAll("[data-dropdown]").forEach((dropdown) => {
+				if (!target || !dropdown.contains(target)) {
+					const trigger = dropdown.querySelector(
+						"[data-dropdown-trigger]",
+					) as HTMLElement | null;
+					trigger?.setAttribute("aria-expanded", "false");
 				}
 			});
 		});
-	});
+
+		const runInit = () => {
+			requestAnimationFrame(init);
+		};
+
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", runInit, {
+				once: true,
+			});
+		} else {
+			runInit();
+		}
+
+		document.addEventListener("astro:after-swap", runInit);
+	}
 </script>

@@ -18,46 +18,64 @@ import FloatingButton from "@components/common/FloatingButton.astro";
 	if (typeof window.BackToTopManager === "undefined") {
 		window.BackToTopManager = class BackToTopManager {
 			constructor() {
-				this.button = document.getElementById("back-to-top-btn");
-				this.init();
+				this.button = null;
+				this.hasBoundScroll = false;
+				this.updateVisibility = this.updateVisibility.bind(this);
 			}
 
 			init() {
+				this.button = document.getElementById("back-to-top-btn");
 				if (!this.button) {
 					return;
 				}
-				this.setupScrollListener();
+
+				if (!this.hasBoundScroll) {
+					this.setupScrollListener();
+					this.hasBoundScroll = true;
+				}
+
+				this.updateVisibility();
+			}
+
+			updateVisibility() {
+				if (!this.button) {
+					return;
+				}
+
+				const scrollTop =
+					window.pageYOffset ||
+					document.documentElement.scrollTop;
+
+				if (scrollTop > 200) {
+					this.button.classList.remove("hide");
+				} else {
+					this.button.classList.add("hide");
+				}
 			}
 
 			setupScrollListener() {
-				const updateVisibility = () => {
-					const scrollTop =
-						window.pageYOffset ||
-						document.documentElement.scrollTop;
-
-					if (scrollTop > 200) {
-						this.button.classList.remove("hide");
-					} else {
-						this.button.classList.add("hide");
-					}
-				};
-
-				window.addEventListener("scroll", updateVisibility, {
+				window.addEventListener("scroll", this.updateVisibility, {
 					passive: true,
 				});
 			}
 		};
 	}
 
-	document.addEventListener("DOMContentLoaded", () => {
-		new window.BackToTopManager();
-	});
+	function initBackToTopManager() {
+		if (!window.__mizukiBackToTopManager) {
+			window.__mizukiBackToTopManager = new window.BackToTopManager();
+		}
+
+		window.__mizukiBackToTopManager.init();
+	}
 
 	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", () => {
-			new window.BackToTopManager();
+		document.addEventListener("DOMContentLoaded", initBackToTopManager, {
+			once: true,
 		});
 	} else {
-		new window.BackToTopManager();
+		initBackToTopManager();
 	}
+
+	document.addEventListener("astro:after-swap", initBackToTopManager);
 </script>
