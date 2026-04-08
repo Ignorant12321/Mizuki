@@ -227,12 +227,9 @@
   body:has(#banner-wrapper) #navbar[data-is-home="true"] .float-panel,
   #banner-wrapper ~ * #navbar[data-is-home="true"] .dropdown-content,
   body:has(#banner-wrapper) #navbar[data-is-home="true"] .dropdown-content,
-  #banner-wrapper ~ * #navbar[data-is-home="true"] ~ * #display-setting,
-  body:has(#banner-wrapper) #navbar[data-is-home="true"] ~ * #display-setting,
   body:has(#banner-wrapper) #navbar[data-is-home="true"] #nav-menu-panel,
   body:has(#banner-wrapper) #navbar[data-is-home="true"] #mobile-toc-panel,
-  body:has(#banner-wrapper) #navbar[data-is-home="true"] #search-panel,
-  body:has(#banner-wrapper) #navbar[data-is-home="true"] #display-setting {
+  body:has(#banner-wrapper) #navbar[data-is-home="true"] #search-panel {
     backdrop-filter: blur(20px);
     background: rgba(255, 255, 255, 0.85);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -243,12 +240,9 @@
   :root.dark body:has(#banner-wrapper) #navbar[data-is-home="true"] .float-panel,
   :root.dark #banner-wrapper ~ * #navbar[data-is-home="true"] .dropdown-content,
   :root.dark body:has(#banner-wrapper) #navbar[data-is-home="true"] .dropdown-content,
-  :root.dark #banner-wrapper ~ * #navbar[data-is-home="true"] ~ * #display-setting,
-  :root.dark body:has(#banner-wrapper) #navbar[data-is-home="true"] ~ * #display-setting,
   :root.dark body:has(#banner-wrapper) #navbar[data-is-home="true"] #nav-menu-panel,
   :root.dark body:has(#banner-wrapper) #navbar[data-is-home="true"] #mobile-toc-panel,
-  :root.dark body:has(#banner-wrapper) #navbar[data-is-home="true"] #search-panel,
-  :root.dark body:has(#banner-wrapper) #navbar[data-is-home="true"] #display-setting {
+  :root.dark body:has(#banner-wrapper) #navbar[data-is-home="true"] #search-panel {
     background: rgba(24, 25, 38, 0.85);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
   }

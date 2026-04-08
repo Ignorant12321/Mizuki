@@ -148,7 +148,7 @@ body.wallpaper-transparent #navbar[data-transparent-mode="semifull"].scrolled {
   }
 
   /* 非首页时，移动端各个弹出面板不透明 */
-  #navbar:not([data-is-home="true"]) :is(#nav-menu-panel, #mobile-toc-panel, #search-panel, #display-setting) {
+  #navbar:not([data-is-home="true"]) :is(#nav-menu-panel, #mobile-toc-panel, #search-panel) {
     background: var(--card-bg);
     backdrop-filter: none;
   }

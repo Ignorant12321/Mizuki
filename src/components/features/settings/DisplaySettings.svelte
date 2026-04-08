@@ -223,6 +223,8 @@
 				<div class="section-title">{i18n(I18nKey.themeColor)}</div>
 				<div class="section-header-actions">
 					<input
+						id="theme-color-hue-input"
+						name="theme-color-hue"
 						aria-label={i18n(I18nKey.themeColor)}
 						type="number"
 						min="0"
@@ -247,6 +249,8 @@
 				</div>
 			</div>
 			<input
+				id="theme-color-hue-slider"
+				name="theme-color-hue-slider"
 				aria-label={i18n(I18nKey.themeColor)}
 				type="range"
 				min="0"
@@ -328,6 +332,7 @@
 							<span>{Math.round(wallpaperOpacity * 100)}%</span>
 						</div>
 						<input
+							name="wallpaper-opacity"
 							aria-label={i18n(I18nKey.wallpaperOpacity)}
 							type="range"
 							min="0"
@@ -344,6 +349,7 @@
 							<span>{wallpaperBlur.toFixed(1)}px</span>
 						</div>
 						<input
+							name="wallpaper-blur"
 							aria-label={i18n(I18nKey.wallpaperBlur)}
 							type="range"
 							min="0"
@@ -399,6 +405,7 @@
 					</div>
 					<input
 						id="effect-live2d"
+						name="effect-live2d"
 						bind:checked={live2dEnabled}
 						type="checkbox"
 					/>
@@ -421,6 +428,7 @@
 					</div>
 					<input
 						id="effect-click"
+						name="effect-click"
 						bind:checked={clickEffectEnabled}
 						type="checkbox"
 					/>
@@ -443,6 +451,7 @@
 					</div>
 					<input
 						id="effect-wave"
+						name="effect-wave"
 						bind:checked={bannerWavesEnabled}
 						type="checkbox"
 					/>
@@ -465,6 +474,7 @@
 					</div>
 					<input
 						id="effect-sakura"
+						name="effect-sakura"
 						bind:checked={sakuraEnabled}
 						type="checkbox"
 					/>
