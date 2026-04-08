@@ -203,32 +203,6 @@
 		}
 	}
 
-	.playlist-source-wrap :global(.playlist-switcher-title) {
-		color: var(--content-meta);
-	}
-
-	.playlist-source-wrap :global(.playlist-trigger) {
-		border-color: color-mix(in oklab, var(--line-color) 82%, transparent);
-		background: color-mix(in oklab, var(--card-bg) 92%, white 8%);
-		color: var(--content-main);
-		box-shadow: none;
-	}
-
-	.playlist-source-wrap :global(.playlist-trigger:hover:not(:disabled)) {
-		border-color: color-mix(in oklab, var(--line-color) 70%, transparent);
-		background: color-mix(in oklab, var(--card-bg) 88%, white 12%);
-	}
-
-	.playlist-source-wrap :global(.playlist-menu) {
-		border-color: color-mix(in oklab, var(--line-color) 84%, transparent);
-		background: color-mix(in oklab, var(--card-bg) 98%, white 2%);
-		box-shadow: 0 8px 20px color-mix(in oklab, black 12%, transparent);
-	}
-
-	.playlist-source-wrap :global(.playlist-option.selected) {
-		background: color-mix(in oklab, var(--primary) 10%, transparent);
-	}
-
 	:global(.dark) .playlist-body {
 		background: color-mix(in oklab, var(--card-bg) 86%, black 14%);
 		border-color: color-mix(in oklab, var(--line-color) 84%, transparent);

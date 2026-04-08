@@ -86,17 +86,11 @@
 		cursor: pointer;
 		border: 1px solid transparent;
 		background: color-mix(in oklab, var(--primary) 3%, transparent);
-		transition:
-			background 180ms ease,
-			border-color 180ms ease,
-			transform 180ms ease,
-			box-shadow 180ms ease;
+		transition: border-color 180ms ease;
 	}
 
 	.playlist-item:hover {
-		background: color-mix(in oklab, var(--primary) 7%, transparent);
-		border-color: color-mix(in oklab, var(--primary) 26%, transparent);
-		transform: translateY(-1px);
+		border-color: color-mix(in oklab, var(--primary) 36%, transparent);
 	}
 
 	.playlist-item.item-active {
@@ -161,10 +155,6 @@
 		color: var(--primary);
 	}
 
-	:global(.dark) .playlist-item:hover .song-title {
-		color: var(--primary);
-	}
-
 	.song-artist {
 		font-size: 0.8rem;
 		margin-top: 0.18rem;
@@ -176,9 +166,5 @@
 
 	.item-active .song-artist {
 		color: color-mix(in oklab, var(--primary) 82%, var(--content-meta));
-	}
-
-	:global(.dark) .playlist-item:hover .song-artist {
-		color: color-mix(in oklab, var(--primary) 82%, white 18%);
 	}
 </style>

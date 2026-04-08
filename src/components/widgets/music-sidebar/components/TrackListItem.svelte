@@ -76,15 +76,11 @@
 		cursor: pointer;
 		border: 1px solid color-mix(in oklab, var(--line-color) 88%, transparent);
 		background: color-mix(in oklab, var(--card-bg) 95%, white 5%);
-		transition:
-			background-color 180ms ease,
-			border-color 180ms ease,
-			box-shadow 180ms ease;
+		transition: border-color 180ms ease;
 	}
 
 	.track-list-item:hover {
-		background: color-mix(in oklab, var(--card-bg) 88%, white 12%);
-		border-color: color-mix(in oklab, var(--line-color) 70%, transparent);
+		border-color: color-mix(in oklab, var(--primary) 30%, var(--line-color));
 	}
 
 	.track-list-item.is-current {
@@ -137,20 +133,14 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		transition: color 180ms ease;
 	}
 
-	.track-list-item:hover .item-title,
 	.item-title.active {
 		color: color-mix(in oklab, var(--primary) 84%, var(--content-main));
 	}
 
 	:global(.dark) .item-title {
 		color: rgb(229 229 229);
-	}
-
-	:global(.dark) .track-list-item:hover .item-title {
-		color: var(--primary);
 	}
 
 	.item-artist {
@@ -162,8 +152,7 @@
 		text-overflow: ellipsis;
 	}
 
-	.item-artist.active,
-	.item-title.active {
+	.item-artist.active {
 		color: color-mix(in oklab, var(--primary) 84%, var(--content-main));
 	}
 

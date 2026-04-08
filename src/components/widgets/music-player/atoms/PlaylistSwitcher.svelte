@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
 	import { onMount } from "svelte";
+	import { scale } from "svelte/transition";
 
 	import Key from "../../../../i18n/i18nKey";
 	import { i18n } from "../../../../i18n/translation";
@@ -106,11 +107,6 @@
 	});
 
 	$effect(() => {
-		currentIndex;
-		isOpen = false;
-	});
-
-	$effect(() => {
 		if (!canOpen() && isOpen) {
 			isOpen = false;
 		}
@@ -152,6 +148,7 @@
 		{#if isOpen}
 			<div
 				class="playlist-menu"
+				transition:scale={{ duration: 140, start: 0.96, opacity: 0 }}
 				role="listbox"
 				tabindex="-1"
 				onkeydown={onMenuKeyDown}
@@ -185,6 +182,94 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.35rem;
+		--playlist-trigger-border: color-mix(
+			in oklab,
+			var(--content-main) 16%,
+			var(--line-color)
+		);
+		--playlist-trigger-border-hover: color-mix(
+			in oklab,
+			var(--content-main) 24%,
+			var(--line-color)
+		);
+		--playlist-trigger-border-focus: color-mix(
+			in oklab,
+			var(--content-main) 28%,
+			var(--line-color)
+		);
+		--playlist-trigger-focus-ring: color-mix(
+			in oklab,
+			var(--content-main) 14%,
+			transparent
+		);
+		--playlist-menu-border: color-mix(
+			in oklab,
+			var(--content-main) 18%,
+			var(--line-color)
+		);
+		--playlist-menu-bg: var(--card-bg-transparent);
+		--playlist-menu-shadow: 0 10px 24px color-mix(
+			in oklab,
+			black 10%,
+			transparent
+		);
+		--playlist-option-text: var(--content-main);
+		--playlist-option-text-hover: color-mix(
+			in oklab,
+			var(--content-main) 92%,
+			transparent
+		);
+		--playlist-option-border-hover: color-mix(
+			in oklab,
+			var(--content-main) 22%,
+			transparent
+		);
+		--playlist-option-selected-border: color-mix(
+			in oklab,
+			var(--primary) 38%,
+			transparent
+		);
+		--playlist-option-selected-border-hover: color-mix(
+			in oklab,
+			var(--primary) 58%,
+			transparent
+		);
+		--playlist-option-selected-text: var(--primary);
+	}
+
+	:global(.dark) .playlist-switcher {
+		--playlist-trigger-border: color-mix(
+			in oklab,
+			white 18%,
+			var(--line-color)
+		);
+		--playlist-trigger-border-hover: color-mix(
+			in oklab,
+			white 28%,
+			var(--line-color)
+		);
+		--playlist-trigger-border-focus: color-mix(
+			in oklab,
+			white 30%,
+			var(--line-color)
+		);
+		--playlist-trigger-focus-ring: color-mix(
+			in oklab,
+			white 12%,
+			transparent
+		);
+		--playlist-menu-border: color-mix(
+			in oklab,
+			white 14%,
+			var(--line-color)
+		);
+		--playlist-option-text: rgb(229 229 229);
+		--playlist-option-text-hover: rgb(245 245 245);
+		--playlist-option-border-hover: color-mix(
+			in oklab,
+			white 16%,
+			transparent
+		);
 	}
 
 	.playlist-switcher-title {
@@ -213,32 +298,28 @@
 
 	.playlist-trigger {
 		width: 100%;
-		height: 2.15rem;
+		height: 2.05rem;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.6rem;
 		padding: 0 0.7rem;
-		border-radius: 0.82rem;
-		border: 1px solid color-mix(in oklab, var(--primary) 24%, var(--line-color));
-		background: var(--btn-regular-bg);
+		border-radius: 0.7rem;
+		border: 1px solid var(--playlist-trigger-border);
+		background: transparent;
 		color: var(--btn-content);
 		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			background 150ms ease,
-			box-shadow 180ms ease;
+		transition: border-color 150ms ease, color 150ms ease;
 	}
 
 	.playlist-trigger:hover:not(:disabled) {
-		border-color: color-mix(in oklab, var(--primary) 38%, var(--line-color));
-		background: var(--btn-regular-bg-hover);
+		border-color: var(--playlist-trigger-border-hover);
 	}
 
 	.playlist-trigger:focus-visible {
 		outline: none;
-		border-color: color-mix(in oklab, var(--primary) 44%, var(--line-color));
-		box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 24%, transparent);
+		border-color: var(--playlist-trigger-border-focus);
+		box-shadow: 0 0 0 1px var(--playlist-trigger-focus-ring);
 	}
 
 	.playlist-trigger:disabled {
@@ -280,14 +361,17 @@
 		right: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 0.16rem;
-		padding: 0.3rem;
+		gap: 0.18rem;
+		padding: 0.22rem;
 		max-height: 9.5rem;
 		overflow-y: auto;
-		border-radius: 0.88rem;
-		border: 1px solid color-mix(in oklab, var(--primary) 24%, var(--line-color));
-		background: var(--float-panel-bg);
-		box-shadow: 0 10px 24px color-mix(in oklab, black 16%, transparent);
+		border-radius: 0.78rem;
+		border: 1px solid var(--playlist-menu-border);
+		background: var(--playlist-menu-bg);
+		box-shadow: var(--playlist-menu-shadow);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		transform-origin: top center;
 		z-index: 80;
 		scrollbar-width: thin;
 		scrollbar-color: color-mix(in oklab, var(--primary) 40%, transparent)
@@ -310,15 +394,19 @@
 		justify-content: space-between;
 		gap: 0.5rem;
 		padding: 0 0.62rem;
-		border: 0;
-		border-radius: 0.62rem;
+		border: 1px solid transparent;
+		border-radius: 0.58rem;
 		background: transparent;
 		cursor: pointer;
-		transition: background 130ms ease;
+		transition: border-color 130ms ease, color 130ms ease;
 	}
 
 	.playlist-option:hover {
-		background: var(--btn-plain-bg-hover);
+		border-color: var(--playlist-option-border-hover);
+	}
+
+	.playlist-option:hover .playlist-option-label {
+		color: var(--playlist-option-text-hover);
 	}
 
 	.playlist-option-label {
@@ -329,11 +417,24 @@
 		font-size: 0.98rem;
 		font-weight: 600;
 		line-height: 1;
-		color: var(--btn-content);
+		color: var(--playlist-option-text);
+	}
+
+	.playlist-option.selected .playlist-option-label {
+		color: var(--playlist-option-selected-text);
+	}
+
+	.playlist-option.selected:hover .playlist-option-label {
+		color: var(--playlist-option-selected-text);
 	}
 
 	.playlist-option.selected {
-		background: color-mix(in oklab, var(--primary) 22%, var(--btn-regular-bg));
+		border-color: var(--playlist-option-selected-border);
+		color: var(--playlist-option-selected-text);
+	}
+
+	.playlist-option.selected:hover {
+		border-color: var(--playlist-option-selected-border-hover);
 	}
 
 	/* svelte-ignore css_unused_selector */
