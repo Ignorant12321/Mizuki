@@ -22,6 +22,10 @@
   color: var(--text-primary);
 }
 
+#display-setting.is-wallpaper-fullscreen {
+  height: min(74vh, calc(100vh - 5.75rem));
+}
+
 :global(html.dark) #display-setting {
   background: linear-gradient(180deg, color-mix(in oklab, #1c2530 84%, var(--card-bg)) 0%, color-mix(in oklab, #0d1218 90%, var(--card-bg)) 40%);
   border-color: color-mix(in oklab, #2a3741 86%, var(--line-color));
@@ -155,6 +159,33 @@
   flex-direction: column;
   gap: 0.55rem;
   padding-right: 0.2rem;
+}
+
+#display-setting .fullscreen-extra-section {
+  transform-origin: top center;
+  will-change: transform, opacity;
+}
+
+#display-setting .wallpaper-transparency-shell {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateY(-0.4rem);
+  transition:
+    max-height 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 160ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    margin-top 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  margin-top: 0;
+}
+
+#display-setting .wallpaper-transparency-shell.is-open {
+  max-height: 14rem;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  margin-top: 0.85rem;
 }
 
 #display-setting .slider-stack {
@@ -507,6 +538,10 @@
     bottom: auto;
     max-height: min(74vh, calc(100vh - 5.5rem - env(safe-area-inset-top)));
     border-radius: 0.95rem;
+  }
+
+  #display-setting.is-wallpaper-fullscreen {
+    height: min(74vh, calc(100vh - 5.5rem - env(safe-area-inset-top)));
   }
 
   #display-setting .panel-scroll {

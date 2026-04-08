@@ -9,7 +9,10 @@
   margin-left: -100px;
   padding: calc(5px * var(--live2d-scale-current));
   position: fixed;
-  transition: margin-left 1s;
+  transition:
+    margin-left 1s,
+    margin-right 1s,
+    transform 0.3s ease;
   width: calc(60px * var(--live2d-scale-current));
   color: inherit;
   z-index: 30;
@@ -30,26 +33,31 @@
 
 #waifu {
   --live2d-scale-current: var(--live2d-scale-desktop, 1);
-  bottom: -500px;
+  --live2d-bottom-current: -500px;
   color: inherit;
   left: 0;
   position: fixed;
   transform: translateY(25px);
   transition:
     transform 0.3s ease-in-out,
-    bottom 3s ease-in-out;
+    bottom 3s ease-in-out,
+    opacity 0.25s ease;
+  bottom: var(--live2d-bottom-current);
+  opacity: 1;
   z-index: 30;
   left: auto;
   right: auto;
-  bottom: var(--live2d-bottom-desktop, 0);
 }
 
 #waifu.waifu-active {
-  bottom: 0;
+  --live2d-bottom-current: var(--live2d-bottom-desktop, 0);
 }
 
 #waifu.waifu-hidden {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transform: translateY(45px);
 }
 
 #waifu:hover {
@@ -130,7 +138,8 @@ html.dark #waifu-tips {
   pointer-events: none;
   padding: calc(7px * var(--live2d-scale-current)) calc(6px * var(--live2d-scale-current));
   position: absolute;
-  right: calc(-10px * var(--live2d-scale-current));
+  left: calc(-10px * var(--live2d-scale-current));
+  right: auto;
   top: calc(45px * var(--live2d-scale-current));
   z-index: 31;
   transition: opacity 0.22s ease;
@@ -185,84 +194,120 @@ html[data-live2d-desktop-side="right"] #waifu {
   right: var(--live2d-offset-desktop, 1rem);
 }
 
-#waifu-toggle {
+html[data-live2d-desktop-side="left"] #waifu-tool {
   left: auto;
+  right: calc(-10px * var(--live2d-scale-current));
+}
+
+html[data-live2d-desktop-side="right"] #waifu-tool {
+  left: calc(-10px * var(--live2d-scale-current));
   right: auto;
-  margin-left: 0;
-  margin-right: 0;
-  transition:
-    margin-left 1s,
-    margin-right 1s,
-    transform 0.3s ease;
 }
 
 html[data-live2d-desktop-side="left"] #waifu-toggle {
-  left: var(--live2d-toggle-offset, 0);
+  left: 0;
   right: auto;
   transform: none;
-  margin-left: var(--live2d-toggle-hidden-offset, -100px);
+  margin-left: -100px;
   margin-right: 0;
 }
 
 html[data-live2d-desktop-side="right"] #waifu-toggle {
   left: auto;
-  right: var(--live2d-toggle-offset, 0);
+  right: 0;
   transform: rotateY(180deg);
   margin-left: 0;
-  margin-right: var(--live2d-toggle-hidden-offset, -100px);
+  margin-right: -100px;
 }
 
 html[data-live2d-desktop-side="left"] #waifu-toggle.waifu-toggle-active {
-  margin-left: var(--live2d-toggle-active-offset, -45px);
+  margin-left: -45px;
   margin-right: 0;
 }
 
 html[data-live2d-desktop-side="right"] #waifu-toggle.waifu-toggle-active {
   margin-left: 0;
-  margin-right: var(--live2d-toggle-active-offset, -45px);
+  margin-right: -45px;
 }
 
 html[data-live2d-desktop-side="left"] #waifu-toggle:hover {
-  margin-left: var(--live2d-toggle-hover-offset, -35px);
+  margin-left: -35px;
   margin-right: 0;
 }
 
 html[data-live2d-desktop-side="right"] #waifu-toggle:hover {
   margin-left: 0;
-  margin-right: var(--live2d-toggle-hover-offset, -35px);
+  margin-right: -35px;
 }
 
 @media (max-width: 768px), (hover: none) {
   #waifu {
+    --live2d-scale-current: var(--live2d-scale-mobile, 0.8);
+    --live2d-bottom-current: -500px;
+  }
+
+  #waifu-toggle {
     --live2d-scale-current: var(--live2d-scale-mobile, 0.8);
   }
 
   html[data-live2d-mobile-side="left"] #waifu {
     left: var(--live2d-offset-mobile, 0.5rem);
     right: auto;
-    bottom: var(--live2d-bottom-mobile, 0);
   }
 
   html[data-live2d-mobile-side="right"] #waifu {
     left: auto;
     right: var(--live2d-offset-mobile, 0.5rem);
-    bottom: var(--live2d-bottom-mobile, 0);
+  }
+
+  html[data-live2d-mobile-side="left"] #waifu-tool {
+    left: auto;
+    right: calc(-10px * var(--live2d-scale-current));
+  }
+
+  html[data-live2d-mobile-side="right"] #waifu-tool {
+    left: calc(-10px * var(--live2d-scale-current));
+    right: auto;
+  }
+
+  #waifu.waifu-active {
+    --live2d-bottom-current: var(--live2d-bottom-mobile, 0);
   }
 
   html[data-live2d-mobile-side="left"] #waifu-toggle {
-    left: var(--live2d-toggle-offset, 0);
+    left: 0;
     right: auto;
     transform: none;
-    margin-left: var(--live2d-toggle-hidden-offset, -100px);
+    margin-left: -100px;
     margin-right: 0;
   }
 
   html[data-live2d-mobile-side="right"] #waifu-toggle {
     left: auto;
-    right: var(--live2d-toggle-offset, 0);
+    right: 0;
     transform: rotateY(180deg);
     margin-left: 0;
-    margin-right: var(--live2d-toggle-hidden-offset, -100px);
+    margin-right: -100px;
+  }
+
+  html[data-live2d-mobile-side="left"] #waifu-toggle.waifu-toggle-active {
+    margin-left: -30px;
+    margin-right: 0;
+  }
+
+  html[data-live2d-mobile-side="right"] #waifu-toggle.waifu-toggle-active {
+    margin-left: 0;
+    margin-right: -30px;
+  }
+
+  html[data-live2d-mobile-side="left"] #waifu-toggle:hover {
+    margin-left: -35px;
+    margin-right: 0;
+  }
+
+  html[data-live2d-mobile-side="right"] #waifu-toggle:hover {
+    margin-left: 0;
+    margin-right: -35px;
   }
 }
 

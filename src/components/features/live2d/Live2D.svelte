@@ -24,13 +24,6 @@ import {
 			bottom: "0",
 			scale: 0.8,
 		},
-		toggle: {
-			offset: "0",
-			hiddenOffset: "-100px",
-			activeOffset: "-45px",
-			hoverOffset: "-35px",
-			mobileActiveOffset: "-30px",
-		},
 	};
 
 	const position = {
@@ -65,23 +58,6 @@ import {
 					live2dConfig.position?.mobile?.scale,
 					DEFAULT_POSITION.mobile.scale,
 				),
-		},
-		toggle: {
-			offset:
-				live2dConfig.position?.toggle?.offset ??
-				DEFAULT_POSITION.toggle.offset,
-			hiddenOffset:
-				live2dConfig.position?.toggle?.hiddenOffset ??
-				DEFAULT_POSITION.toggle.hiddenOffset,
-			activeOffset:
-				live2dConfig.position?.toggle?.activeOffset ??
-				DEFAULT_POSITION.toggle.activeOffset,
-			hoverOffset:
-				live2dConfig.position?.toggle?.hoverOffset ??
-				DEFAULT_POSITION.toggle.hoverOffset,
-			mobileActiveOffset:
-				live2dConfig.position?.toggle?.mobileActiveOffset ??
-				DEFAULT_POSITION.toggle.mobileActiveOffset,
 		},
 	};
 
@@ -129,32 +105,16 @@ import {
 			position.mobile.bottom,
 		);
 		root.style.setProperty(
-			"--live2d-toggle-offset",
-			position.toggle.offset,
-		);
-		root.style.setProperty(
-			"--live2d-toggle-hidden-offset",
-			position.toggle.hiddenOffset,
-		);
-		root.style.setProperty(
-			"--live2d-toggle-active-offset",
-			position.toggle.activeOffset,
-		);
-		root.style.setProperty(
-			"--live2d-toggle-hover-offset",
-			position.toggle.hoverOffset,
-		);
-		root.style.setProperty(
-			"--live2d-toggle-mobile-active-offset",
-			position.toggle.mobileActiveOffset,
-		);
-		root.style.setProperty(
 			"--live2d-base-width",
 			`${LIVE2D_BASE_WIDTH_PX}px`,
 		);
 		root.style.setProperty(
 			"--live2d-base-height",
 			`${LIVE2D_BASE_HEIGHT_PX}px`,
+		);
+		root.style.setProperty(
+			"--live2d-scale-current",
+			String(position.desktop.scale),
 		);
 		root.style.setProperty(
 			"--live2d-scale-desktop",
@@ -303,7 +263,6 @@ import {
 		};
 
 		document.addEventListener("pointerdown", onPointerDown, true);
-		showTools();
 
 		return () => {
 			document.removeEventListener("pointerdown", onPointerDown, true);
@@ -372,8 +331,12 @@ import {
 
 		setTimeout(() => {
 			const waifuElement = document.getElementById("waifu");
+			const waifuToggle = document.getElementById("waifu-toggle");
 			if (!waifuElement) {
-				scheduleRetry("waifu dom not created");
+				// 原版 widget 在点击 quit 后会只保留 toggle，这不算初始化失败。
+				if (!waifuToggle) {
+					scheduleRetry("waifu dom not created");
+				}
 				return;
 			}
 			retryCount = 0;

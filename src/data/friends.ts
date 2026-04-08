@@ -34,7 +34,7 @@ export const friendsData: FriendItem[] = [
 	{
 		id: 3,
 		title: "Yu Qi",
-		imgurl: "https://yqamm.eu.cc/_astro/avatar.DsloLJ2B_Z1z32Q.webp",
+		imgurl: "https://yqamm.eu.cc/_astro/avatar.DsloLJ2B_Z2ceESW.webp",
 		desc: "生命绚烂，别被黑暗压垮",
 		siteurl: "https://yqamm.eu.cc",
 		tags: ["Blog", "Friend"],
@@ -46,6 +46,14 @@ export const friendsData: FriendItem[] = [
 		desc: "飞萤之火自无梦的长夜亮起，绽放在终竟的明天。",
 		siteurl: "https://blog.cuteleaf.cn",
 		tags: ["Blog"],
+	},
+	{
+		id: 5,
+		title: "NNNullptr南",
+		imgurl: "https://www.xnmoe.com/assets/images/pfp.png",
+		desc: "数学生的古早拼贴风格网站",
+		siteurl: "https://xnmoe.com",
+		tags: ["Blog", "Friend"],
 	},
 ];
 

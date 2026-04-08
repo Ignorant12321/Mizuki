@@ -138,6 +138,10 @@ export interface SiteConfig {
 			localFonts: string[];
 			enableCompress: boolean;
 		};
+		blacklist?: {
+			// 匹配到的元素将回退到系统字体，不应用自定义字体
+			selectors?: string[];
+		};
 	};
 
 	// 添加bangumi配置

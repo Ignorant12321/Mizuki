@@ -49,6 +49,8 @@
 	let wallpaperMode = WALLPAPER_BANNER;
 	let wallpaperOpacity = 0.8;
 	let wallpaperBlur = 1;
+	let showWallpaperTransparency = false;
+	let lockWallpaperPanelHeight = false;
 	let layoutMode: LayoutMode = "list";
 	let clickEffectEnabled = true;
 	let sakuraEnabled = false;
@@ -111,7 +113,7 @@
 	}
 
 	function resetWallpaperMode() {
-		wallpaperMode = getDefaultWallpaperMode();
+		updateWallpaperMode(getDefaultWallpaperMode());
 	}
 
 	function resetWallpaperTransparency() {
@@ -130,6 +132,40 @@
 		layoutMode = getDefaultPostListLayout();
 	}
 
+	function updateWallpaperMode(nextMode: typeof wallpaperMode) {
+		const isEnteringFullscreen = nextMode === WALLPAPER_FULLSCREEN;
+		const isLeavingFullscreen =
+			wallpaperMode === WALLPAPER_FULLSCREEN &&
+			nextMode !== WALLPAPER_FULLSCREEN;
+
+		wallpaperMode = nextMode;
+
+		if (isEnteringFullscreen) {
+			lockWallpaperPanelHeight = true;
+			showWallpaperTransparency = true;
+			return;
+		}
+
+		if (isLeavingFullscreen) {
+			lockWallpaperPanelHeight = true;
+			showWallpaperTransparency = false;
+			return;
+		}
+
+		lockWallpaperPanelHeight = false;
+		showWallpaperTransparency = false;
+	}
+
+	function handleWallpaperTransparencyTransitionEnd(event: TransitionEvent) {
+		if (event.propertyName !== "max-height") {
+			return;
+		}
+
+		if (wallpaperMode !== WALLPAPER_FULLSCREEN) {
+			lockWallpaperPanelHeight = false;
+		}
+	}
+
 	async function closePanel() {
 		await panelManager.closePanel("display-setting");
 	}
@@ -140,6 +176,8 @@
 		wallpaperMode = getStoredWallpaperMode();
 		wallpaperOpacity = getStoredWallpaperOpacity();
 		wallpaperBlur = getStoredWallpaperBlur();
+		showWallpaperTransparency = wallpaperMode === WALLPAPER_FULLSCREEN;
+		lockWallpaperPanelHeight = showWallpaperTransparency;
 		layoutMode = getStoredPostListLayout();
 		clickEffectEnabled = getStoredClickEffectEnabled();
 		sakuraEnabled = getStoredSakuraEnabled();
@@ -187,8 +225,9 @@
 
 <div
 	id="display-setting"
-	class={`float-panel float-panel-closed fixed transition-all right-4 w-[21.5rem] max-w-[calc(100vw-2rem)]`}
+	class={`float-panel float-panel-closed fixed right-4 w-[21.5rem] max-w-[calc(100vw-2rem)]`}
 	class:list={[className]}
+	class:is-wallpaper-fullscreen={lockWallpaperPanelHeight}
 >
 	<div class="panel-scroll">
 		<div class="panel-header">
@@ -290,78 +329,85 @@
 						class:is-active={wallpaperMode === option.mode}
 						aria-label={i18n(option.label)}
 						title={i18n(option.label)}
-						on:click={() => (wallpaperMode = option.mode)}
+						on:click={() => updateWallpaperMode(option.mode)}
 					>
 						<Icon icon={option.icon} class="text-[1rem]" />
 						<span>{i18n(option.label)}</span>
 					</button>
 				{/each}
 			</div>
-		</section>
 
-		{#if wallpaperMode === WALLPAPER_FULLSCREEN}
-			<section class="setting-section">
-				<div class="section-header">
-					<div class="section-title">
-						{i18n(I18nKey.wallpaperTransparencySettings)}
+			<div
+				class="wallpaper-transparency-shell"
+				class:is-open={showWallpaperTransparency}
+				aria-hidden={!showWallpaperTransparency}
+				on:transitionend={handleWallpaperTransparencyTransitionEnd}
+			>
+				<section class="setting-section fullscreen-extra-section">
+					<div class="section-header">
+						<div class="section-title">
+							{i18n(I18nKey.wallpaperTransparencySettings)}
+						</div>
+						<div class="section-header-actions">
+							<button
+								type="button"
+								aria-label={i18n(
+									I18nKey.resetWallpaperTransparency,
+								)}
+								class="section-reset-btn"
+								class:is-disabled={wallpaperOpacity ===
+									getDefaultWallpaperOpacity() &&
+									wallpaperBlur === getDefaultWallpaperBlur()}
+								on:click={resetWallpaperTransparency}
+							>
+								<Icon
+									icon="fa7-solid:arrow-rotate-left"
+									class="text-[0.875rem]"
+								/>
+							</button>
+						</div>
 					</div>
-					<div class="section-header-actions">
-						<button
-							type="button"
-							aria-label={i18n(
-								I18nKey.resetWallpaperTransparency,
-							)}
-							class="section-reset-btn"
-							class:is-disabled={wallpaperOpacity ===
-								getDefaultWallpaperOpacity() &&
-								wallpaperBlur === getDefaultWallpaperBlur()}
-							on:click={resetWallpaperTransparency}
-						>
-							<Icon
-								icon="fa7-solid:arrow-rotate-left"
-								class="text-[0.875rem]"
+
+					<div class="slider-stack">
+						<div class="slider-block">
+							<div class="slider-meta">
+								<span>{i18n(I18nKey.wallpaperOpacity)}</span>
+								<span>{Math.round(wallpaperOpacity * 100)}%</span>
+							</div>
+							<input
+								name="wallpaper-opacity"
+								aria-label={i18n(I18nKey.wallpaperOpacity)}
+								type="range"
+								min="0"
+								max="1"
+								step="0.05"
+								bind:value={wallpaperOpacity}
+								class="setting-slider"
+								disabled={!showWallpaperTransparency}
 							/>
-						</button>
-					</div>
-				</div>
-
-				<div class="slider-stack">
-					<div class="slider-block">
-						<div class="slider-meta">
-							<span>{i18n(I18nKey.wallpaperOpacity)}</span>
-							<span>{Math.round(wallpaperOpacity * 100)}%</span>
 						</div>
-						<input
-							name="wallpaper-opacity"
-							aria-label={i18n(I18nKey.wallpaperOpacity)}
-							type="range"
-							min="0"
-							max="1"
-							step="0.05"
-							bind:value={wallpaperOpacity}
-							class="setting-slider"
-						/>
-					</div>
 
-					<div class="slider-block">
-						<div class="slider-meta">
-							<span>{i18n(I18nKey.wallpaperBlur)}</span>
-							<span>{wallpaperBlur.toFixed(1)}px</span>
+						<div class="slider-block">
+							<div class="slider-meta">
+								<span>{i18n(I18nKey.wallpaperBlur)}</span>
+								<span>{wallpaperBlur.toFixed(1)}px</span>
+							</div>
+							<input
+								name="wallpaper-blur"
+								aria-label={i18n(I18nKey.wallpaperBlur)}
+								type="range"
+								min="0"
+								max="24"
+								step="0.5"
+								bind:value={wallpaperBlur}
+								class="setting-slider"
+								disabled={!showWallpaperTransparency}
+							/>
 						</div>
-						<input
-							name="wallpaper-blur"
-							aria-label={i18n(I18nKey.wallpaperBlur)}
-							type="range"
-							min="0"
-							max="24"
-							step="0.5"
-							bind:value={wallpaperBlur}
-							class="setting-slider"
-						/>
 					</div>
-				</div>
-			</section>
-		{/if}
+				</section>
+			</div>
+		</section>
 
 		<section class="setting-section">
 			<div class="section-header">

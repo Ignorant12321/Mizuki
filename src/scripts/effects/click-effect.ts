@@ -25,6 +25,7 @@ type ValidatedConfig = ClickEffectConfig & {
 class ClickEffectController {
 	private config: ValidatedConfig;
 	private activeParticles = 0;
+	private activeParticleQueue: HTMLDivElement[] = [];
 	private lastEffectTimestamp = 0;
 	private pointerDownPosition: { x: number; y: number } | null = null;
 
@@ -69,14 +70,17 @@ class ClickEffectController {
 		if (!target) return;
 		if (!this.isAllowedTarget(target)) return;
 
+		const requestedParticles = Math.min(
+			RING_PARTICLES + EXTRA_PARTICLES,
+			MAX_PARTICLES_PER_CLICK,
+		);
+		if (requestedParticles <= 0) return;
+
+		this.ensureParticleCapacity(requestedParticles);
 		const availableSlots = MAX_ACTIVE_PARTICLES - this.activeParticles;
 		if (availableSlots <= 0) return;
 
-		const totalParticles = Math.min(
-			RING_PARTICLES + EXTRA_PARTICLES,
-			MAX_PARTICLES_PER_CLICK,
-			availableSlots,
-		);
+		const totalParticles = Math.min(requestedParticles, availableSlots);
 		const fragment = document.createDocumentFragment();
 		let created = 0;
 
@@ -216,16 +220,42 @@ class ClickEffectController {
 		particle.style.height = `${size}px`;
 
 		this.activeParticles += 1;
+		this.activeParticleQueue.push(particle);
 		particle.addEventListener(
 			"animationend",
 			() => {
-				particle.remove();
-				this.activeParticles = Math.max(0, this.activeParticles - 1);
+				this.destroyParticle(particle);
 			},
 			{ once: true },
 		);
 
 		return particle;
+	}
+
+	private ensureParticleCapacity(nextBurstCount: number) {
+		const overflow =
+			this.activeParticles + nextBurstCount - MAX_ACTIVE_PARTICLES;
+		if (overflow <= 0) return;
+
+		// 优先淘汰最早创建的粒子，避免连点时整次点击无反馈。
+		for (let i = 0; i < overflow; i += 1) {
+			const oldestParticle = this.activeParticleQueue.shift();
+			if (!oldestParticle) break;
+			this.destroyParticle(oldestParticle);
+		}
+	}
+
+	private destroyParticle(particle: HTMLDivElement) {
+		if (particle.dataset.mizukiParticleDestroyed === "true") return;
+		particle.dataset.mizukiParticleDestroyed = "true";
+
+		const queueIndex = this.activeParticleQueue.indexOf(particle);
+		if (queueIndex >= 0) {
+			this.activeParticleQueue.splice(queueIndex, 1);
+		}
+
+		particle.remove();
+		this.activeParticles = Math.max(0, this.activeParticles - 1);
 	}
 }
 

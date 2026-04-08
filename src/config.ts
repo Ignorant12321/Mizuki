@@ -307,6 +307,14 @@ export const siteConfig: SiteConfig = {
 			localFonts: ["loli.ttf"],
 			enableCompress: true, // 启用字体子集优化，减少字体文件大小
 		},
+		blacklist: {
+			// 黑名单中的选择器将回退到系统字体，不使用全局自定义字体
+			selectors: [
+				".tk-content", // Twikoo 评论正文
+				".news-title", // 新闻标题
+				".news-desc", // 新闻正文摘要
+			],
+		},
 	},
 	showLastModified: true, // 控制"上次编辑"卡片显示的开关
 	pageProgressBar: {
@@ -778,8 +786,8 @@ export const live2dConfig = {
 	mobile: true,
 	drag: false,
 	logLevel: "warn",
-	modelId: 2, // 初始模型 ID（仅在 localStorage 没有 modelId 时生效）
-	modelTexturesId: 17, // 初始衣服/贴图 ID（仅在 localStorage 没有 modelTexturesId 时生效）
+	modelId: 2, // 初始模型 ID（仅在 localStorage 没有 modelId 时生效；当前对应 HyperdimensionNeptunia）
+	modelTexturesId: 17, // 初始外观/变体 ID（仅在 localStorage 没有 modelTexturesId 时生效；当前对应 vert_classic）
 	tools: [
 		// "home",
 		"hitokoto",
@@ -802,9 +810,9 @@ export const live2dConfig = {
 		// 或 models[].variants[].model + models[].variants[].textures。
 		// 注意：waifuTipsJson 的提示词/交互文案始终生效，不受 cdnPath 影响。
 		// 本地真皮肤格式示例：
-		// { model: "/assets/live2d/model/Pio/index.json", textures: ["textures/default.png", "textures/maid.png"] }
+		// { model: "/assets/live2d/models/Pio/index.json", textures: ["textures/default.png", "textures/maid.png"] }
 		// 本地角色变体示例：
-		// { name: "Shizuku", variants: [{ name: "48", model: "/assets/live2d/model/ShizukuTalk/shizuku-48/index.json" }, { name: "Pajama", model: "/assets/live2d/model/ShizukuTalk/shizuku-pajama/index.json" }] }
+		// { name: "Shizuku", variants: [{ name: "48", model: "/assets/live2d/models/ShizukuTalk/shizuku-48/index.json" }, { name: "Pajama", model: "/assets/live2d/models/ShizukuTalk/shizuku-pajama/index.json" }] }
 		// 衣服切换说明：modelTexturesId 由 localStorage 优先；本地模式下它表示当前角色内的“外观索引”（可对应皮肤或变体）。
 		// live2d(2)      // 当前模型切到皮肤 2
 		// live2d(5, 3)   // 切到模型 5 + 皮肤 3
@@ -821,13 +829,6 @@ export const live2dConfig = {
 			offset: "0.5rem",
 			bottom: "0",
 			scale: 0.75, // 基于 300x300 的移动端缩放比例
-		},
-		toggle: {
-			offset: "0",
-			hiddenOffset: "-100px",
-			activeOffset: "-45px",
-			hoverOffset: "-35px",
-			mobileActiveOffset: "-30px",
 		},
 	},
 } as const;

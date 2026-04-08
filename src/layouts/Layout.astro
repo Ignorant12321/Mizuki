@@ -155,6 +155,34 @@ if (siteConfig.font) {
 	// 组合成完整的 font-family 字符串
 	bodyFontFamily = fonts.join(", ");
 }
+
+const fontFallbackFamily = [
+	"system-ui",
+	"-apple-system",
+	"BlinkMacSystemFont",
+	"'Segoe UI'",
+	"Roboto",
+	"Oxygen",
+	"Ubuntu",
+	"Cantarell",
+	"'Open Sans'",
+	"'Helvetica Neue'",
+	"sans-serif",
+].join(", ");
+
+const fontBlacklistSelectors =
+	siteConfig.font?.blacklist?.selectors
+		?.filter((selector) => typeof selector === "string")
+		.map((selector) => selector.trim())
+		.filter(
+			(selector) =>
+				selector.length > 0 && !selector.includes("{") && !selector.includes("}"),
+		) ?? [];
+
+const fontBlacklistCss =
+	fontBlacklistSelectors.length > 0
+		? `${fontBlacklistSelectors.join(",\n")} {\n\tfont-family: ${fontFallbackFamily} !important;\n}`
+		: "";
 ---
 
 <!doctype html>
@@ -197,6 +225,7 @@ if (siteConfig.font) {
 				"page-width": `${PAGE_WIDTH}rem`,
 			}}
 		></style>
+		{fontBlacklistCss && <style is:global set:html={fontBlacklistCss} />}
 
 		<!-- Live2D 看板娘样式 - 非渲染阻塞加载 -->
 		<Fragment
