@@ -463,7 +463,7 @@ import {
 		const onSwupPageView = () => {
 			syncLive2dState();
 		};
-		document.addEventListener("swup:page:view", onSwupPageView);
+		document.addEventListener("astro:page-load", onSwupPageView);
 		window.addEventListener(DISPLAY_SETTINGS_CHANGED_EVENT, syncLive2dState);
 		window.addEventListener("storage", syncLive2dState);
 
@@ -480,7 +480,7 @@ import {
 		}
 
 		return () => {
-			document.removeEventListener("swup:page:view", onSwupPageView);
+			document.removeEventListener("astro:page-load", onSwupPageView);
 			window.removeEventListener(
 				DISPLAY_SETTINGS_CHANGED_EVENT,
 				syncLive2dState,

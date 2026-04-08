@@ -140,15 +140,21 @@
 				const checkSwup = () => {
 					if (w.swup) {
 						setupSwupListeners();
-						document.removeEventListener("swup:enable", checkSwup);
+						document.removeEventListener(
+							"mizuki:swup-ready",
+							checkSwup,
+						);
 					}
 				};
 
-				document.addEventListener("swup:enable", checkSwup);
+				document.addEventListener("mizuki:swup-ready", checkSwup);
 				setTimeout(() => {
 					if (w.swup) {
 						setupSwupListeners();
-						document.removeEventListener("swup:enable", checkSwup);
+						document.removeEventListener(
+							"mizuki:swup-ready",
+							checkSwup,
+						);
 					}
 				}, 1000);
 			}

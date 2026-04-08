@@ -36,6 +36,8 @@ export class SwupManager {
 	private fancyboxHandler: FancyboxHandler;
 	private backToTopHandler: BackToTopHandler;
 	private panelHandler: PanelHandler;
+	private swupReadyRetryId: number | null = null;
+	private swupReadyDispatched = false;
 
 	private bannerEnabled: boolean;
 	private initialized = false;
@@ -122,29 +124,62 @@ export class SwupManager {
 			},
 		});
 
-		// 如果 Swup 已经就绪，直接设置钩子
-		if (window?.swup?.hooks) {
+		const handleSwupReady = () => {
+			if (!window?.swup?.hooks || !this.hooksManager) {
+				return false;
+			}
+
 			initFancybox();
 			checkKatex();
 			this.hooksManager.registerHooks();
-		} else {
-			// 监听 Swup 就绪事件
-			document.addEventListener("swup:enable", () => {
-				if (this.hooksManager) {
-					this.hooksManager.registerHooks();
-				}
-			});
+			this.dispatchSwupReady();
+			this.stopSwupReadyRetry();
+			return true;
+		};
 
-			// 监听 DOM 加载（确保首屏也能加载优化组件）
-			if (document.readyState === "loading") {
-				document.addEventListener("DOMContentLoaded", async () => {
-					await initFancybox();
-					checkKatex();
-				});
-			} else {
-				initFancybox();
+		// 如果 Swup 已经就绪，直接设置钩子
+		if (!handleSwupReady()) {
+			this.swupReadyRetryId = window.setInterval(() => {
+				handleSwupReady();
+			}, 50);
+
+			window.setTimeout(() => {
+				this.stopSwupReadyRetry();
+			}, 5000);
+		}
+
+		// 监听 DOM 加载（确保首屏也能加载优化组件）
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", async () => {
+				await initFancybox();
 				checkKatex();
-			}
+			});
+		} else {
+			initFancybox();
+			checkKatex();
+		}
+	}
+
+	private dispatchSwupReady(): void {
+		if (this.swupReadyDispatched) {
+			return;
+		}
+
+		this.swupReadyDispatched = true;
+		document.dispatchEvent(
+			new CustomEvent("mizuki:swup-ready", {
+				detail: {
+					path: window.location.pathname,
+					timestamp: Date.now(),
+				},
+			}),
+		);
+	}
+
+	private stopSwupReadyRetry(): void {
+		if (this.swupReadyRetryId !== null) {
+			window.clearInterval(this.swupReadyRetryId);
+			this.swupReadyRetryId = null;
 		}
 	}
 
@@ -204,6 +239,7 @@ export class SwupManager {
 	 * 销毁管理器
 	 */
 	destroy(): void {
+		this.stopSwupReadyRetry();
 		this.hooksManager = null;
 		this.fancyboxHandler.destroy();
 		this.backToTopHandler.destroy();

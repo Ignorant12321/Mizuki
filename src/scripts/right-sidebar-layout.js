@@ -51,8 +51,8 @@ function initPageLayout(pageType) {
 		}, 100);
 	});
 
-	// 监听SWUP导航事件
-	document.addEventListener("swup:contentReplaced", () => {
+	// 监听页面切换完成事件
+	document.addEventListener("astro:after-swap", () => {
 		setTimeout(() => {
 			const currentLayout =
 				localStorage.getItem("postListLayout") || "list";

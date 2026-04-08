@@ -264,7 +264,11 @@ export function initFilterHandler() {
 		if (window.swup) {
 			setupSwupListeners();
 		} else {
-			document.addEventListener("swup:enable", setupSwupListeners);
+			document.addEventListener(
+				"mizuki:swup-ready",
+				setupSwupListeners,
+				{ once: true },
+			);
 		}
 	}
 }

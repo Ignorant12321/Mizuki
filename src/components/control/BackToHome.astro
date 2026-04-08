@@ -41,8 +41,5 @@ import { i18n } from "@i18n/translation";
 	updateBackToHomeVisibility();
 
 	document.addEventListener("astro:page-load", updateBackToHomeVisibility);
-	document.addEventListener(
-		"swup:contentReplaced",
-		updateBackToHomeVisibility,
-	);
+	document.addEventListener("astro:after-swap", updateBackToHomeVisibility);
 </script>

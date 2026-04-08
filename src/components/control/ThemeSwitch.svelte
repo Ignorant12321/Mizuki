@@ -64,14 +64,14 @@
 				handleContentReplace,
 			);
 		} else {
-			document.addEventListener("swup:enable", () => {
+			document.addEventListener("mizuki:swup-ready", () => {
 				if ((window as any).swup && (window as any).swup.hooks) {
 					(window as any).swup.hooks.on(
 						"content:replace",
 						handleContentReplace,
 					);
 				}
-			});
+			}, { once: true });
 		}
 
 		// 页面加载完成后也同步一次状态

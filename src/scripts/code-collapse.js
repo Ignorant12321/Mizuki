@@ -40,7 +40,7 @@ class CodeBlockCollapser {
 		});
 
 		// 监听页面切换事件，确保同步
-		document.addEventListener("swup:pageView", () => {
+		document.addEventListener("astro:page-load", () => {
 			// 延迟同步，确保主题优化器已经处理完代码块
 			setTimeout(() => {
 				this.syncWithThemeOptimizer();
@@ -359,11 +359,15 @@ if (!setupSwupHooks()) {
 	// 如果 Swup 尚未初始化，等待它加载
 	codeBlockCollapser.log("Swup not ready, waiting for initialization");
 
-	// 监听 swup:enable 事件
-	document.addEventListener("swup:enable", () => {
-		codeBlockCollapser.log("Swup enabled, setting up hooks");
-		setupSwupHooks();
-	});
+	// 监听统一的 Swup 就绪事件
+	document.addEventListener(
+		"mizuki:swup-ready",
+		() => {
+			codeBlockCollapser.log("Swup ready, setting up hooks");
+			setupSwupHooks();
+		},
+		{ once: true },
+	);
 
 	// 额外的延迟重试机制，确保捕获到 Swup
 	const retryInterval = setInterval(() => {

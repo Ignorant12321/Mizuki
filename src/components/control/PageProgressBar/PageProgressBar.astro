@@ -52,7 +52,11 @@ const { enable, height, duration } = Astro.props;
 			if (window.swup) {
 				setupProgressBar();
 			} else {
-				document.addEventListener("swup:enable", setupProgressBar);
+				document.addEventListener(
+					"mizuki:swup-ready",
+					setupProgressBar,
+					{ once: true },
+				);
 			}
 		</script>
 	</>

@@ -101,17 +101,17 @@ export function waitForSwup(timeout = 5000): Promise<boolean> {
 		const checkSwup = () => {
 			if (isSwupReady()) {
 				clearTimeout(timeoutId);
-				document.removeEventListener("swup:enable", checkSwup);
+				document.removeEventListener("mizuki:swup-ready", checkSwup);
 				resolve(true);
 			}
 		};
 
-		// 监听 Swup 启用事件
-		document.addEventListener("swup:enable", checkSwup);
+		// 监听统一的 Swup 就绪事件
+		document.addEventListener("mizuki:swup-ready", checkSwup);
 
 		// 设置超时
 		timeoutId = setTimeout(() => {
-			document.removeEventListener("swup:enable", checkSwup);
+			document.removeEventListener("mizuki:swup-ready", checkSwup);
 			resolve(false);
 		}, timeout);
 	});

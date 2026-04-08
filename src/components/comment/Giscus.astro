@@ -110,7 +110,10 @@ const config = {
 				}
 			}
 			if (swupEnableHandler) {
-				document.removeEventListener("swup:enable", swupEnableHandler);
+				document.removeEventListener(
+					"mizuki:swup-ready",
+					swupEnableHandler,
+				);
 				swupEnableHandler = null;
 			}
 		}
@@ -160,9 +163,13 @@ const config = {
 						);
 					}
 				};
-				document.addEventListener("swup:enable", swupEnableHandler, {
-					once: true,
-				});
+				document.addEventListener(
+					"mizuki:swup-ready",
+					swupEnableHandler,
+					{
+						once: true,
+					},
+				);
 			}
 		}
 

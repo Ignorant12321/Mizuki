@@ -133,7 +133,7 @@ const config = {
 				});
 			} else {
 				document.addEventListener(
-					"swup:enable",
+					"mizuki:swup-ready",
 					() => {
 						if (window.swup?.hooks) {
 							window.swup.hooks.on("content:replace", () => {

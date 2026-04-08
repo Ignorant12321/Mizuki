@@ -48,6 +48,7 @@ export default defineConfig({
 			animationClass: "transition-swup-",
 			// Use a single stable container to avoid fallback full-page reloads.
 			containers: ["#content-wrapper"],
+			loadOnIdle: false,
 			smoothScrolling: false, // 禁用平滑滚动以提升性能，避免与锚点导航冲突
 			cache: true,
 			preload: false, // 禁用预加载以提升性能
