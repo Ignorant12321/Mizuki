@@ -10,10 +10,6 @@
 
 	const { icon, class: className = "" }: Props = $props();
 
-	const [collection, name] = icon.includes(":")
-		? icon.split(":")
-		: ["mdi", icon];
-
 	const iconSetMap: Record<string, string> = {
 		"material-symbols": "@iconify-json/material-symbols",
 		"material-symbols-outlined": "@iconify-json/material-symbols",
@@ -24,35 +20,50 @@
 		"simple-icons": "@iconify-json/simple-icons",
 	};
 
-	const packageName = iconSetMap[collection];
-	let svgContent = "";
+	const iconParts = $derived(icon.includes(":") ? icon.split(":") : ["mdi", icon]);
+	const collection = $derived(iconParts[0] ?? "mdi");
+	const name = $derived(iconParts[1] ?? icon);
+	const packageName = $derived(iconSetMap[collection]);
+	let svgContent = $state("");
 
-	async function loadIcon() {
-		if (!packageName) {
+	async function loadIcon(
+		iconName: string,
+		iconPackageName: string | undefined,
+		iconKey: string,
+		svgClassName: string,
+	) {
+		if (!iconPackageName) {
+			svgContent = "";
 			return;
 		}
 
 		try {
 			const iconsData = await import(
-				/* @vite-ignore */ `${packageName}/icons.json`
+				/* @vite-ignore */ `${iconPackageName}/icons.json`
 			);
 			const icons = iconsData.icons || {};
-			const iconData = icons[name];
+			const iconData = icons[iconKey];
 
 			if (iconData) {
 				const viewBox = iconData.viewBox || "0 0 24 24";
 				const body = iconData.body;
 
 				if (body) {
-					svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" class="${className}">${body}</svg>`;
+					svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" class="${svgClassName}">${body}</svg>`;
+					return;
 				}
 			}
+
+			svgContent = "";
 		} catch (e) {
-			console.warn(`Failed to load icon ${icon} from ${packageName}:`, e);
+			svgContent = "";
+			console.warn(`Failed to load icon ${iconName} from ${iconPackageName}:`, e);
 		}
 	}
 
-	loadIcon();
+	$effect(() => {
+		void loadIcon(icon, packageName, name, className);
+	});
 </script>
 
 {#if svgContent}

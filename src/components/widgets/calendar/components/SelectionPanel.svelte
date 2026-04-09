@@ -30,6 +30,12 @@
 			onClose();
 		}
 	}
+
+	function handlePanelKeyDown(e: KeyboardEvent) {
+		if (e.key === "Escape") {
+			onClose();
+		}
+	}
 </script>
 
 <div
@@ -38,8 +44,10 @@
 	class:opacity-100={currentView !== "day"}
 	class:hidden={currentView === "day"}
 	onclick={handleBackdropClick}
+	onkeydown={handlePanelKeyDown}
 	role="dialog"
 	aria-label="Date selection panel"
+	tabindex="-1"
 >
 	{#if currentView === "month"}
 		<MonthPicker

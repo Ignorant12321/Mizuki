@@ -1,7 +1,6 @@
-<script lang="ts">
+	<script lang="ts">
 	import Icon from "@iconify/svelte";
 	import { onMount } from "svelte";
-	import { scale } from "svelte/transition";
 
 	import Key from "../../../../i18n/i18nKey";
 	import { i18n } from "../../../../i18n/translation";
@@ -148,7 +147,6 @@
 		{#if isOpen}
 			<div
 				class="playlist-menu"
-				transition:scale={{ duration: 140, start: 0.96, opacity: 0 }}
 				role="listbox"
 				tabindex="-1"
 				onkeydown={onMenuKeyDown}
