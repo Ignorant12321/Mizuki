@@ -1,0 +1,54 @@
+{
+	"mode": "external",
+	"hidden": false,
+	"title": "Random Animation Album",
+	"description": "参考afoim/Static_RandomPicAPI搭建的随机二次元图片接口",
+	"date": "2026-01-01",
+	"location": "Github",
+	"tags": ["Kawai", "Random"],
+	"layout": "masonry",
+	"columns": 2,
+	"cover": "https://pic.ssr.ddns-ip.net/h",
+	"photos": [
+		{
+			"id": "rand-01",
+			"src": "https://pic.ssr.ddns-ip.net/v",
+			"alt": "随机动漫 0",
+			"title": "随机动漫 0",
+			"description": "随机动漫 0",
+			"tags": ["随机", "动漫", "pic.ssr.ddns-ip.net"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-02",
+			"src": "https://pic.ssr.ddns-ip.net/h",
+			"alt": "随机动漫 2",
+			"title": "随机动漫 2",
+			"description": "随机动漫 2",
+			"tags": ["随机", "动漫", "pic.ssr.ddns-ip.net"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-03",
+			"src": "https://pic.ssr.ddns-ip.net/r",
+			"alt": "随机动漫 3",
+			"title": "随机动漫 3",
+			"description": "随机动漫 3",
+			"tags": ["随机", "动漫", "pic.ssr.ddns-ip.net"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-04",
+			"src": "https://pic.ssr.ddns-ip.net/r",
+			"alt": "随机动漫 4",
+			"title": "随机动漫 4",
+			"description": "随机动漫 4",
+			"tags": ["随机", "动漫", "pic.ssr.ddns-ip.net"],
+			"width": 800,
+			"height": 600
+		}
+	]
+}

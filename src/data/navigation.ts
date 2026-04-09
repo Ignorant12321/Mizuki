@@ -71,11 +71,11 @@ export const navigationData: NavigationItem[] = [
 	},
 	{
 		id: 8,
-		title: "Python 教程",
-		imgurl: "/assets/icon/VscodeIconsFileTypePython.svg",
-		desc: "零基础入门 Python3 的中文教程",
-		siteurl: "https://www.runoob.com/python3/python3-tutorial.html",
-		tags: ["博引", "授艺"],
+		title: "云间引渡",
+		imgurl: "/assets/icon/Github.svg",
+		desc: "基于 Cloudflare Snippets 构建的 GitHub 反向代理加速服务",
+		siteurl: "https://home-gh.ssr.ddns-ip.net/",
+		tags: ["私筑", "器录"],
 	},
 ];
 

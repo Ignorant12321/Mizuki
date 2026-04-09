@@ -227,9 +227,10 @@ const fontBlacklistCss =
 		></style>
 		{fontBlacklistCss && <style is:global set:html={fontBlacklistCss} />}
 
-		<!-- Live2D 看板娘样式 - 非渲染阻塞加载 -->
-		<Fragment
-			set:html={`<link rel="stylesheet" href="${live2dConfig.paths.waifuCss}" media="print" onload="this.media='all'" />`}
+		<!-- Live2D 看板娘样式 -->
+		<link
+			rel="stylesheet"
+			href={live2dConfig.paths.waifuCss}
 		/>
 
 		<link

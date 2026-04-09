@@ -157,7 +157,9 @@ function formatDateSimple(dateString: string): string {
 
 																		return (
 																			<div
-																				class={`image-item relative rounded-lg overflow-hidden bg-(--card-bg-alt) w-full shadow-sm ${spanClass} ${aspectClass}`}
+																				class={`image-item diary-image-shell relative rounded-lg overflow-hidden bg-(--card-bg-alt) w-full shadow-sm ${spanClass} ${aspectClass}`}
+																				data-diary-image-shell
+																				data-loaded="false"
 																			>
 																				<a
 																					href="javascript:void(0)"
@@ -166,12 +168,19 @@ function formatDateSimple(dateString: string): string {
 																					data-fancybox={`gallery-diary-${index}`}
 																					class="block w-full h-full"
 																				>
+																					<div
+																						class="diary-image-skeleton"
+																						aria-hidden="true"
+																					>
+																						<div class="diary-image-skeleton-shine"></div>
+																					</div>
 																					<img
 																						src={image}
 																						alt="diary moment"
-																						class="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+																						class="diary-image-media w-full h-full object-cover cursor-pointer"
 																						loading="lazy"
 																						decoding="async"
+																						data-diary-image
 																					/>
 																				</a>
 																			</div>
@@ -238,11 +247,159 @@ function formatDateSimple(dateString: string): string {
 	</div>
 </MainGridLayout>
 
+<script is:inline>
+	(function () {
+		if (window.__mizukiDiaryImageSkeletonBound) {
+			return;
+		}
+
+		window.__mizukiDiaryImageSkeletonBound = true;
+
+		function markLoaded(shell) {
+			shell.dataset.loaded = "true";
+			shell.dataset.loadState = "loaded";
+		}
+
+		function markError(shell) {
+			shell.dataset.loaded = "error";
+			shell.dataset.loadState = "error";
+		}
+
+		function bindDiaryImage(shell) {
+			if (!(shell instanceof HTMLElement) || shell.dataset.bound === "true") {
+				return;
+			}
+
+			const image = shell.querySelector("[data-diary-image]");
+			if (!(image instanceof HTMLImageElement)) {
+				return;
+			}
+
+			shell.dataset.bound = "true";
+
+			if (image.complete) {
+				if (image.naturalWidth > 0) {
+					markLoaded(shell);
+				} else {
+					markError(shell);
+				}
+				return;
+			}
+
+			image.addEventListener(
+				"load",
+				() => {
+					markLoaded(shell);
+				},
+				{ once: true },
+			);
+
+			image.addEventListener(
+				"error",
+				() => {
+					markError(shell);
+				},
+				{ once: true },
+			);
+		}
+
+		function initDiaryImageSkeletons() {
+			document
+				.querySelectorAll("[data-diary-image-shell]")
+				.forEach((shell) => bindDiaryImage(shell));
+		}
+
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", initDiaryImageSkeletons, {
+				once: true,
+			});
+		} else {
+			initDiaryImageSkeletons();
+		}
+
+		document.addEventListener("astro:page-load", initDiaryImageSkeletons);
+		document.addEventListener("astro:after-swap", initDiaryImageSkeletons);
+	})();
+</script>
+
 <style>
 	.card-base-daily {
 		box-shadow:
 			0 2px 8px -2px rgba(0, 0, 0, 0.05),
 			0 0 1px rgba(0, 0, 0, 0.1);
+	}
+
+	.diary-image-shell {
+		isolation: isolate;
+	}
+
+	.diary-image-skeleton {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		overflow: hidden;
+		pointer-events: none;
+		background: color-mix(in oklab, var(--card-bg) 95%, white 5%);
+		transition:
+			opacity 220ms ease,
+			visibility 220ms ease;
+	}
+
+	.diary-image-skeleton-shine {
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background:
+			radial-gradient(
+				circle at top left,
+				color-mix(in oklab, white 12%, transparent) 0%,
+				transparent 48%
+			),
+			color-mix(in oklab, var(--line-color) 78%, transparent);
+		animation: diarySkeletonPulse 1.2s ease-in-out infinite;
+	}
+
+	.diary-image-media {
+		position: relative;
+		z-index: 0;
+		opacity: 0;
+		transform: scale(1);
+		transform-origin: center;
+		transition:
+			opacity 240ms ease,
+			transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.diary-image-shell[data-loaded="true"] .diary-image-media {
+		opacity: 1;
+	}
+
+	.diary-image-shell[data-loaded="true"]:hover .diary-image-media {
+		transform: scale(1.05);
+	}
+
+	.diary-image-shell[data-loaded="true"] .diary-image-skeleton {
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	.diary-image-shell[data-loaded="error"] .diary-image-skeleton {
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	.diary-image-shell[data-load-state="error"] .diary-image-media {
+		opacity: 0;
+	}
+
+	@keyframes diarySkeletonPulse {
+		0%,
+		100% {
+			opacity: 0.55;
+		}
+		50% {
+			opacity: 1;
+		}
 	}
 
 	@media (max-width: 768px) {

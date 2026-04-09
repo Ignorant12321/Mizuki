@@ -90,13 +90,6 @@ const siteTimeZone = siteConfig.timeZone;
 			</div>
 
 			<div id="news-list" class="news-list">
-				<div
-					class="news-loading"
-					id="news-loading"
-					style="display: none;"
-				>
-					<div class="news-loading-title">Loading news...</div>
-				</div>
 				<div id="no-result" class="hidden">
 					<FilterEmptyState
 						title={emptyTitle}
@@ -866,7 +859,6 @@ const siteTimeZone = siteConfig.timeZone;
 
 		function initNewsPage() {
 			const listEl = document.getElementById("news-list");
-			const loadingEl = document.getElementById("news-loading");
 			const emptyEl =
 				document.getElementById("no-result") ||
 				document.getElementById("no-results");
@@ -901,9 +893,6 @@ const siteTimeZone = siteConfig.timeZone;
 			function setLoadingState(loading) {
 				isLoading = loading;
 				refreshBtn.toggleAttribute("disabled", loading);
-				if (loadingEl) {
-					loadingEl.style.display = loading ? "" : "none";
-				}
 			}
 
 			function clearRenderedCards() {
@@ -1066,18 +1055,6 @@ const siteTimeZone = siteConfig.timeZone;
 </MainGridLayout>
 
 <style is:global>
-	.news-loading {
-		padding: 1rem;
-		border-radius: 1rem;
-		border: 1px dashed color-mix(in srgb, var(--primary) 28%, transparent);
-		background: color-mix(in srgb, var(--primary) 6%, transparent);
-	}
-
-	.news-loading-title {
-		font-size: 0.9rem;
-		color: var(--content-meta);
-	}
-
 	.news-toolbar {
 		position: relative;
 		padding: 1rem;

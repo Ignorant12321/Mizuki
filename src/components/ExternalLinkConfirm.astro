@@ -23,10 +23,13 @@ import { i18n } from "@/i18n/translation";
 				>
 					{externalLinkConfirmConfig.background && (
 						<img
+							id="external-link-confirm-bg"
 							class="ext-link-confirm-bg"
-							src={externalLinkConfirmConfig.background}
+							data-src={externalLinkConfirmConfig.background}
 							alt="external link confirm background"
 							referrerpolicy="no-referrer"
+							loading="lazy"
+							decoding="async"
 						/>
 					)}
 					<div class="ext-link-confirm-overlay" />
@@ -34,9 +37,12 @@ import { i18n } from "@/i18n/translation";
 						<div class="ext-link-confirm-head">
 							{externalLinkConfirmConfig.iconSvg && (
 								<img
+									id="external-link-confirm-icon"
 									class="ext-link-confirm-icon"
 									src={externalLinkConfirmConfig.iconSvg}
 									alt="external link confirm icon"
+									loading="eager"
+									decoding="async"
 								/>
 							)}
 							<h3 class="ext-link-confirm-title">
@@ -132,12 +138,14 @@ import { i18n } from "@/i18n/translation";
 			pendingTarget: "_blank",
 			isOpening: false,
 			domBound: false,
+			assetsLoaded: false,
 			copyResetTimer: 0,
 			hideTimer: 0,
 			modalSeq: 0,
 			root: null,
 			urlEl: null,
 			syncDom: null,
+			backgroundPreloadScheduled: false,
 		};
 		window[stateKey] = state;
 
@@ -239,6 +247,18 @@ import { i18n } from "@/i18n/translation";
 			state.pendingUrl = url;
 			state.pendingTarget = target || "_self";
 			state.urlEl.textContent = url;
+
+			if (!state.assetsLoaded) {
+				const bgImage = document.getElementById("external-link-confirm-bg");
+				if (bgImage instanceof HTMLImageElement) {
+					const source = bgImage.getAttribute("data-src");
+					if (source && !bgImage.getAttribute("src")) {
+						bgImage.setAttribute("src", source);
+					}
+				}
+				state.assetsLoaded = true;
+			}
+
 			state.root.hidden = false;
 			const copyButton = document.getElementById(
 				"external-link-confirm-copy",
@@ -410,6 +430,37 @@ import { i18n } from "@/i18n/translation";
 
 		state.syncDom = bindDom;
 		bindDom();
+
+		// 空闲时预热弹窗背景图，降低首次打开的等待感；不阻塞首屏关键资源。
+		const scheduleBackgroundPreload = () => {
+			if (state.backgroundPreloadScheduled || state.assetsLoaded) {
+				return;
+			}
+			state.backgroundPreloadScheduled = true;
+
+			const loadBackground = () => {
+				if (state.assetsLoaded) {
+					return;
+				}
+				const bgImage = document.getElementById("external-link-confirm-bg");
+				if (!(bgImage instanceof HTMLImageElement)) {
+					return;
+				}
+				const source = bgImage.getAttribute("data-src");
+				if (source && !bgImage.getAttribute("src")) {
+					bgImage.setAttribute("src", source);
+				}
+				state.assetsLoaded = true;
+			};
+
+			if ("requestIdleCallback" in window) {
+				window.requestIdleCallback(loadBackground, { timeout: 2200 });
+			} else {
+				window.setTimeout(loadBackground, 900);
+			}
+		};
+		scheduleBackgroundPreload();
+
 		document.addEventListener("click", handleDocumentClick, true);
 		document.addEventListener("keydown", (event) => {
 			if (event.key === "Escape") {

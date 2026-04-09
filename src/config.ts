@@ -90,7 +90,7 @@ export const siteConfig: SiteConfig = {
 	},
 
 	news: {
-		mode: "online",
+		mode: "local", // 新闻页面模式："online" 在线模式，使用在线RSS源；"local" 本地模式，使用本地构筑时拉取的RSS源新闻
 		title: "时语",
 		subtitle: "倾听世界之声",
 		initialVisible: 5,
@@ -310,9 +310,8 @@ export const siteConfig: SiteConfig = {
 		blacklist: {
 			// 黑名单中的选择器将回退到系统字体，不使用全局自定义字体
 			selectors: [
-				".tk-content", // Twikoo 评论正文
-				".news-title", // 新闻标题
-				".news-desc", // 新闻正文摘要
+				".tk-comments-container", // Twikoo 评论区
+				".news-card", // 新闻卡片
 			],
 		},
 	},
@@ -589,7 +588,8 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 			name: "洛天依",
 			mode: "meting",
 			meting_api:
-				"https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r",
+				// "https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r",
+				"https://meting.mysqil.com/api?server=:server&type=:type&id=:id&auth=:auth&r=:r",
 			server: "netease",
 			type: "playlist",
 			id: "17699694803",

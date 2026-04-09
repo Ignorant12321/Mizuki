@@ -1,15 +1,1 @@
-export const compressFontsExtraTexts = [
-	"示例",
-	"歌曲",
-	"艺术家",
-	"看板娘",
-	"Live2D",
-	"首页",
-	"关于",
-	"拍照",
-	"切换",
-	"模型",
-	"提示",
-	"欢迎",
-	"再见",
-];
+export const compressFontsExtraTexts = ["昵称", "网址", "邮件"];

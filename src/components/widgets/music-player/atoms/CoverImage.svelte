@@ -161,23 +161,14 @@
 			color-mix(in oklab, black 54%, var(--card-bg)) 16% 56%,
 			color-mix(in oklab, black 70%, var(--card-bg)) 57% 100%
 		);
-		box-shadow:
-			0 8px 16px color-mix(in oklab, black 30%, transparent),
-			inset 0 0 0 1px color-mix(in oklab, white 16%, transparent),
-			inset 0 0 16px color-mix(in oklab, black 20%, transparent);
 		transition:
 			transform 0.25s ease,
-			box-shadow 0.25s ease,
 			border-color 0.25s ease;
 	}
 
 	.music-cover:hover {
 		transform: translateY(-1px) scale(1.02);
 		border-color: color-mix(in oklab, var(--primary) 24%, var(--line-color));
-		box-shadow:
-			0 8px 18px color-mix(in oklab, black 34%, transparent),
-			inset 0 0 0 1px color-mix(in oklab, var(--primary) 12%, transparent),
-			inset 0 0 18px color-mix(in oklab, black 32%, transparent);
 	}
 
 	.music-cover:active {
@@ -211,28 +202,31 @@
 		inset: 2px;
 		background: repeating-radial-gradient(
 			circle at 50% 50%,
-			color-mix(in oklab, white 24%, transparent) 0 0.75px,
-			color-mix(in oklab, black 12%, transparent) 1.25px 2.75px
+			color-mix(in oklab, white 34%, transparent) 0 0.9px,
+			color-mix(in oklab, black 20%, transparent) 1.1px 2.8px
 		);
-		opacity: 0.42;
-		box-shadow: inset 0 0 0 1px color-mix(in oklab, white 12%, transparent);
+		opacity: 0.62;
 		z-index: 1;
 	}
 
 	.cover-disc::after {
 		background:
-			linear-gradient(
-				130deg,
-				color-mix(in oklab, white 36%, transparent) 0%,
-				transparent 42%
+			repeating-radial-gradient(
+				circle at 50% 50%,
+				transparent 0 5px,
+				color-mix(in oklab, white 18%, transparent) 5.2px 5.7px,
+				transparent 6px 10px
 			),
-			radial-gradient(
-				circle at 30% 24%,
-				color-mix(in oklab, white 22%, transparent) 0% 18%,
-				transparent 38%
+			conic-gradient(
+				from 18deg,
+				color-mix(in oklab, white 10%, transparent),
+				color-mix(in oklab, black 12%, transparent),
+				color-mix(in oklab, white 8%, transparent),
+				color-mix(in oklab, black 10%, transparent),
+				color-mix(in oklab, white 10%, transparent)
 			);
-		mix-blend-mode: screen;
-		opacity: 0.52;
+		opacity: 0.5;
+		mix-blend-mode: soft-light;
 		z-index: 4;
 	}
 
@@ -248,9 +242,6 @@
 			color-mix(in oklab, black 20%, var(--card-bg)) 100%
 		);
 		border: 1px solid color-mix(in oklab, white 26%, transparent);
-		box-shadow:
-			0 2px 6px color-mix(in oklab, black 26%, transparent),
-			inset 0 0 0 1px color-mix(in oklab, white 12%, transparent);
 		transform-origin: center;
 		will-change: transform;
 	}
@@ -287,7 +278,7 @@
 			color-mix(in oklab, black 92%, transparent) 0% 60%,
 			color-mix(in oklab, white 24%, transparent) 61% 100%
 		);
-		box-shadow: 0 0 0 1px color-mix(in oklab, black 42%, transparent);
+		box-shadow: none;
 	}
 
 	.cover-hover-mask {
