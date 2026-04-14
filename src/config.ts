@@ -90,7 +90,7 @@ export const siteConfig: SiteConfig = {
 	},
 
 	news: {
-		mode: "local", // 新闻页面模式："online" 在线模式，使用在线RSS源；"local" 本地模式，使用本地构筑时拉取的RSS源新闻
+		mode: "online", // 新闻页面模式："online" 在线模式，使用在线RSS源；"local" 本地模式，使用本地构筑时拉取的RSS源新闻
 		title: "时语",
 		subtitle: "倾听世界之声",
 		initialVisible: 5,
