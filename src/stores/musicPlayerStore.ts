@@ -196,7 +196,13 @@ class MusicPlayerStore {
 		this.showError(i18n(Key.musicPlayerErrorSong));
 
 		if (this.state.playlist.length > 1) {
-			setTimeout(() => this.next(true), SKIP_ERROR_DELAY);
+			setTimeout(
+				() =>
+					this.next(
+						this.state.isPlaying || this.state.willAutoPlay,
+					),
+				SKIP_ERROR_DELAY,
+			);
 		} else if (this.state.playlist.length <= 1) {
 			this.showError(i18n(Key.musicPlayerErrorEmpty));
 		}

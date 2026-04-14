@@ -74,9 +74,9 @@ export const siteConfig: SiteConfig = {
 		friends: true, // 友链页面开关
 		navigation: true, // 导航页面开关
 		news: true, // 新闻页面开关
-		projects: false, // 项目页面开关
-		skills: false, // 技能页面开关
-		timeline: false, // 时间线页面开关
+		projects: true, // 项目页面开关
+		skills: true, // 技能页面开关
+		timeline: true, // 时间线页面开关
 		albums: true, // 相册页面开关
 		devices: true, // 设备页面开关
 	},
@@ -359,37 +359,10 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Archive,
 		LinkPreset.Diary,
 		{
-			name: "津渡",
-			nameKey: I18nKey.navigation,
-			url: "/navigation/",
-			icon: "material-symbols:map-search",
+			name: "铸器",
+			url: "/projects/",
+			icon: "material-symbols:exercise",
 		},
-		// 支持自定义导航栏链接，支持多级菜单
-		// {
-		// 	name: "Links",
-		// 	url: "/links/",
-		// 	icon: "material-symbols:link",
-		// 	children: [
-		// 		{
-		// 			name: "GitHub",
-		// 			url: "https://github.com/Ignorant12321/Mizuki",
-		// 			external: true,
-		// 			icon: "fa7-brands:github",
-		// 		},
-		// 		{
-		// 			name: "Bilibili",
-		// 			url: "https://space.bilibili.com/2063167092",
-		// 			external: true,
-		// 			icon: "fa7-brands:bilibili",
-		// 		},
-		// 		{
-		// 			name: "Gitee",
-		// 			url: "https://gitee.com/ignorantand",
-		// 			external: true,
-		// 			icon: "mdi:git",
-		// 		},
-		// 	],
-		// },
 		{
 			name: "私馆",
 			nameKey: I18nKey.navMy,
@@ -397,7 +370,7 @@ export const navBarConfig: NavBarConfig = {
 			icon: "material-symbols:person",
 			children: [
 				{
-					name: "逐影",
+					name: "追光",
 					nameKey: I18nKey.albums,
 					url: "/albums/",
 					icon: "material-symbols:photo-library",
@@ -408,12 +381,18 @@ export const navBarConfig: NavBarConfig = {
 					url: "/anime/",
 					icon: "material-symbols:movie",
 				},
+				// {
+				// 	name: "物志",
+				// 	nameKey: I18nKey.devices,
+				// 	url: "/devices/",
+				// 	icon: "material-symbols:devices",
+				// 	external: false,
+				// },
 				{
-					name: "物志",
-					nameKey: I18nKey.devices,
-					url: "/devices/",
-					icon: "material-symbols:devices",
-					external: false,
+					name: "津渡",
+					nameKey: I18nKey.navigation,
+					url: "/navigation/",
+					icon: "material-symbols:map-search",
 				},
 				{
 					name: "时语",

@@ -102,7 +102,7 @@ export const zh_CN: Translation = {
 	[Key.author]: "作者",
 	[Key.publishedAt]: "发布于",
 	[Key.license]: "许可协议",
-	[Key.anime]: "追番",
+	[Key.anime]: "逐影",
 	[Key.diary]: "碎念",
 
 	// 番剧页面
@@ -177,7 +177,7 @@ export const zh_CN: Translation = {
 	[Key.unknownArtist]: "未知艺术家",
 
 	// 相册页面
-	[Key.albums]: "相册",
+	[Key.albums]: "追光",
 	[Key.albumsSubtitle]: "记录生活中的美好瞬间",
 	[Key.albumsEmpty]: "暂无内容",
 	[Key.albumsEmptyDesc]: "还没有创建任何相册，快去添加一些美好的回忆吧！",

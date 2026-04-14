@@ -21,20 +21,20 @@ export interface Project {
 
 export const projectsData: Project[] = [
 	{
-		id: "mizuki",
-		title: "Mizuki",
+		id: "Edge-Bookmark-Editor",
+		title: "Edge-Bookmark-Editor",
 		description:
-			"A next-gen Material Design 3 blog theme built with Astro, featuring i18n, dark mode, and responsive design.",
-		image: "/assets/projects/mizuki.webp",
+			"一个纯静态的 Edge 收藏夹编辑器，用来导入、编辑、整理并重新导出 Edge 的收藏夹 HTML。",
+		image: "/assets/projects/Edge-Bookmark-Editor.webp",
 		category: "web",
-		techStack: ["Astro", "TypeScript", "Tailwind CSS", "Svelte"],
+		techStack: ["JavaScript", "CSS", "HTML"],
 		status: "completed",
-		sourceCode: "https://github.com/LyraVoid/Mizuki",
-		visitUrl: "https://mizuki.mysqil.com",
-		startDate: "2024-01-01",
-		endDate: "2024-06-01",
+		sourceCode: "https://github.com/Ignorant12321/Edge-Bookmark-Editor",
+		visitUrl: "https://edge-bookmark-editor.pages.dev/",
+		startDate: "2026-04-12",
+		endDate: "2026-04-14",
 		featured: true,
-		tags: ["Blog", "Theme", "Open Source"],
+		tags: ["Bookmark", "Editor", "Open Source"],
 	},
 	{
 		id: "folkpatch",
