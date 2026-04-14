@@ -218,6 +218,7 @@ export const zh_TW: Translation = {
 	[Key.projectsSource]: "原始碼",
 	[Key.projectsVisit]: "前往專案",
 	[Key.projectsGitHub]: "GitHub",
+	[Key.projectsSearchPlaceholder]: "搜尋專案名稱、描述或技術堆疊...",
 
 	// RSS 頁面
 	[Key.rss]: "RSS 訂閱",

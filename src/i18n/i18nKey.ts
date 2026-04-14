@@ -211,6 +211,7 @@ enum I18nKey {
 	projectsSource = "projectsSource",
 	projectsVisit = "projectsVisit",
 	projectsGitHub = "projectsGitHub",
+	projectsSearchPlaceholder = "projectsSearchPlaceholder",
 
 	// Skills page
 	skills = "skills",

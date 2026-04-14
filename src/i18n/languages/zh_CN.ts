@@ -218,6 +218,7 @@ export const zh_CN: Translation = {
 	[Key.projectsSource]: "源代码",
 	[Key.projectsVisit]: "前往",
 	[Key.projectsGitHub]: "GitHub",
+	[Key.projectsSearchPlaceholder]: "搜索项目名称、描述或技术栈...",
 
 	// 技能展示页面
 	[Key.skills]: "技能展示",

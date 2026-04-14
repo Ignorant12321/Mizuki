@@ -872,6 +872,7 @@ const siteTimeZone = siteConfig.timeZone;
 			let cards = [];
 			let visibleCount = INITIAL_VISIBLE;
 			let isLoading = false;
+			let refreshStatusTimer = 0;
 
 			function setStatus(message, tone = "info") {
 				if (!statusEl) {
@@ -888,6 +889,27 @@ const siteTimeZone = siteConfig.timeZone;
 				statusEl.textContent = message;
 				statusEl.dataset.tone = tone;
 				statusEl.style.display = "";
+			}
+
+			function clearRefreshStatusTimer() {
+				if (refreshStatusTimer) {
+					window.clearInterval(refreshStatusTimer);
+					refreshStatusTimer = 0;
+				}
+			}
+
+			function startRefreshingStatus() {
+				clearRefreshStatusTimer();
+				const startedAt = Date.now();
+				const render = () => {
+					const elapsedSeconds = Math.max(
+						0,
+						Math.floor((Date.now() - startedAt) / 1000),
+					);
+					setStatus(`${refreshingLabel}(${elapsedSeconds}s)`, "info");
+				};
+				render();
+				refreshStatusTimer = window.setInterval(render, 1000);
 			}
 
 			function setLoadingState(loading) {
@@ -959,7 +981,7 @@ const siteTimeZone = siteConfig.timeZone;
 
 				setLoadingState(true);
 				emptyEl?.classList.add("hidden");
-				setStatus(refreshingLabel, "info");
+				startRefreshingStatus();
 
 				try {
 					const list =
@@ -967,11 +989,13 @@ const siteTimeZone = siteConfig.timeZone;
 							? await fetchLocalNews()
 							: await fetchOnlineNews();
 					renderList(list);
+					clearRefreshStatusTimer();
 					setStatus("", "info");
 				} catch {
 					if (cards.length === 0) {
 						emptyEl?.classList.remove("hidden");
 					}
+					clearRefreshStatusTimer();
 					setStatus(refreshFailed, "error");
 				} finally {
 					setLoadingState(false);

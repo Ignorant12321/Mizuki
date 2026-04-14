@@ -359,11 +359,6 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Archive,
 		LinkPreset.Diary,
 		{
-			name: "铸器",
-			url: "/projects/",
-			icon: "material-symbols:exercise",
-		},
-		{
 			name: "私馆",
 			nameKey: I18nKey.navMy,
 			url: "/content/",
@@ -389,16 +384,15 @@ export const navBarConfig: NavBarConfig = {
 				// 	external: false,
 				// },
 				{
+					name: "铸器",
+					url: "/projects/",
+					icon: "material-symbols:exercise",
+				},
+				{
 					name: "津渡",
 					nameKey: I18nKey.navigation,
 					url: "/navigation/",
 					icon: "material-symbols:map-search",
-				},
-				{
-					name: "时语",
-					nameKey: I18nKey.news,
-					url: "/news/",
-					icon: "material-symbols:article",
 				},
 			],
 		},
@@ -416,6 +410,12 @@ export const navBarConfig: NavBarConfig = {
 					name: "Friends",
 					url: "/friends/",
 					icon: "material-symbols:group",
+				},
+				{
+					name: "时语",
+					nameKey: I18nKey.news,
+					url: "/news/",
+					icon: "material-symbols:article",
 				},
 			],
 		},

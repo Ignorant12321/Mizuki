@@ -229,6 +229,8 @@ export const ja: Translation = {
 	[Key.projectsSource]: "ソースコード",
 	[Key.projectsVisit]: "プロジェクトを開く",
 	[Key.projectsGitHub]: "GitHub",
+	[Key.projectsSearchPlaceholder]:
+		"プロジェクト名・説明・技術スタックで検索...",
 
 	// RSSページ
 	[Key.rss]: "RSSフィード",

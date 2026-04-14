@@ -1,8 +1,9 @@
 ---
+import { Icon } from "astro-icon/components";
+
 import I18nKey from "../../../i18n/i18nKey";
 import { i18n } from "../../../i18n/translation";
 import type { ProjectCardProps } from "./types";
-import { Icon } from "astro-icon/components";
 
 const { project, maxTechStack = 4 } = Astro.props as ProjectCardProps;
 
@@ -10,6 +11,15 @@ const hasImage = !!project.image;
 const showImageArea = project.showImage !== false && hasImage;
 const hasVisitUrl = !!project.visitUrl;
 const hasSourceCode = !!project.sourceCode;
+const searchText = [
+	project.title,
+	project.description,
+	project.category,
+	...(project.techStack || []),
+	...(project.tags || []),
+]
+	.join(" ")
+	.toLowerCase();
 
 const getStatusText = (status: string) => {
 	switch (status) {
@@ -28,6 +38,7 @@ const getStatusText = (status: string) => {
 <div
 	class="project-card group relative rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
 	data-category={project.category}
+	data-search-text={searchText}
 >
 	{
 		showImageArea && (
@@ -145,6 +156,10 @@ const getStatusText = (status: string) => {
 
 	.project-card.filtered-out {
 		display: none;
+	}
+
+	.project-card.search-hidden {
+		display: none !important;
 	}
 
 	@keyframes fadeInUp {
