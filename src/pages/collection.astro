@@ -1,0 +1,152 @@
+---
+import { FilterTabs } from "@components/atoms/filter-tabs";
+import { FilterEmptyState } from "@components/atoms/empty-state";
+import { PageHeader } from "@components/features/page-header";
+import NavigationCard from "@components/features/navigation/NavigationCard.astro";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+
+import { siteConfig } from "../config";
+import {
+	collectionTagPriorityKeys,
+	getCollectionList,
+} from "../data/collection";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+
+export const prerender = true;
+
+const title = i18n(I18nKey.collection);
+const subtitle = i18n(I18nKey.collectionSubtitle);
+
+const rawCollectionList = getCollectionList().filter((item) => {
+	if (item.feature === "news") {
+		return siteConfig.featurePages.news;
+	}
+	if (item.feature === "navigation") {
+		return siteConfig.featurePages.navigation;
+	}
+	return true;
+});
+
+const collectionList = rawCollectionList.map((item) => ({
+	id: item.id,
+	title: i18n(item.titleKey),
+	imgurl: item.imgurl,
+	desc: i18n(item.descKey),
+	siteurl: item.siteurl,
+	tags: item.tagKeys.map((tagKey) => i18n(tagKey)),
+	external: item.external,
+}));
+
+const allTags = Array.from(new Set(collectionList.flatMap((item) => item.tags)));
+const filterTabs = [
+	{
+		value: "all",
+		label: i18n(I18nKey.navigationFilterAll),
+		count: collectionList.length,
+	},
+	...allTags.map((tag) => ({
+		value: tag,
+		label: tag,
+		count: collectionList.filter((item) => item.tags.includes(tag)).length,
+	})),
+];
+---
+
+<MainGridLayout title={title} description={subtitle}>
+	<script>
+		import("../scripts/right-sidebar-layout.js");
+	</script>
+
+	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+		<div class="card-base z-10 px-9 py-6 relative w-full">
+			<PageHeader
+				title={title}
+				subtitle={subtitle}
+				bgImage="https://www.loliapi.com/acg/pc?t=collection"
+			/>
+
+			<div class="mb-6 space-y-3">
+				<div class="w-full">
+					<div class="relative">
+						<input
+							type="text"
+							id="navigation-search"
+							placeholder={i18n(I18nKey.collectionSearchPlaceholder)}
+							class="w-full px-4 py-2 pl-10 rounded-lg bg-[var(--btn-regular-bg)]
+									text-black/90 dark:text-white/90
+									border border-black/10 dark:border-white/10
+									focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50
+									transition-all duration-200"
+						/>
+						<svg
+							class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-black/40 dark:text-white/40"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+							></path>
+						</svg>
+					</div>
+				</div>
+
+				<FilterTabs
+					tabs={filterTabs}
+					dataAttr="tags"
+					priorityValues={collectionTagPriorityKeys.map((key) => i18n(key))}
+					emptyTarget="none"
+				/>
+			</div>
+
+			<div id="navigation-grid" class="grid grid-cols-1 gap-4 mb-6">
+				{
+					collectionList.map((item) => (
+						<NavigationCard
+							item={item}
+							visitText={i18n(I18nKey.navigationVisit)}
+							copyText={i18n(I18nKey.copyLink)}
+						/>
+					))
+				}
+			</div>
+
+			<div id="no-results" class:list={["no-results-panel", collectionList.length === 0 && "is-visible"]}>
+				<FilterEmptyState />
+			</div>
+
+			<div id="navigation-copy-success-text" style="display: none;">
+				{i18n(I18nKey.copied)}
+			</div>
+		</div>
+	</div>
+
+	<script is:inline src="/js/filter-tabs-handler.js"></script>
+	<script is:inline src="/js/navigation-page-handler.js"></script>
+</MainGridLayout>
+
+<style>
+	#navigation-search:focus {
+		box-shadow: 0 0 0 3px var(--primary) / 0.1;
+	}
+
+	.no-results-panel {
+		opacity: 0;
+		transform: translateY(8px);
+		visibility: hidden;
+		pointer-events: none;
+		transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+	}
+
+	.no-results-panel.is-visible {
+		opacity: 1;
+		transform: translateY(0);
+		visibility: visible;
+		pointer-events: auto;
+		transition: opacity 0.18s ease, transform 0.18s ease;
+	}
+</style>

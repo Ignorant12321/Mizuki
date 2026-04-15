@@ -376,6 +376,11 @@ export const navBarConfig: NavBarConfig = {
 					url: "/anime/",
 					icon: "material-symbols:movie",
 				},
+				{
+					name: "铸器",
+					url: "/projects/",
+					icon: "material-symbols:exercise",
+				},
 				// {
 				// 	name: "物志",
 				// 	nameKey: I18nKey.devices,
@@ -383,17 +388,6 @@ export const navBarConfig: NavBarConfig = {
 				// 	icon: "material-symbols:devices",
 				// 	external: false,
 				// },
-				{
-					name: "铸器",
-					url: "/projects/",
-					icon: "material-symbols:exercise",
-				},
-				{
-					name: "津渡",
-					nameKey: I18nKey.navigation,
-					url: "/navigation/",
-					icon: "material-symbols:map-search",
-				},
 			],
 		},
 		{
@@ -412,10 +406,10 @@ export const navBarConfig: NavBarConfig = {
 					icon: "material-symbols:group",
 				},
 				{
-					name: "时语",
-					nameKey: I18nKey.news,
-					url: "/news/",
-					icon: "material-symbols:article",
+					name: "荟萃",
+					nameKey: I18nKey.collection,
+					url: "/collection/",
+					icon: "material-symbols:work",
 				},
 			],
 		},

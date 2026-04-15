@@ -40,6 +40,18 @@ export const en: Translation = {
 	[Key.navigationSearchPlaceholder]: "Search site name or description...",
 	[Key.navigationFilterAll]: "All",
 	[Key.navigationVisit]: "Visit",
+	[Key.collection]: "Collection",
+	[Key.collectionSubtitle]: "Curated handy tools",
+	[Key.collectionSearchPlaceholder]: "Search tool name or description...",
+	[Key.collectionNewsTitle]: "News",
+	[Key.collectionNewsDescription]:
+		"Aggregate RSS sources for quick access to latest updates",
+	[Key.collectionNavigationTitle]: "Navigation",
+	[Key.collectionNavigationDescription]:
+		"Filter useful websites by tags and keep your directory organized",
+	[Key.collectionTagInternal]: "Internal",
+	[Key.collectionTagNews]: "News",
+	[Key.collectionTagNavigation]: "Navigation",
 	[Key.news]: "News",
 	[Key.newsSubtitle]:
 		"Aggregate external sources for a quick glance at the latest updates",

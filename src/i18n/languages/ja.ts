@@ -40,6 +40,18 @@ export const ja: Translation = {
 	[Key.navigationSearchPlaceholder]: "サイト名または説明で検索...",
 	[Key.navigationFilterAll]: "すべて",
 	[Key.navigationVisit]: "訪問",
+	[Key.collection]: "コレクション",
+	[Key.collectionSubtitle]: "よく使うツール集",
+	[Key.collectionSearchPlaceholder]: "ツール名または説明で検索...",
+	[Key.collectionNewsTitle]: "ニュース",
+	[Key.collectionNewsDescription]:
+		"RSS ソースをまとめて最新情報を素早く確認できます",
+	[Key.collectionNavigationTitle]: "ナビゲーション",
+	[Key.collectionNavigationDescription]:
+		"タグでよく使うサイトを絞り込み、リンク集を整理します",
+	[Key.collectionTagInternal]: "サイト内",
+	[Key.collectionTagNews]: "ニュース",
+	[Key.collectionTagNavigation]: "ナビ",
 	[Key.news]: "ニュース",
 	[Key.newsSubtitle]: "外部ソースをまとめて、最新情報を素早く確認できます",
 	[Key.newsSource]: "ソース",
