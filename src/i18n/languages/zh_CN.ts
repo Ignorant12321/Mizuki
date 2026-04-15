@@ -48,9 +48,13 @@ export const zh_CN: Translation = {
 	[Key.collectionNavigationTitle]: "津渡",
 	[Key.collectionNavigationDescription]:
 		"按标签筛选常用网站，沉淀你的导航收藏",
+	[Key.collectionFilesTitle]: "云盘",
+	[Key.collectionFilesDescription]:
+		"通过 OpenList 访问 OneDrive 分享文件，在线浏览并下载",
 	[Key.collectionTagInternal]: "站内",
 	[Key.collectionTagNews]: "资讯",
 	[Key.collectionTagNavigation]: "导航",
+	[Key.collectionTagCloud]: "网盘",
 	[Key.news]: "时语",
 	[Key.newsSubtitle]: "聚合外部资讯源，快速浏览最新消息",
 	[Key.newsSource]: "来源",

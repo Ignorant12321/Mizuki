@@ -15,6 +15,7 @@ export const collectionTagPriorityKeys: I18nKey[] = [
 	I18nKey.collectionTagInternal,
 	I18nKey.collectionTagNews,
 	I18nKey.collectionTagNavigation,
+	I18nKey.collectionTagCloud,
 ];
 
 export const collectionData: CollectionItem[] = [
@@ -40,6 +41,15 @@ export const collectionData: CollectionItem[] = [
 		],
 		external: false,
 		feature: "navigation",
+	},
+	{
+		id: 3,
+		titleKey: I18nKey.collectionFilesTitle,
+		imgurl: "/assets/icon/fileTransferGo.svg",
+		descKey: I18nKey.collectionFilesDescription,
+		siteurl: "/files/",
+		tagKeys: [I18nKey.collectionTagInternal, I18nKey.collectionTagCloud],
+		external: false,
 	},
 ];
 

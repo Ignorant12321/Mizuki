@@ -49,9 +49,13 @@ export const en: Translation = {
 	[Key.collectionNavigationTitle]: "Navigation",
 	[Key.collectionNavigationDescription]:
 		"Filter useful websites by tags and keep your directory organized",
+	[Key.collectionFilesTitle]: "Cloud Files",
+	[Key.collectionFilesDescription]:
+		"Browse and download shared OneDrive files via OpenList",
 	[Key.collectionTagInternal]: "Internal",
 	[Key.collectionTagNews]: "News",
 	[Key.collectionTagNavigation]: "Navigation",
+	[Key.collectionTagCloud]: "Cloud",
 	[Key.news]: "News",
 	[Key.newsSubtitle]:
 		"Aggregate external sources for a quick glance at the latest updates",

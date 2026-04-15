@@ -49,9 +49,13 @@ export const ja: Translation = {
 	[Key.collectionNavigationTitle]: "ナビゲーション",
 	[Key.collectionNavigationDescription]:
 		"タグでよく使うサイトを絞り込み、リンク集を整理します",
+	[Key.collectionFilesTitle]: "クラウドファイル",
+	[Key.collectionFilesDescription]:
+		"OpenList 経由で OneDrive の共有ファイルを閲覧・ダウンロードできます",
 	[Key.collectionTagInternal]: "サイト内",
 	[Key.collectionTagNews]: "ニュース",
 	[Key.collectionTagNavigation]: "ナビ",
+	[Key.collectionTagCloud]: "クラウド",
 	[Key.news]: "ニュース",
 	[Key.newsSubtitle]: "外部ソースをまとめて、最新情報を素早く確認できます",
 	[Key.newsSource]: "ソース",

@@ -48,9 +48,13 @@ export const zh_TW: Translation = {
 	[Key.collectionNavigationTitle]: "導航",
 	[Key.collectionNavigationDescription]:
 		"按標籤篩選常用網站，沉澱你的導航收藏",
+	[Key.collectionFilesTitle]: "雲盤",
+	[Key.collectionFilesDescription]:
+		"透過 OpenList 存取 OneDrive 分享檔案，線上瀏覽並下載",
 	[Key.collectionTagInternal]: "站內",
 	[Key.collectionTagNews]: "資訊",
 	[Key.collectionTagNavigation]: "導航",
+	[Key.collectionTagCloud]: "網盤",
 	[Key.news]: "新聞",
 	[Key.newsSubtitle]: "聚合外部資訊源，快速瀏覽最新消息",
 	[Key.newsSource]: "來源",

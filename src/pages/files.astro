@@ -1,0 +1,224 @@
+---
+import { PageHeader } from "@components/features/page-header";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+
+export const prerender = true;
+
+const title = i18n(I18nKey.collectionFilesTitle);
+const subtitle = i18n(I18nKey.collectionFilesDescription);
+const shareUrl = "https://openlist.ignorant.top/@s/Jrk6HG9a";
+---
+
+<MainGridLayout title={title} description={subtitle}>
+	<script>
+		import("../scripts/right-sidebar-layout.js");
+	</script>
+
+	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+		<div class="card-base z-10 px-5 sm:px-8 py-6 relative w-full">
+			<PageHeader
+				title={title}
+				subtitle={subtitle}
+				bgImage="https://www.loliapi.com/acg/pc?t=cloud"
+			/>
+
+			<div class="files-toolbar">
+				<p class="files-tip">
+					文件由 OpenList 分享页提供，可直接在线浏览并下载。
+				</p>
+				<div class="files-actions">
+					<button type="button" id="files-refresh-btn" class="files-refresh-btn">
+						刷新
+					</button>
+					<a
+						class="files-open-btn"
+						href={shareUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						打开
+					</a>
+				</div>
+			</div>
+
+			<div class="files-embed-card">
+				<div id="files-empty-tip" class="files-empty-tip">
+					默认未加载，点击上方“刷新”按钮后开始加载。
+				</div>
+				<iframe
+					id="files-iframe"
+					data-src={shareUrl}
+					title="OpenList OneDrive Files"
+					loading="lazy"
+					referrerpolicy="no-referrer"
+					class="files-iframe"
+				></iframe>
+			</div>
+
+		</div>
+	</div>
+
+	<script is:inline>
+		function setupFilesRefresh() {
+			const refreshBtn = document.getElementById("files-refresh-btn");
+			const frame = document.getElementById("files-iframe");
+			const emptyTip = document.getElementById("files-empty-tip");
+			if (
+				!(refreshBtn instanceof HTMLButtonElement) ||
+				!(frame instanceof HTMLIFrameElement)
+			) {
+				return;
+			}
+
+			const refresh = () => {
+				const targetSrc = frame.dataset.src || "";
+				if (!targetSrc) {
+					return;
+				}
+
+				const loaded = frame.dataset.loaded === "true";
+				if (!loaded) {
+					frame.src = targetSrc;
+					frame.dataset.loaded = "true";
+				} else {
+					const currentSrc = frame.src;
+					frame.src = "";
+					requestAnimationFrame(() => {
+						frame.src = currentSrc;
+					});
+				}
+
+				frame.classList.add("is-visible");
+				if (emptyTip instanceof HTMLElement) {
+					emptyTip.classList.add("is-hidden");
+				}
+			};
+
+			refreshBtn.onclick = refresh;
+		}
+
+		setupFilesRefresh();
+		document.addEventListener("astro:after-swap", setupFilesRefresh);
+	</script>
+</MainGridLayout>
+
+<style>
+	.files-toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-bottom: 0.9rem;
+		padding: 0.9rem 1rem;
+		border-radius: 0.9rem;
+		border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+		background:
+			linear-gradient(
+				160deg,
+				color-mix(in srgb, var(--primary) 10%, transparent),
+				transparent 58%
+			),
+			var(--card-bg);
+	}
+
+	.files-actions {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.files-tip {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--content-meta);
+	}
+
+	.files-open-btn,
+	.files-refresh-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.5rem 0.95rem;
+		border-radius: 999px;
+		border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+		background: color-mix(in srgb, var(--primary) 10%, transparent);
+		color: var(--primary);
+		font-size: 0.85rem;
+		font-weight: 700;
+		white-space: nowrap;
+		transition:
+			border-color 0.2s ease,
+			background 0.2s ease;
+	}
+
+	.files-open-btn {
+		text-decoration: none;
+	}
+
+	.files-refresh-btn {
+		cursor: pointer;
+	}
+
+	.files-open-btn:hover,
+	.files-refresh-btn:hover {
+		border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+		background: color-mix(in srgb, var(--primary) 16%, transparent);
+	}
+
+	.files-embed-card {
+		border-radius: 1rem;
+		overflow: hidden;
+		border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+		background: var(--card-bg);
+	}
+
+	.files-empty-tip {
+		min-height: 11rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1rem;
+		text-align: center;
+		font-size: 0.9rem;
+		color: var(--content-meta);
+	}
+
+	.files-empty-tip.is-hidden {
+		display: none;
+	}
+
+	.files-iframe {
+		display: none;
+		width: 100%;
+		min-height: 78vh;
+		border: 0;
+	}
+
+	.files-iframe.is-visible {
+		display: block;
+	}
+
+	@media (max-width: 720px) {
+		.files-toolbar {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.files-actions {
+			width: 100%;
+			flex-direction: column;
+		}
+
+		.files-refresh-btn,
+		.files-open-btn {
+			width: 100%;
+		}
+
+		.files-iframe {
+			min-height: 72vh;
+		}
+	}
+</style>
