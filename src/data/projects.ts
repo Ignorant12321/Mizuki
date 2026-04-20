@@ -23,7 +23,7 @@ export const projectsData: Project[] = [
 	{
 		id: "mizuki",
 		title: "Mizuki",
-		description: "基于LyraVoid/Mizuki魔改的个人博客，",
+		description: "基于LyraVoid/Mizuki魔改的个人博客",
 		image: "/assets/projects/Mizuki.webp",
 		category: "web",
 		techStack: ["Astro", "TypeScript", "Tailwind CSS", "Svelte"],

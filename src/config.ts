@@ -391,6 +391,31 @@ export const navBarConfig: NavBarConfig = {
 			],
 		},
 		{
+			name: "荟萃",
+			nameKey: I18nKey.collection,
+			url: "/collection/",
+			icon: "material-symbols:work",
+			children: [
+				{
+					name: "时语",
+					nameKey: I18nKey.news,
+					url: "/news/",
+					icon: "material-symbols:article",
+				},
+				{
+					name: "云盘",
+					url: "/files/",
+					icon: "material-symbols:cloud",
+				},
+				{
+					name: "津渡",
+					nameKey: I18nKey.navigation,
+					url: "/navigation/",
+					icon: "material-symbols:explore",
+				},
+			],
+		},
+		{
 			name: "About",
 			url: "/content/",
 			icon: "material-symbols:info",
@@ -404,12 +429,6 @@ export const navBarConfig: NavBarConfig = {
 					name: "Friends",
 					url: "/friends/",
 					icon: "material-symbols:group",
-				},
-				{
-					name: "荟萃",
-					nameKey: I18nKey.collection,
-					url: "/collection/",
-					icon: "material-symbols:work",
 				},
 			],
 		},
