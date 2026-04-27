@@ -10,7 +10,6 @@
 	import FabMusicPanel from "./FabMusicPanel.svelte";
 	import MiniPlayer from "./organisms/MiniPlayer.svelte";
 	import PlayerBar from "./organisms/PlayerBar.svelte";
-	import Playlist from "./organisms/Playlist.svelte";
 
 	let state: MusicPlayerState = musicPlayerStore.getState();
 	let fabAnchorRight = 0;
@@ -34,12 +33,8 @@
 		musicPlayerStore.next();
 	}
 
-	function toggleShuffle() {
-		musicPlayerStore.toggleShuffle();
-	}
-
-	function toggleRepeat() {
-		musicPlayerStore.toggleRepeat();
+	function toggleMode() {
+		musicPlayerStore.toggleMode();
 	}
 
 	function playIndex(index: number) {
@@ -50,88 +45,16 @@
 		musicPlayerStore.selectPlaylist(index);
 	}
 
-	function setProgress(event: MouseEvent) {
-		const progressElement = event.currentTarget as HTMLElement | null;
-		if (!progressElement) {
-			return;
-		}
-		const rect = progressElement.getBoundingClientRect();
-		const percent = (event.clientX - rect.left) / rect.width;
-		musicPlayerStore.setProgress(percent);
-	}
-
-	function handleProgressKeyDown(event: KeyboardEvent) {
-		if (event.key === "Enter" || event.key === " ") {
-			event.preventDefault();
-			musicPlayerStore.setProgress(0.5);
-		}
+	function seek(time: number) {
+		musicPlayerStore.seek(time);
 	}
 
 	function toggleMute() {
 		musicPlayerStore.toggleMute();
 	}
 
-	function handleVolumeButtonClick() {
-		musicPlayerStore.toggleMute();
-	}
-
-	function startVolumeDrag(event: PointerEvent) {
-		const slider = event.currentTarget as HTMLElement | null;
-		if (!slider) {
-			return;
-		}
-
-		const updateVolume = (clientX: number) => {
-			const rect = slider.getBoundingClientRect();
-			if (rect.width <= 0) {
-				return;
-			}
-			const percent = Math.max(
-				0,
-				Math.min(1, (clientX - rect.left) / rect.width),
-			);
-			musicPlayerStore.setVolume(percent);
-		};
-
-		updateVolume(event.clientX);
-
-		const pointerId = event.pointerId;
-		slider.setPointerCapture(pointerId);
-
-		const handleMove = (moveEvent: PointerEvent) => {
-			if (moveEvent.pointerId !== pointerId) {
-				return;
-			}
-			updateVolume(moveEvent.clientX);
-		};
-
-		const cleanup = () => {
-			slider.removeEventListener("pointermove", handleMove);
-			slider.removeEventListener("pointerup", handleUp);
-			slider.removeEventListener("pointercancel", handleCancel);
-			if (slider.hasPointerCapture(pointerId)) {
-				slider.releasePointerCapture(pointerId);
-			}
-		};
-
-		const handleUp = (upEvent: PointerEvent) => {
-			if (upEvent.pointerId !== pointerId) {
-				return;
-			}
-			updateVolume(upEvent.clientX);
-			cleanup();
-		};
-
-		const handleCancel = (cancelEvent: PointerEvent) => {
-			if (cancelEvent.pointerId !== pointerId) {
-				return;
-			}
-			cleanup();
-		};
-
-		slider.addEventListener("pointermove", handleMove);
-		slider.addEventListener("pointerup", handleUp);
-		slider.addEventListener("pointercancel", handleCancel);
+	function setVolume(volume: number) {
+		musicPlayerStore.setVolume(volume);
 	}
 
 	function handleVolumeKeyDown(event: KeyboardEvent) {
@@ -181,12 +104,6 @@
 
 	function hideError() {
 		musicPlayerStore.hideError();
-	}
-
-	function volumeBarRef(node: HTMLElement) {}
-
-	function canSkip(): boolean {
-		return musicPlayerStore.canSkip();
 	}
 
 	function updateFabAnchorPosition() {
@@ -269,15 +186,13 @@
 		</div>
 	{/if}
 
-		{#if useFabEntry}
-			{#if state.isExpanded}
+	{#if useFabEntry}
+		{#if state.isExpanded}
 			<div
 				class="music-player-fab-anchor fixed z-[55]"
 				style={`--music-fab-anchor-right:${fabAnchorRight}px;--music-fab-anchor-bottom:${fabAnchorBottom}px;`}
 			>
-				<div
-					class="music-player-fab-shell"
-				>
+				<div class="music-player-fab-shell">
 					<FabMusicPanel />
 				</div>
 			</div>
@@ -316,46 +231,20 @@
 			/>
 
 			<PlayerBar
-				song={state.currentSong}
-				currentTime={state.currentTime}
-				duration={state.duration}
-				isPlaying={state.isPlaying}
-				isLoading={state.isLoading}
-				isShuffled={state.isShuffled}
-				isRepeating={state.isRepeating}
-				showPlaylist={state.showPlaylist}
-				canSkip={canSkip()}
-				volume={state.volume}
-				isMuted={state.isMuted}
-				isVolumeDragging={false}
+				{state}
 				isHidden={!state.isExpanded}
-				{volumeBarRef}
-				onPlayClick={togglePlay}
-				onPrevClick={prev}
-				onNextClick={() => next()}
-				onShuffleClick={toggleShuffle}
-				onRepeatClick={toggleRepeat}
-				onProgressClick={setProgress}
-				onProgressKeyDown={handleProgressKeyDown}
-				onVolumeButtonClick={handleVolumeButtonClick}
-				onSliderPointerDown={startVolumeDrag}
-				onSliderKeyDown={handleVolumeKeyDown}
-				onHideClick={toggleHidden}
-				onPlaylistClick={togglePlaylist}
-				onCollapseClick={toggleExpanded}
-			/>
-
-			<Playlist
-				playlist={state.playlist}
-				playlists={state.playlists}
-				currentPlaylistIndex={state.currentPlaylistIndex}
-				isPlaylistLoading={state.isPlaylistLoading}
-				currentIndex={state.currentIndex}
-				isPlaying={state.isPlaying}
-				show={state.showPlaylist}
-				onClose={togglePlaylist}
+				onTogglePlay={togglePlay}
+				onPrev={prev}
+				onNext={() => next()}
+				onToggleMode={toggleMode}
+				onTogglePlaylist={togglePlaylist}
+				onPlayIndex={playIndex}
+				onSeek={seek}
+				onToggleMute={toggleMute}
+				onSetVolume={setVolume}
 				onPlaylistSourceSelect={selectPlaylist}
-				onPlaySong={playIndex}
+				onHide={toggleHidden}
+				onCollapse={toggleExpanded}
 			/>
 		</div>
 	{/if}
@@ -645,7 +534,11 @@
 		}
 
 		:global(.music-track-fill) {
-			background: color-mix(in oklab, var(--primary) 88%, white 12%) !important;
+			background: color-mix(
+				in oklab,
+				var(--primary) 88%,
+				white 12%
+			) !important;
 		}
 
 		:global(.playlist-item-base) {

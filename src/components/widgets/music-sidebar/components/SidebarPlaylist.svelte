@@ -1,8 +1,12 @@
 <script lang="ts">
+	import Icon from "@iconify/svelte";
+
+	import Key from "../../../../i18n/i18nKey";
+	import { i18n } from "../../../../i18n/translation";
+	import type { ResolvedPlaylistConfig } from "../../../../stores/musicPlaylistConfig";
 	import AccordionDrawer from "../../common/AccordionDrawer.svelte";
 	import PlaylistSwitcher from "../../music-player/atoms/PlaylistSwitcher.svelte";
 	import type { Song } from "../../music-player/types";
-	import type { ResolvedPlaylistConfig } from "../../../../stores/musicPlaylistConfig";
 	import TrackListItem from "./TrackListItem.svelte";
 
 	interface Props {
@@ -40,6 +44,10 @@
 					isLoading={isPlaylistLoading}
 					onSelect={onPlaylistSourceSelect}
 				/>
+			</div>
+			<div class="playlist-track-title">
+				<Icon icon="material-symbols:music-note-rounded" />
+				<span>{i18n(Key.musicPlayerSongSource)}</span>
 			</div>
 			<div
 				class="playlist-content"
@@ -97,10 +105,23 @@
 		position: relative;
 		z-index: 2;
 		overflow: visible;
-		padding: 0.12rem 0.18rem 0.34rem;
+		padding: 0.12rem 0.18rem 0.42rem;
 		margin-bottom: 0.02rem;
-		border-bottom: 1px solid
+		border-bottom: 1px dashed
 			color-mix(in oklab, var(--line-color) 82%, transparent);
+	}
+
+	.playlist-track-title {
+		display: flex;
+		align-items: center;
+		gap: 0.34rem;
+		padding: 0.42rem 0.36rem 0.28rem;
+		border-bottom: 1px dashed
+			color-mix(in oklab, var(--line-color) 78%, transparent);
+		font-size: 0.76rem;
+		font-weight: 700;
+		line-height: 1.2;
+		color: var(--content-meta);
 	}
 
 	.playlist-content {

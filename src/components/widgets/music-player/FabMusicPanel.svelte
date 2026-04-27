@@ -4,11 +4,7 @@
 	import type { MusicPlayerState } from "@/stores/musicPlayerStore";
 	import { musicPlayerStore } from "@/stores/musicPlayerStore";
 
-	import SidebarControls from "../music-sidebar/components/SidebarControls.svelte";
-	import SidebarCover from "../music-sidebar/components/SidebarCover.svelte";
-	import SidebarPlaylist from "../music-sidebar/components/SidebarPlaylist.svelte";
-	import SidebarProgress from "../music-sidebar/components/SidebarProgress.svelte";
-	import SidebarTrackInfo from "../music-sidebar/components/SidebarTrackInfo.svelte";
+	import MusicPanelContent from "./organisms/MusicPanelContent.svelte";
 
 	let state: MusicPlayerState = $state(musicPlayerStore.getState());
 	let showPlaylist = $state(false);
@@ -73,50 +69,21 @@
 <div
 	class="fab-music-panel card-base shadow-xl rounded-2xl p-4 w-[20rem] max-w-[80vw]"
 >
-	<div class="fab-music-header">
-		<SidebarCover
-			currentSong={state.currentSong}
-			isPlaying={state.isPlaying}
-			isLoading={state.isLoading}
-		/>
-		<SidebarTrackInfo
-			currentSong={state.currentSong}
-			currentTime={state.currentTime}
-			duration={state.duration}
-			volume={state.volume}
-			isMuted={state.isMuted}
-			onToggleMute={toggleMute}
-			onSetVolume={setVolume}
-		/>
-	</div>
-
-	<SidebarProgress
-		currentTime={state.currentTime}
-		duration={state.duration}
-		onSeek={seek}
-	/>
-
-	<SidebarControls
-		isPlaying={state.isPlaying}
-		isShuffled={state.isShuffled}
-		repeatMode={state.isRepeating}
-		onToggleMode={toggleMode}
+	<MusicPanelContent
+		{state}
+		{showPlaylist}
+		compact
+		onTogglePlay={togglePlay}
 		onPrev={prev}
 		onNext={next}
-		onTogglePlay={togglePlay}
+		onToggleMode={toggleMode}
 		onTogglePlaylist={togglePlaylistView}
-	/>
-
-	<SidebarPlaylist
-		playlist={state.playlist}
-		playlists={state.playlists}
-		currentPlaylistIndex={state.currentPlaylistIndex}
-		isPlaylistLoading={state.isPlaylistLoading}
-		currentIndex={state.currentIndex}
-		isPlaying={state.isPlaying}
-		show={showPlaylist}
-		onPlaylistSourceSelect={(index) => musicPlayerStore.selectPlaylist(index)}
-		onPlaySong={playIndex}
+		onPlayIndex={playIndex}
+		onSeek={seek}
+		onToggleMute={toggleMute}
+		onSetVolume={setVolume}
+		onPlaylistSourceSelect={(index) =>
+			musicPlayerStore.selectPlaylist(index)}
 	/>
 </div>
 
@@ -125,7 +92,8 @@
 		border-radius: 1.25rem;
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
-		border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--line-color));
+		border: 1px solid
+			color-mix(in oklab, var(--primary) 22%, var(--line-color));
 		background: linear-gradient(
 			180deg,
 			color-mix(in oklab, var(--primary) 7%, var(--card-bg)) 0%,
@@ -138,13 +106,6 @@
 
 	:global(.dark) .fab-music-panel {
 		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
-	}
-
-	.fab-music-header {
-		display: flex;
-		align-items: center;
-		gap: 0.8rem;
-		margin-bottom: 0.82rem;
 	}
 
 	@media (max-width: 640px) {

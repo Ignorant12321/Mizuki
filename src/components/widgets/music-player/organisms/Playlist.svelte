@@ -56,6 +56,10 @@
 					onSelect={onPlaylistSourceSelect}
 				/>
 			</div>
+			<div class="playlist-track-title">
+				<Icon icon="material-symbols:music-note-rounded" />
+				<span>{i18n(Key.musicPlayerSongSource)}</span>
+			</div>
 			<div
 				class="playlist-content overflow-y-auto max-h-80"
 				role="presentation"
@@ -135,6 +139,19 @@
 			transparent;
 	}
 
+	.playlist-track-title {
+		display: flex;
+		align-items: center;
+		gap: 0.34rem;
+		padding: 0.42rem 0.44rem 0.34rem;
+		border-bottom: 1px dashed
+			color-mix(in oklab, var(--primary) 12%, transparent);
+		font-size: 0.78rem;
+		font-weight: 700;
+		line-height: 1.2;
+		color: var(--content-meta);
+	}
+
 	.playlist-body {
 		margin: 0.35rem 0.45rem 0.5rem;
 		padding: 0.28rem 0.28rem 0.28rem;
@@ -147,9 +164,9 @@
 		position: relative;
 		z-index: 2;
 		overflow: visible;
-		padding: 0.16rem 0.22rem 0.4rem;
-		margin-bottom: 0.04rem;
-		border-bottom: 1px solid
+		padding: 0.16rem 0.22rem 0.46rem;
+		margin-bottom: 0.02rem;
+		border-bottom: 1px dashed
 			color-mix(in oklab, var(--primary) 14%, transparent);
 	}
 

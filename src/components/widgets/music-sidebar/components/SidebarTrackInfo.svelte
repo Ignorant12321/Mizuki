@@ -5,8 +5,7 @@
 
 	interface Props {
 		currentSong: Song;
-		currentTime: number;
-		duration: number;
+		playlistName: string;
 		volume: number;
 		isMuted: boolean;
 		onToggleMute: () => void;
@@ -15,21 +14,12 @@
 
 	const {
 		currentSong,
-		currentTime,
-		duration,
+		playlistName,
 		volume,
 		isMuted,
 		onToggleMute,
 		onSetVolume,
 	}: Props = $props();
-
-	const currentTimeLabel = $derived(
-		`${Math.floor(currentTime / 60)}:${String(Math.floor(currentTime % 60)).padStart(2, "0")}`,
-	);
-
-	const durationLabel = $derived(
-		`${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2, "0")}`,
-	);
 
 	const volumePercent = $derived(
 		isMuted ? 0 : Math.max(0, Math.min(100, volume * 100)),
@@ -83,12 +73,9 @@
 		<span class="artist-text truncate">{currentSong.artist}</span>
 	</div>
 	<div class="meta-row">
-		<div class="time-label" aria-live="polite">
-			<span>{currentTimeLabel}</span>
-			<span class="divider">/</span>
-			<span>{durationLabel}</span>
-		</div>
-
+		<span class="playlist-text truncate" title={playlistName}>
+			歌单：{playlistName || "-"}
+		</span>
 		<div class="volume-wrap">
 			<button
 				type="button"
@@ -149,30 +136,25 @@
 	}
 
 	.artist-row {
-		margin-bottom: 0.36rem;
+		margin-bottom: 0.22rem;
 	}
 
 	.meta-row {
 		display: flex;
 		align-items: center;
-		gap: 0.55rem;
+		gap: 0.45rem;
 		min-width: 0;
 		justify-content: space-between;
 	}
 
-	.time-label {
-		display: flex;
-		align-items: center;
-		gap: 0.2rem;
-		font-size: 10px;
-		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	.playlist-text {
+		min-width: 0;
+		flex: 1 1 auto;
+		max-width: calc(100% - 5.9rem);
+		font-size: 0.66rem;
+		line-height: 1.15;
 		color: var(--content-meta);
-		white-space: nowrap;
-		flex-shrink: 0;
-	}
-
-	.divider {
-		opacity: 0.6;
+		opacity: 0.86;
 	}
 
 	.volume-wrap {
@@ -181,15 +163,17 @@
 		gap: 0.35rem;
 		min-width: 0;
 		justify-content: flex-end;
-		margin-left: auto;
+		flex: 0 0 auto;
+		margin-right: 0.48rem;
+		padding-right: 0;
 	}
 
 	.volume-btn {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 1.5rem;
-		height: 1.5rem;
+		width: 1.3rem;
+		height: 1.3rem;
 		border-radius: 0.375rem;
 		color: var(--content-meta);
 		transition: color 150ms ease;
@@ -201,7 +185,9 @@
 
 	.volume-slider {
 		position: relative;
-		width: 4rem;
+		width: 3.75rem;
+		min-width: 0;
+		flex: 0 0 auto;
 		height: 0.25rem;
 		border-radius: 9999px;
 		background: color-mix(
@@ -211,7 +197,6 @@
 		);
 		overflow: hidden;
 		cursor: pointer;
-		flex-shrink: 0;
 		transition: height 150ms ease;
 	}
 
@@ -234,19 +219,16 @@
 
 	@media (max-width: 520px) {
 		.artist-row {
-			margin-bottom: 0.28rem;
+			margin-bottom: 0.18rem;
 		}
 
 		.meta-row {
-			gap: 0.4rem;
-		}
-
-		.time-label {
-			font-size: 9px;
+			gap: 0.32rem;
 		}
 
 		.volume-wrap {
 			gap: 0.25rem;
+			margin-right: 0.32rem;
 		}
 
 		.volume-btn {
@@ -255,7 +237,7 @@
 		}
 
 		.volume-slider {
-			width: 3.2rem;
+			width: 2.9rem;
 		}
 	}
 </style>

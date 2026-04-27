@@ -1,10 +1,17 @@
 export interface Song {
-	id: number;
+	id: number | string;
 	title: string;
 	artist: string;
 	cover: string;
 	url: string;
 	duration: number;
+	lyric?: string;
+	lyricUrl?: string;
+}
+
+export interface LyricLine {
+	time: number;
+	text: string;
 }
 
 export type PlayerMode = "local" | "meting";

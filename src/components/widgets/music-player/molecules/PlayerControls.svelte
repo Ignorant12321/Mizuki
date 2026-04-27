@@ -32,7 +32,7 @@
 	}: Props = $props();
 </script>
 
-<div class="controls flex items-center justify-center gap-2 mb-4">
+<div class="controls flex items-center justify-center gap-2 mb-2">
 	<ModeButton mode="shuffle" isActive={isShuffled} onclick={onShuffleClick} />
 	<PrevButton onclick={onPrevClick} disabled={false} />
 	<PlayButton {isPlaying} {isLoading} onclick={onPlayClick} />

@@ -3,7 +3,11 @@ import {
 	DEFAULT_METING_SERVER,
 	DEFAULT_METING_TYPE,
 } from "@/components/widgets/music-player/constants";
-import type { MusicPlayerConfig, MusicPlaylistConfig } from "@/types/config";
+import type {
+	LocalAudioSong,
+	MusicPlayerConfig,
+	MusicPlaylistConfig,
+} from "@/types/config";
 
 export interface ResolvedPlaylistConfig {
 	name: string;
@@ -12,6 +16,7 @@ export interface ResolvedPlaylistConfig {
 	id: string;
 	server: string;
 	type: string;
+	audioList: LocalAudioSong[];
 }
 
 function normalizePlaylists(
@@ -26,6 +31,7 @@ function normalizePlaylists(
 			id: playlist.id ?? "",
 			server: playlist.server ?? DEFAULT_METING_SERVER,
 			type: playlist.type ?? DEFAULT_METING_TYPE,
+			audioList: playlist.audioList ?? [],
 		}));
 }
 
@@ -50,6 +56,7 @@ function normalizeLegacyPlaylistConfig(
 		id: config.id ?? "",
 		server: config.server ?? DEFAULT_METING_SERVER,
 		type: config.type ?? DEFAULT_METING_TYPE,
+		audioList: [],
 	};
 }
 
@@ -66,5 +73,5 @@ export function resolvePlaylistsFromConfig(
 }
 
 export function buildPlaylistCacheKey(source: ResolvedPlaylistConfig): string {
-	return `${source.mode}:${source.meting_api}:${source.server}:${source.type}:${source.id}`;
+	return `${source.name}:${source.mode}:${source.meting_api}:${source.server}:${source.type}:${source.id}`;
 }

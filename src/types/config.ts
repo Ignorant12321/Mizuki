@@ -425,6 +425,19 @@ export interface MusicPlayerConfig {
 	legacyPlaylistName?: string;
 }
 
+export interface LocalAudioSong {
+	id?: number | string;
+	title?: string;
+	artist?: string;
+	cover?: string;
+	url?: string;
+	duration?: number | string;
+	lyric?: string; // 支持内联歌词文本（可写 LRC）
+	lyricUrl?: string; // 支持歌词文件地址（.lrc / .txt）
+	lrc?: string; // 兼容字段：可写歌词文本或歌词地址
+	lrcUrl?: string; // 兼容字段：歌词文件地址
+}
+
 export interface MusicPlaylistConfig {
 	name: string; // 歌单名称
 	mode?: "meting" | "local"; // 歌单来源模式，默认按 meting 处理
@@ -432,6 +445,7 @@ export interface MusicPlaylistConfig {
 	id?: string; // 歌单ID
 	server?: string; // 音乐源服务器
 	type?: string; // 音乐类型
+	audioList?: LocalAudioSong[]; // local 模式专用：本地歌曲数组
 }
 
 export interface FooterConfig {

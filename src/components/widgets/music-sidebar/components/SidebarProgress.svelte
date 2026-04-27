@@ -13,6 +13,18 @@
 			: 0,
 	);
 
+	const currentTimeLabel = $derived(formatTime(currentTime));
+	const durationLabel = $derived(formatTime(duration));
+
+	function formatTime(seconds: number): string {
+		if (!Number.isFinite(seconds) || seconds < 0) {
+			return "0:00";
+		}
+		const mins = Math.floor(seconds / 60);
+		const secs = Math.floor(seconds % 60);
+		return `${mins}:${secs.toString().padStart(2, "0")}`;
+	}
+
 	function handleClick(event: MouseEvent) {
 		const el = event.currentTarget as HTMLElement | null;
 		if (!el || duration <= 0) {
@@ -35,6 +47,7 @@
 </script>
 
 <div class="sidebar-progress-wrapper">
+	<span class="progress-time" aria-live="polite">{currentTimeLabel}</span>
 	<div
 		class="sidebar-progress-bar"
 		onclick={handleClick}
@@ -51,11 +64,26 @@
 			style={`width: ${progressPercent}%`}
 		></div>
 	</div>
+	<span class="progress-time">{durationLabel}</span>
 </div>
 
 <style>
 	.sidebar-progress-wrapper {
+		display: grid;
+		grid-template-columns: 2.35rem minmax(0, 1fr) 2.35rem;
+		align-items: center;
+		gap: 0.45rem;
 		margin-top: 0.15rem;
+	}
+
+	.progress-time {
+		font-size: 0.68rem;
+		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+		color: var(--content-meta);
+		font-variant-numeric: tabular-nums;
+		text-align: center;
+		white-space: nowrap;
+		user-select: none;
 	}
 
 	.sidebar-progress-bar {
@@ -83,5 +111,16 @@
 	.sidebar-progress-bar:focus-visible {
 		outline: 2px solid var(--primary);
 		outline-offset: 2px;
+	}
+
+	@media (max-width: 520px) {
+		.sidebar-progress-wrapper {
+			grid-template-columns: 2.1rem minmax(0, 1fr) 2.1rem;
+			gap: 0.35rem;
+		}
+
+		.progress-time {
+			font-size: 0.62rem;
+		}
 	}
 </style>

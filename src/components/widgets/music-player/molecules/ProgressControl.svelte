@@ -21,7 +21,7 @@
 	}
 </script>
 
-<div class="progress-section progress-row mb-4">
+<div class="progress-section progress-row mb-3">
 	<span class="progress-time">{formatTime(currentTime)}</span>
 	<ProgressBar
 		{currentTime}

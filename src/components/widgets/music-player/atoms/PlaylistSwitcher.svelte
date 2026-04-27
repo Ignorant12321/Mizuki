@@ -1,6 +1,5 @@
-	<script lang="ts">
+<script lang="ts">
 	import Icon from "@iconify/svelte";
-	import { onMount } from "svelte";
 
 	import Key from "../../../../i18n/i18nKey";
 	import { i18n } from "../../../../i18n/translation";
@@ -16,161 +15,87 @@
 	let { playlists, currentIndex, isLoading = false, onSelect }: Props =
 		$props();
 
-	let isOpen = $state(false);
-	let rootEl: HTMLDivElement | null = null;
-	let triggerEl: HTMLButtonElement | null = null;
+	function getSafeIndex(): number {
+		if (playlists.length === 0) {
+			return -1;
+		}
+
+		return currentIndex >= 0 && currentIndex < playlists.length
+			? currentIndex
+			: 0;
+	}
 
 	function getCurrentName(): string {
-		return playlists[currentIndex]?.name ?? "-";
+		const safeIndex = getSafeIndex();
+		return safeIndex >= 0 ? playlists[safeIndex]?.name ?? "-" : "-";
 	}
 
-	function canOpen(): boolean {
-		return !isLoading && playlists.length > 0;
+	function canSwitch(): boolean {
+		return !isLoading && playlists.length > 1;
 	}
 
-	function toggleMenu(): void {
-		if (!canOpen()) {
+	function selectOffset(offset: -1 | 1): void {
+		if (!canSwitch()) {
 			return;
 		}
-		isOpen = !isOpen;
-	}
 
-	function closeMenu(focusTrigger = false): void {
-		isOpen = false;
-		if (focusTrigger) {
-			triggerEl?.focus();
+		const safeIndex = getSafeIndex();
+		const nextIndex =
+			(safeIndex + offset + playlists.length) % playlists.length;
+
+		if (nextIndex !== currentIndex) {
+			onSelect(nextIndex);
 		}
 	}
-
-	function selectOption(index: number): void {
-		onSelect(index);
-		closeMenu();
-	}
-
-	function handleTriggerClick(event: MouseEvent): void {
-		event.stopPropagation();
-		toggleMenu();
-	}
-
-	function handleOptionClick(event: MouseEvent, index: number): void {
-		event.stopPropagation();
-		selectOption(index);
-	}
-
-	function onTriggerKeyDown(event: KeyboardEvent): void {
-		if (event.key === "Escape") {
-			event.preventDefault();
-			closeMenu(true);
-		}
-	}
-
-	function onOptionKeyDown(event: KeyboardEvent, index: number): void {
-		if (event.key === "Enter" || event.key === " ") {
-			event.preventDefault();
-			selectOption(index);
-			return;
-		}
-		if (event.key === "Escape") {
-			event.preventDefault();
-			closeMenu(true);
-		}
-	}
-
-	function onMenuKeyDown(event: KeyboardEvent): void {
-		if (event.key === "Escape") {
-			event.preventDefault();
-			closeMenu(true);
-		}
-	}
-
-	onMount(() => {
-		const handleWindowPointerDown = (event: PointerEvent) => {
-			if (!isOpen || !rootEl) {
-				return;
-			}
-			if (rootEl.contains(event.target as Node)) {
-				return;
-			}
-			closeMenu();
-		};
-
-		window.addEventListener("pointerdown", handleWindowPointerDown, true);
-
-		return () => {
-			window.removeEventListener(
-				"pointerdown",
-				handleWindowPointerDown,
-				true,
-			);
-		};
-	});
-
-	$effect(() => {
-		if (!canOpen() && isOpen) {
-			isOpen = false;
-		}
-	});
 </script>
 
-<div class="playlist-switcher" bind:this={rootEl}>
+<div class="playlist-switcher">
 	<div class="playlist-switcher-title">
-		<Icon icon="material-symbols:queue-music-rounded" class="text-lg" />
-		<span>{i18n(Key.musicPlayerPlaylistSource)}</span>
-		{#if isLoading}
-			<span class="switcher-loading">
-				<Icon icon="material-symbols:progress-activity-rounded" />
-			</span>
+		<span class="title-main">
+			<Icon icon="material-symbols:library-music-rounded" class="text-base" />
+			<span>{i18n(Key.musicPlayerPlaylistSource)}</span>
+		</span>
+		{#if playlists.length > 1}
+			<span class="playlist-index">{getSafeIndex() + 1}/{playlists.length}</span>
 		{/if}
 	</div>
 
-	<div class="playlist-dropdown" class:open={isOpen}>
+	<div class="playlist-source-bar" class:is-loading={isLoading}>
 		<button
 			type="button"
-			class="playlist-trigger"
-			bind:this={triggerEl}
-			onclick={handleTriggerClick}
-			onkeydown={onTriggerKeyDown}
-			disabled={!canOpen()}
-			aria-haspopup="listbox"
-			aria-expanded={isOpen}
-			aria-label={i18n(Key.musicPlayerPlaylistSource)}
+			class="source-step-btn"
+			onclick={() => selectOffset(-1)}
+			disabled={!canSwitch()}
+			title="上一个歌单"
+			aria-label="上一个歌单"
 		>
-			<span class="playlist-current-label">{getCurrentName()}</span>
-			<span class="playlist-arrow">
-				<Icon
-					icon="material-symbols:keyboard-arrow-down-rounded"
-					style="color: inherit"
-				/>
-			</span>
+			<Icon icon="material-symbols:chevron-left-rounded" />
 		</button>
 
-		{#if isOpen}
-			<div
-				class="playlist-menu"
-				role="listbox"
-				tabindex="-1"
-				onkeydown={onMenuKeyDown}
-			>
-				{#each playlists as playlist, index}
-					<button
-						type="button"
-						role="option"
-						class="playlist-option"
-						class:selected={index === currentIndex}
-						aria-selected={index === currentIndex}
-						onclick={(event) => handleOptionClick(event, index)}
-						onkeydown={(event) => onOptionKeyDown(event, index)}
-					>
-						<span class="playlist-option-label">{playlist.name}</span>
-						{#if index === currentIndex}
-							<span class="playlist-check">
-								<Icon icon="material-symbols:check-rounded" />
-							</span>
-						{/if}
-					</button>
-				{/each}
-			</div>
-		{/if}
+		<div
+			class="source-current"
+			role="status"
+			aria-live="polite"
+			aria-label={`${i18n(Key.musicPlayerPlaylistSource)}：${getCurrentName()}`}
+		>
+			{#if isLoading}
+				<span class="source-loading" aria-hidden="true">
+					<Icon icon="material-symbols:progress-activity-rounded" />
+				</span>
+			{/if}
+			<span class="source-name">{getCurrentName()}</span>
+		</div>
+
+		<button
+			type="button"
+			class="source-step-btn"
+			onclick={() => selectOffset(1)}
+			disabled={!canSwitch()}
+			title="下一个歌单"
+			aria-label="下一个歌单"
+		>
+			<Icon icon="material-symbols:chevron-right-rounded" />
+		</button>
 	</div>
 </div>
 
@@ -179,267 +104,137 @@
 		width: 100%;
 		display: flex;
 		flex-direction: column;
-		gap: 0.35rem;
-		--playlist-trigger-border: color-mix(
-			in oklab,
-			var(--content-main) 16%,
-			var(--line-color)
-		);
-		--playlist-trigger-border-hover: color-mix(
-			in oklab,
-			var(--content-main) 24%,
-			var(--line-color)
-		);
-		--playlist-trigger-border-focus: color-mix(
-			in oklab,
-			var(--content-main) 28%,
-			var(--line-color)
-		);
-		--playlist-trigger-focus-ring: color-mix(
-			in oklab,
-			var(--content-main) 14%,
-			transparent
-		);
-		--playlist-menu-border: color-mix(
-			in oklab,
-			var(--content-main) 18%,
-			var(--line-color)
-		);
-		--playlist-menu-bg: var(--card-bg-transparent);
-		--playlist-menu-shadow: 0 10px 24px color-mix(
-			in oklab,
-			black 10%,
-			transparent
-		);
-		--playlist-option-text: var(--content-main);
-		--playlist-option-text-hover: color-mix(
-			in oklab,
-			var(--content-main) 92%,
-			transparent
-		);
-		--playlist-option-border-hover: color-mix(
-			in oklab,
-			var(--content-main) 22%,
-			transparent
-		);
-		--playlist-option-selected-border: color-mix(
-			in oklab,
-			var(--primary) 38%,
-			transparent
-		);
-		--playlist-option-selected-border-hover: color-mix(
-			in oklab,
-			var(--primary) 58%,
-			transparent
-		);
-		--playlist-option-selected-text: var(--primary);
-	}
-
-	:global(.dark) .playlist-switcher {
-		--playlist-trigger-border: color-mix(
-			in oklab,
-			white 18%,
-			var(--line-color)
-		);
-		--playlist-trigger-border-hover: color-mix(
-			in oklab,
-			white 28%,
-			var(--line-color)
-		);
-		--playlist-trigger-border-focus: color-mix(
-			in oklab,
-			white 30%,
-			var(--line-color)
-		);
-		--playlist-trigger-focus-ring: color-mix(
-			in oklab,
-			white 12%,
-			transparent
-		);
-		--playlist-menu-border: color-mix(
-			in oklab,
-			white 14%,
-			var(--line-color)
-		);
-		--playlist-option-text: rgb(229 229 229);
-		--playlist-option-text-hover: rgb(245 245 245);
-		--playlist-option-border-hover: color-mix(
-			in oklab,
-			white 16%,
-			transparent
-		);
+		gap: 0.34rem;
 	}
 
 	.playlist-switcher-title {
 		display: flex;
 		align-items: center;
-		gap: 0.35rem;
-		padding-left: 0.05rem;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0 0.05rem;
 		font-size: 0.78rem;
-		font-weight: 600;
+		font-weight: 700;
 		line-height: 1.2;
 		color: var(--content-meta);
 	}
 
-	/* svelte-ignore css_unused_selector */
-	.switcher-loading {
-		margin-left: auto;
-		font-size: 0.95rem;
+	.title-main {
+		min-width: 0;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.32rem;
+	}
+
+	.playlist-index {
+		flex-shrink: 0;
+		padding: 0.1rem 0.38rem;
+		border-radius: 9999px;
+		font-size: 0.68rem;
+		font-weight: 800;
+		line-height: 1;
+		color: var(--content-meta);
+		background: transparent;
+		border: 1px solid color-mix(in oklab, var(--line-color) 86%, transparent);
+	}
+
+	.playlist-source-bar {
+		display: grid;
+		grid-template-columns: 2rem minmax(0, 1fr) 2rem;
+		align-items: center;
+		gap: 0.38rem;
+		padding: 0.1rem 0;
+		border-radius: 0;
+		border: 0;
+		background: transparent;
+		transition: border-color 150ms ease, background 150ms ease;
+	}
+
+	.playlist-source-bar:hover {
+		border-color: transparent;
+	}
+
+	.source-step-btn {
+		width: 2rem;
+		height: 2rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 9999px;
+		border: 0;
+		background: transparent;
+		color: var(--primary);
+		font-size: 1.2rem;
+		cursor: pointer;
+		transition:
+			background 150ms ease,
+			border-color 150ms ease,
+			transform 150ms ease,
+			opacity 150ms ease;
+	}
+
+	.source-step-btn:hover:not(:disabled) {
+		background: color-mix(in oklab, var(--primary) 7%, transparent);
+		border-color: transparent;
+		transform: translateY(-1px);
+	}
+
+	.source-step-btn:active:not(:disabled) {
+		transform: scale(0.96);
+	}
+
+	.source-step-btn:focus-visible {
+		outline: none;
+		box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 22%, transparent);
+	}
+
+	.source-step-btn:disabled {
+		opacity: 0.42;
+		cursor: not-allowed;
+	}
+
+	.source-current {
+		min-width: 0;
+		height: 2.05rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.34rem;
+		padding: 0 0.72rem;
+		border-radius: 9999px;
+		border: 0;
+		background: transparent;
+		color: var(--btn-content);
+	}
+
+	.source-name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 0.96rem;
+		font-weight: 800;
+		line-height: 1;
+	}
+
+	.source-loading {
+		flex-shrink: 0;
+		font-size: 0.92rem;
 		color: var(--primary);
 		animation: switcherSpin 1s linear infinite;
 	}
 
-	.playlist-dropdown {
-		position: relative;
-		z-index: 2;
-	}
-
-	.playlist-trigger {
-		width: 100%;
-		height: 2.05rem;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.6rem;
-		padding: 0 0.7rem;
-		border-radius: 0.7rem;
-		border: 1px solid var(--playlist-trigger-border);
+	:global(.dark) .playlist-source-bar {
 		background: transparent;
-		color: var(--btn-content);
-		cursor: pointer;
-		transition: border-color 150ms ease, color 150ms ease;
+		border-color: color-mix(in oklab, var(--line-color) 84%, transparent);
 	}
 
-	.playlist-trigger:hover:not(:disabled) {
-		border-color: var(--playlist-trigger-border-hover);
-	}
-
-	.playlist-trigger:focus-visible {
-		outline: none;
-		border-color: var(--playlist-trigger-border-focus);
-		box-shadow: 0 0 0 1px var(--playlist-trigger-focus-ring);
-	}
-
-	.playlist-trigger:disabled {
-		opacity: 0.74;
-		cursor: not-allowed;
-	}
-
-	.playlist-current-label {
-		min-width: 0;
-		flex: 1;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: 0.98rem;
-		font-weight: 700;
-		line-height: 1.1;
-		text-align: left;
-		color: var(--btn-content);
-	}
-
-	/* svelte-ignore css_unused_selector */
-	.playlist-arrow {
-		flex-shrink: 0;
-		font-size: 1rem;
-		color: var(--content-meta) !important;
-		fill: currentColor;
-		transition: transform 180ms ease;
-	}
-
-	/* svelte-ignore css_unused_selector */
-	.playlist-dropdown.open .playlist-arrow {
-		transform: rotate(180deg);
-	}
-
-	.playlist-menu {
-		position: absolute;
-		top: calc(100% + 0.36rem);
-		left: 0;
-		right: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.18rem;
-		padding: 0.22rem;
-		max-height: 9.5rem;
-		overflow-y: auto;
-		border-radius: 0.78rem;
-		border: 1px solid var(--playlist-menu-border);
-		background: var(--playlist-menu-bg);
-		box-shadow: var(--playlist-menu-shadow);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		transform-origin: top center;
-		z-index: 80;
-		scrollbar-width: thin;
-		scrollbar-color: color-mix(in oklab, var(--primary) 40%, transparent)
-			transparent;
-	}
-
-	.playlist-menu::-webkit-scrollbar {
-		width: 6px;
-	}
-
-	.playlist-menu::-webkit-scrollbar-thumb {
-		background: color-mix(in oklab, var(--primary) 36%, transparent);
-		border-radius: 9999px;
-	}
-
-	.playlist-option {
-		height: 2.15rem;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-		padding: 0 0.62rem;
-		border: 1px solid transparent;
-		border-radius: 0.58rem;
+	:global(.dark) .source-step-btn {
 		background: transparent;
-		cursor: pointer;
-		transition: border-color 130ms ease, color 130ms ease;
 	}
 
-	.playlist-option:hover {
-		border-color: var(--playlist-option-border-hover);
-	}
-
-	.playlist-option:hover .playlist-option-label {
-		color: var(--playlist-option-text-hover);
-	}
-
-	.playlist-option-label {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: 0.98rem;
-		font-weight: 600;
-		line-height: 1;
-		color: var(--playlist-option-text);
-	}
-
-	.playlist-option.selected .playlist-option-label {
-		color: var(--playlist-option-selected-text);
-	}
-
-	.playlist-option.selected:hover .playlist-option-label {
-		color: var(--playlist-option-selected-text);
-	}
-
-	.playlist-option.selected {
-		border-color: var(--playlist-option-selected-border);
-		color: var(--playlist-option-selected-text);
-	}
-
-	.playlist-option.selected:hover {
-		border-color: var(--playlist-option-selected-border-hover);
-	}
-
-	/* svelte-ignore css_unused_selector */
-	.playlist-check {
-		flex-shrink: 0;
-		font-size: 0.95rem;
-		color: var(--primary);
+	:global(.dark) .source-current {
+		background: transparent;
 	}
 
 	@keyframes switcherSpin {
@@ -452,14 +247,35 @@
 	}
 
 	@media (max-width: 520px) {
-		.playlist-trigger,
-		.playlist-option {
-			height: 2.05rem;
+		.playlist-source-bar {
+			grid-template-columns: 1.9rem minmax(0, 1fr) 1.9rem;
+			gap: 0.3rem;
+			padding: 0.24rem;
 		}
 
-		.playlist-current-label,
-		.playlist-option-label {
-			font-size: 0.95rem;
+		.source-step-btn {
+			width: 1.9rem;
+			height: 1.9rem;
+		}
+
+		.source-current {
+			height: 1.95rem;
+			padding: 0 0.54rem;
+		}
+
+		.source-name {
+			font-size: 0.92rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.playlist-source-bar,
+		.source-step-btn {
+			transition: none;
+		}
+
+		.source-loading {
+			animation: none;
 		}
 	}
 </style>

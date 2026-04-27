@@ -7,7 +7,11 @@ import {
 	SKIP_ERROR_DELAY,
 	STORAGE_KEY_VOLUME,
 } from "@/components/widgets/music-player/constants";
-import type { RepeatMode, Song } from "@/components/widgets/music-player/types";
+import type {
+	LyricLine,
+	RepeatMode,
+	Song,
+} from "@/components/widgets/music-player/types";
 import { musicPlayerConfig } from "@/config";
 import {
 	buildPlaylistCacheKey,
@@ -27,6 +31,10 @@ export interface MusicPlayerState {
 	isLoading: boolean;
 	currentTime: number;
 	duration: number;
+	lyricLines: LyricLine[];
+	lyricIsTimed: boolean;
+	currentLyricIndex: number;
+	lyricLoading: boolean;
 	volume: number;
 	isMuted: boolean;
 	isShuffled: boolean;
@@ -40,17 +48,150 @@ export interface MusicPlayerState {
 	willAutoPlay: boolean;
 }
 
+interface ParsedLyric {
+	lines: LyricLine[];
+	timed: boolean;
+}
+
 function getAssetPath(path: string): string {
 	if (!path) {
 		return "";
 	}
-	if (path.startsWith("http://") || path.startsWith("https://")) {
+	if (
+		path.startsWith("http://") ||
+		path.startsWith("https://") ||
+		path.startsWith("//")
+	) {
 		return path;
 	}
 	if (path.startsWith("/")) {
 		return path;
 	}
 	return `/${path}`;
+}
+
+function normalizeDuration(duration: unknown): number {
+	let dur = Number(duration ?? 0);
+	if (dur > 10000) {
+		dur = Math.floor(dur / 1000);
+	}
+	if (!Number.isFinite(dur) || dur <= 0) {
+		dur = 0;
+	}
+	return dur;
+}
+
+function hasLyricTimestamp(text: string): boolean {
+	return /\[\d{1,2}:\d{1,2}(?:\.\d{1,3})?\]/.test(text);
+}
+
+function isLikelyLyricUrl(value: string): boolean {
+	const text = value.trim();
+	if (!text) {
+		return false;
+	}
+	if (/^(https?:)?\/\//.test(text)) {
+		return true;
+	}
+	if (text.startsWith("/")) {
+		return true;
+	}
+	if (/\.(lrc|txt)(\?.*)?$/i.test(text)) {
+		return true;
+	}
+	return !text.includes("\n") && !text.includes("[") && text.includes("/");
+}
+
+function extractSongLyricFields(song: any): Pick<Song, "lyric" | "lyricUrl"> {
+	const candidates: string[] = [];
+	const pushCandidate = (value: unknown) => {
+		if (typeof value !== "string") {
+			return;
+		}
+		const trimmed = value.trim();
+		if (trimmed) {
+			candidates.push(trimmed);
+		}
+	};
+
+	pushCandidate(song.lyric);
+	pushCandidate(song.lrc);
+	pushCandidate(song?.lrc?.lyric);
+	pushCandidate(song?.lrc?.url);
+	pushCandidate(song?.lyric?.lyric);
+	pushCandidate(song?.lyric?.url);
+	pushCandidate(song.lyricUrl);
+	pushCandidate(song.lrcUrl);
+
+	let lyric: string | undefined;
+	let lyricUrl: string | undefined;
+	for (const candidate of candidates) {
+		if (
+			!lyric &&
+			(hasLyricTimestamp(candidate) || candidate.includes("\n"))
+		) {
+			lyric = candidate;
+			continue;
+		}
+		if (!lyricUrl && isLikelyLyricUrl(candidate)) {
+			lyricUrl = candidate;
+		}
+	}
+
+	if (!lyric && !lyricUrl && candidates.length > 0) {
+		lyric = candidates[0];
+	}
+
+	return { lyric, lyricUrl };
+}
+
+function parseLyricText(rawText: string): ParsedLyric {
+	const source = rawText.replace(/\uFEFF/g, "").trim();
+	if (!source) {
+		return { lines: [], timed: false };
+	}
+
+	const result: LyricLine[] = [];
+	let hasTimedLine = false;
+	const rows = source.split(/\r?\n/);
+	const timeTagReg = /\[(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?\]/g;
+
+	for (const row of rows) {
+		const matches = [...row.matchAll(timeTagReg)];
+		const text = row.replace(/\[[^\]]*]/g, "").trim();
+		if (matches.length === 0) {
+			continue;
+		}
+
+		hasTimedLine = true;
+		const normalizedText = text || "♪";
+		for (const match of matches) {
+			const min = Number(match[1] ?? 0);
+			const sec = Number(match[2] ?? 0);
+			const msRaw = match[3] ?? "0";
+			const ms = Number(msRaw.padEnd(3, "0").slice(0, 3));
+			const time = min * 60 + sec + ms / 1000;
+			result.push({ time, text: normalizedText });
+		}
+	}
+
+	if (hasTimedLine) {
+		result.sort((a, b) => a.time - b.time);
+		const deduped = result.filter((line, index, arr) => {
+			if (index === 0) {
+				return true;
+			}
+			const prev = arr[index - 1];
+			return prev.time !== line.time || prev.text !== line.text;
+		});
+		return { lines: deduped, timed: true };
+	}
+
+	const plainLines = rows.map((line) => line.trim()).filter(Boolean);
+	return {
+		lines: plainLines.map((text, index) => ({ time: index * 5, text })),
+		timed: false,
+	};
 }
 
 class MusicPlayerStore {
@@ -60,6 +201,8 @@ class MusicPlayerStore {
 	private unregisterInteraction: (() => void) | undefined;
 	private playlistRequestToken = 0;
 	private playlistCache = new Map<string, Song[]>();
+	private lyricRequestToken = 0;
+	private lyricCache = new Map<string, ParsedLyric>();
 	private listeners = new Set<(state: MusicPlayerState) => void>();
 
 	constructor() {
@@ -79,6 +222,10 @@ class MusicPlayerStore {
 			isLoading: false,
 			currentTime: 0,
 			duration: 0,
+			lyricLines: [],
+			lyricIsTimed: false,
+			currentLyricIndex: -1,
+			lyricLoading: false,
 			volume: 0.7,
 			isMuted: false,
 			isShuffled: false,
@@ -98,8 +245,10 @@ class MusicPlayerStore {
 			...this.state,
 			currentSong: { ...this.state.currentSong },
 			playlist: this.state.playlist.map((song) => ({ ...song })),
+			lyricLines: this.state.lyricLines.map((line) => ({ ...line })),
 			playlists: this.state.playlists.map((playlist) => ({
 				...playlist,
+				audioList: playlist.audioList.map((song) => ({ ...song })),
 			})),
 		};
 	}
@@ -158,6 +307,7 @@ class MusicPlayerStore {
 		this.audio.addEventListener("timeupdate", () => {
 			if (this.audio) {
 				this.state.currentTime = this.audio.currentTime;
+				this.syncLyricsWithCurrentTime();
 				this.broadcastState();
 			}
 		});
@@ -198,9 +348,7 @@ class MusicPlayerStore {
 		if (this.state.playlist.length > 1) {
 			setTimeout(
 				() =>
-					this.next(
-						this.state.isPlaying || this.state.willAutoPlay,
-					),
+					this.next(this.state.isPlaying || this.state.willAutoPlay),
 				SKIP_ERROR_DELAY,
 			);
 		} else if (this.state.playlist.length <= 1) {
@@ -312,10 +460,16 @@ class MusicPlayerStore {
 
 		if (source.mode === "local") {
 			const cacheKey = buildPlaylistCacheKey(source);
-			this.playlistCache.set(cacheKey, this.cloneSongs(LOCAL_PLAYLIST));
+			const localSongs =
+				source.audioList.length > 0
+					? source.audioList.map((song) =>
+							this.convertLocalSong(song),
+						)
+					: this.cloneSongs(LOCAL_PLAYLIST);
+			this.playlistCache.set(cacheKey, this.cloneSongs(localSongs));
 			this.applyPlaylistSongs(
 				index,
-				this.cloneSongs(LOCAL_PLAYLIST),
+				this.cloneSongs(localSongs),
 				shouldAutoPlay,
 			);
 			this.state.isPlaylistLoading = false;
@@ -399,6 +553,7 @@ class MusicPlayerStore {
 		this.state.duration = 0;
 		this.state.isLoading = false;
 		this.state.willAutoPlay = false;
+		this.clearLyrics();
 		if (this.audio) {
 			this.audio.removeAttribute("src");
 			this.audio.load();
@@ -447,27 +602,31 @@ class MusicPlayerStore {
 	private convertMetingSong(song: any): Song {
 		const title = song.name ?? song.title ?? i18n(Key.unknownSong);
 		const artist = song.artist ?? song.author ?? i18n(Key.unknownArtist);
-		let dur = song.duration ?? 0;
-		if (typeof dur === "string") {
-			dur = parseInt(dur, 10);
-		}
-		if (dur > 10000) {
-			dur = Math.floor(dur / 1000);
-		}
-		if (!Number.isFinite(dur) || dur <= 0) {
-			dur = 0;
-		}
+		const { lyric, lyricUrl } = extractSongLyricFields(song);
 
 		return {
-			id:
-				typeof song.id === "string"
-					? parseInt(song.id, 10)
-					: (song.id ?? 0),
+			id: song.id ?? 0,
 			title,
 			artist,
 			cover: song.pic ?? "",
 			url: song.url ?? "",
-			duration: dur,
+			duration: normalizeDuration(song.duration),
+			lyric,
+			lyricUrl,
+		};
+	}
+
+	private convertLocalSong(song: any): Song {
+		const { lyric, lyricUrl } = extractSongLyricFields(song);
+		return {
+			id: song.id ?? `${song.title ?? "song"}-${song.url ?? ""}`,
+			title: song.title ?? song.name ?? i18n(Key.unknownSong),
+			artist: song.artist ?? song.author ?? i18n(Key.unknownArtist),
+			cover: song.cover ?? song.pic ?? "",
+			url: song.url ?? "",
+			duration: normalizeDuration(song.duration),
+			lyric,
+			lyricUrl,
 		};
 	}
 
@@ -477,12 +636,15 @@ class MusicPlayerStore {
 		}
 		if (song.url !== this.state.currentSong.url) {
 			this.state.currentSong = { ...song };
+			this.state.currentTime = 0;
+			this.state.duration = song.duration ?? 0;
 			if (song.url) {
 				this.state.isLoading = true;
 			} else {
 				this.state.isLoading = false;
 			}
 		}
+		void this.loadLyricsForSong(song);
 		this.state.willAutoPlay = autoPlay;
 		if (this.audio) {
 			if (this.audio.src && song.url) {
@@ -492,6 +654,124 @@ class MusicPlayerStore {
 			this.audio.load();
 		}
 		this.broadcastState();
+	}
+
+	private clearLyrics(): void {
+		this.lyricRequestToken++;
+		this.state.lyricLines = [];
+		this.state.lyricIsTimed = false;
+		this.state.currentLyricIndex = -1;
+		this.state.lyricLoading = false;
+	}
+
+	private getLyricCacheKey(song: Song): string {
+		return `${song.id ?? "unknown"}::${song.url}`;
+	}
+
+	private async fetchLyricByUrl(url: string): Promise<string> {
+		try {
+			const response = await fetch(getAssetPath(url));
+			if (!response.ok) {
+				return "";
+			}
+			return await response.text();
+		} catch {
+			return "";
+		}
+	}
+
+	private async resolveSongLyricText(song: Song): Promise<string> {
+		if (song.lyric) {
+			if (
+				isLikelyLyricUrl(song.lyric) &&
+				!hasLyricTimestamp(song.lyric)
+			) {
+				const remoteLyric = await this.fetchLyricByUrl(song.lyric);
+				if (remoteLyric) {
+					return remoteLyric;
+				}
+			} else {
+				return song.lyric;
+			}
+		}
+
+		if (song.lyricUrl) {
+			return await this.fetchLyricByUrl(song.lyricUrl);
+		}
+
+		return "";
+	}
+
+	private applyLyricResult(parsed: ParsedLyric): void {
+		this.state.lyricLines = parsed.lines.map((line) => ({ ...line }));
+		this.state.lyricIsTimed = parsed.timed;
+		this.state.currentLyricIndex = -1;
+		this.state.lyricLoading = false;
+		this.syncLyricsWithCurrentTime();
+		this.broadcastState();
+	}
+
+	private syncLyricsWithCurrentTime(): void {
+		if (!this.state.lyricIsTimed || this.state.lyricLines.length === 0) {
+			this.state.currentLyricIndex = -1;
+			return;
+		}
+
+		const time = Number.isFinite(this.state.currentTime)
+			? this.state.currentTime
+			: 0;
+		let activeIndex = -1;
+		for (let i = 0; i < this.state.lyricLines.length; i++) {
+			if (time >= this.state.lyricLines[i].time) {
+				activeIndex = i;
+			} else {
+				break;
+			}
+		}
+
+		this.state.currentLyricIndex = activeIndex;
+	}
+
+	private async loadLyricsForSong(song: Song): Promise<void> {
+		const cacheKey = this.getLyricCacheKey(song);
+		const requestToken = ++this.lyricRequestToken;
+		this.state.currentLyricIndex = -1;
+
+		if (!song.url) {
+			this.clearLyrics();
+			this.broadcastState();
+			return;
+		}
+
+		const cachedLyric = this.lyricCache.get(cacheKey);
+		if (cachedLyric) {
+			this.applyLyricResult(cachedLyric);
+			return;
+		}
+
+		this.state.lyricLoading = true;
+		this.state.lyricLines = [];
+		this.state.lyricIsTimed = false;
+		this.broadcastState();
+
+		try {
+			const rawLyric = await this.resolveSongLyricText(song);
+			if (requestToken !== this.lyricRequestToken) {
+				return;
+			}
+
+			const parsed = parseLyricText(rawLyric);
+			this.lyricCache.set(cacheKey, parsed);
+			this.applyLyricResult(parsed);
+		} catch {
+			if (requestToken !== this.lyricRequestToken) {
+				return;
+			}
+
+			const parsed = { lines: [], timed: false };
+			this.lyricCache.set(cacheKey, parsed);
+			this.applyLyricResult(parsed);
+		}
 	}
 
 	private showError(message: string): void {
@@ -587,6 +867,7 @@ class MusicPlayerStore {
 		if (time >= 0 && time <= this.state.duration) {
 			this.audio.currentTime = time;
 			this.state.currentTime = time;
+			this.syncLyricsWithCurrentTime();
 			this.broadcastState();
 		}
 	}
@@ -689,6 +970,7 @@ class MusicPlayerStore {
 		const newTime = percent * this.state.duration;
 		this.audio.currentTime = newTime;
 		this.state.currentTime = newTime;
+		this.syncLyricsWithCurrentTime();
 		this.broadcastState();
 	}
 
