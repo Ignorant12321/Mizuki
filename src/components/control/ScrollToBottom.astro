@@ -1,0 +1,128 @@
+---
+import FloatingButton from "@components/common/FloatingButton.astro";
+---
+
+<FloatingButton
+	id="scroll-to-bottom-btn"
+	icon="material-symbols:keyboard-arrow-down-rounded"
+	ariaLabel="Scroll to Comments or Bottom"
+	onclick="scrollToCommentsOrBottom()"
+	class="hide"
+/>
+
+<script is:raw is:inline>
+	function findCommentTarget() {
+		return document.querySelector(
+			[
+				"#twikoo-container",
+				"#tcomment",
+				"#giscus-container",
+				".giscus-comment",
+				".giscus-container",
+				".twikoo-container",
+			].join(","),
+		);
+	}
+
+	function getScrollToBottomTargetTop() {
+		const scrollTop =
+			window.pageYOffset || document.documentElement.scrollTop || 0;
+		const commentTarget = findCommentTarget();
+
+		if (commentTarget) {
+			const commentTop =
+				commentTarget.getBoundingClientRect().top + scrollTop;
+			if (commentTop > scrollTop + 120) {
+				return Math.max(commentTop - 80, 0);
+			}
+		}
+
+		const scrollHeight = Math.max(
+			document.documentElement.scrollHeight,
+			document.body?.scrollHeight || 0,
+		);
+		return Math.max(scrollHeight - window.innerHeight, 0);
+	}
+
+	function scrollToCommentsOrBottom() {
+		window.scroll({
+			top: getScrollToBottomTargetTop(),
+			behavior: "smooth",
+		});
+	}
+
+	if (typeof window.ScrollToBottomManager === "undefined") {
+		window.ScrollToBottomManager = class ScrollToBottomManager {
+			constructor() {
+				this.button = null;
+				this.hasBoundListeners = false;
+				this.updateVisibility = this.updateVisibility.bind(this);
+			}
+
+			init() {
+				this.button = document.getElementById("scroll-to-bottom-btn");
+				if (!this.button) {
+					return;
+				}
+
+				if (!this.hasBoundListeners) {
+					this.setupListeners();
+					this.hasBoundListeners = true;
+				}
+
+				this.updateVisibility();
+			}
+
+			updateVisibility() {
+				if (!this.button) {
+					return;
+				}
+
+				const scrollTop =
+					window.pageYOffset ||
+					document.documentElement.scrollTop ||
+					0;
+				const targetTop = getScrollToBottomTargetTop();
+
+				if (targetTop > scrollTop + 120) {
+					this.button.classList.remove("hide");
+				} else {
+					this.button.classList.add("hide");
+				}
+			}
+
+			setupListeners() {
+				window.addEventListener("scroll", this.updateVisibility, {
+					passive: true,
+				});
+				window.addEventListener("resize", this.updateVisibility, {
+					passive: true,
+				});
+			}
+		};
+	}
+
+	function initScrollToBottomManager() {
+		if (!window.__mizukiScrollToBottomManager) {
+			window.__mizukiScrollToBottomManager =
+				new window.ScrollToBottomManager();
+		}
+
+		window.__mizukiScrollToBottomManager.init();
+	}
+
+	if (document.readyState === "loading") {
+		document.addEventListener(
+			"DOMContentLoaded",
+			initScrollToBottomManager,
+			{
+				once: true,
+			},
+		);
+	} else {
+		initScrollToBottomManager();
+	}
+
+	document.addEventListener("astro:after-swap", initScrollToBottomManager);
+	document.addEventListener("astro:page-load", initScrollToBottomManager);
+</script>

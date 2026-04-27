@@ -6,6 +6,7 @@ import FloatingTOC from "../features/toc/FloatingTOC.astro";
 import BackToHome from "./BackToHome.astro";
 import BackToTop from "./BackToTop.astro";
 import MusicFabButton from "./MusicFabButton.svelte";
+import ScrollToBottom from "./ScrollToBottom.astro";
 
 interface Props {
 	headings?: MarkdownHeading[];
@@ -36,6 +37,9 @@ const { headings = [] } = Astro.props;
 	</div>
 	<div class="floating-control-item" data-control-key="top">
 		<BackToTop />
+	</div>
+	<div class="floating-control-item" data-control-key="bottom">
+		<ScrollToBottom />
 	</div>
 </div>
 
@@ -93,7 +97,8 @@ const { headings = [] } = Astro.props;
 
 	:global(html.fab-visibility-locked #floating-toc-btn.fab-lock-visible),
 	:global(html.fab-visibility-locked #back-to-home-btn.fab-lock-visible),
-	:global(html.fab-visibility-locked #back-to-top-btn.fab-lock-visible) {
+	:global(html.fab-visibility-locked #back-to-top-btn.fab-lock-visible),
+	:global(html.fab-visibility-locked #scroll-to-bottom-btn.fab-lock-visible) {
 		min-width: var(--fab-button-size) !important;
 		min-height: var(--fab-button-size) !important;
 		transform: scale(1) !important;
@@ -118,13 +123,20 @@ const { headings = [] } = Astro.props;
 	),
 	:global(
 		html:not(.dark).fab-visibility-locked #back-to-top-btn.fab-lock-visible
+	),
+	:global(
+		html:not(.dark).fab-visibility-locked
+			#scroll-to-bottom-btn.fab-lock-visible
 	) {
 		border-color: var(--line-color) !important;
 	}
 
 	:global(html.fab-visibility-locked #floating-toc-btn.fab-lock-visible.hide),
 	:global(html.fab-visibility-locked #back-to-home-btn.fab-lock-visible.hide),
-	:global(html.fab-visibility-locked #back-to-top-btn.fab-lock-visible.hide) {
+	:global(html.fab-visibility-locked #back-to-top-btn.fab-lock-visible.hide),
+	:global(
+		html.fab-visibility-locked #scroll-to-bottom-btn.fab-lock-visible.hide
+	) {
 		transform: scale(1) !important;
 		opacity: 1 !important;
 		pointer-events: auto !important;
@@ -140,7 +152,10 @@ const { headings = [] } = Astro.props;
 
 	:global(html.fab-visibility-locked #floating-toc-btn.fab-lock-visible svg),
 	:global(html.fab-visibility-locked #back-to-home-btn.fab-lock-visible svg),
-	:global(html.fab-visibility-locked #back-to-top-btn.fab-lock-visible svg) {
+	:global(html.fab-visibility-locked #back-to-top-btn.fab-lock-visible svg),
+	:global(
+		html.fab-visibility-locked #scroll-to-bottom-btn.fab-lock-visible svg
+	) {
 		opacity: 1 !important;
 	}
 
@@ -233,6 +248,7 @@ const { headings = [] } = Astro.props;
 			"floating-toc-btn",
 			"back-to-home-btn",
 			"back-to-top-btn",
+			"scroll-to-bottom-btn",
 		];
 
 		function isButtonVisible(id) {
@@ -262,6 +278,8 @@ const { headings = [] } = Astro.props;
 					visible = isButtonVisible("back-to-home-btn");
 				} else if (key === "top") {
 					visible = isButtonVisible("back-to-top-btn");
+				} else if (key === "bottom") {
+					visible = isButtonVisible("scroll-to-bottom-btn");
 				}
 
 				item.classList.toggle("is-collapsed", !visible);
@@ -329,6 +347,7 @@ const { headings = [] } = Astro.props;
 			observeFloatingControlButton("floating-toc-btn");
 			observeFloatingControlButton("back-to-home-btn");
 			observeFloatingControlButton("back-to-top-btn");
+			observeFloatingControlButton("scroll-to-bottom-btn");
 		}
 
 		function lockFloatingControlVisibility() {
@@ -346,7 +365,9 @@ const { headings = [] } = Astro.props;
 							? "back-to-home-btn"
 							: key === "top"
 								? "back-to-top-btn"
-								: null;
+								: key === "bottom"
+									? "scroll-to-bottom-btn"
+									: null;
 
 				if (!id) {
 					continue;

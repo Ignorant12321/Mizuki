@@ -694,87 +694,87 @@
 			"variants": [
 				{
 					"name": "blanc_classic",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/blanc_classic/index.json",
 					"message": "Blanc 经典版 ~"
 				},
 				{
 					"name": "blanc_normal",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/blanc_normal/index.json",
 					"message": "Blanc 常服版 ~"
 				},
 				{
 					"name": "blanc_swimwear",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/blanc_swimwear/index.json",
 					"message": "Blanc 泳装版 ~"
 				},
 				{
 					"name": "histoire",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/histoire/index.json",
 					"message": "Histoire 来啦 ~"
 				},
 				{
 					"name": "histoirenohover",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/histoirenohover/index.json",
 					"message": "Histoire 无悬停版 ~"
 				},
 				{
 					"name": "nepgear",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepgear/index.json",
 					"message": "Nepgear 来啦 ~"
 				},
 				{
 					"name": "nepgear_extra",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepgear_extra/index.json",
 					"message": "Nepgear 特别版 ~"
 				},
 				{
 					"name": "nepgearswim",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepgearswim/index.json",
 					"message": "Nepgear 泳装版 ~"
 				},
 				{
 					"name": "nepmaid",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepmaid/index.json",
 					"message": "Nepgear 女仆版 ~"
 				},
 				{
 					"name": "nepnep",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepnep/index.json",
 					"message": "Neptune 来啦 ~"
 				},
 				{
 					"name": "nepswim",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/nepswim/index.json",
 					"message": "Neptune 泳装版 ~"
 				},
 				{
 					"name": "neptune_classic",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/neptune_classic/index.json",
 					"message": "Neptune 经典版 ~"
 				},
 				{
 					"name": "neptune_santa",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/neptune_santa/index.json",
 					"message": "Neptune 圣诞版 ~"
 				},
 				{
 					"name": "noir",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noir/index.json",
 					"message": "Noir 来啦 ~"
 				},
 				{
 					"name": "noir_classic",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noir_classic/index.json",
 					"message": "Noir 经典版 ~"
 				},
 				{
 					"name": "noir_santa",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noir_santa/index.json",
 					"message": "Noir 圣诞版 ~"
 				},
 				{
 					"name": "noireswim",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/noireswim/index.json",
 					"message": "Noir 泳装版 ~"
 				},
 				{
@@ -784,12 +784,12 @@
 				},
 				{
 					"name": "vert_normal",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/vert_normal/index.json",
 					"message": "Vert 常服版 ~"
 				},
 				{
 					"name": "vert_swimwear",
-					"model": "/assets/live2d/models/HyperdimensionNeptunia/vert_classic/index.json",
+					"model": "https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/model/HyperdimensionNeptunia/vert_swimwear/index.json",
 					"message": "Vert 泳装版 ~"
 				}
 			]
