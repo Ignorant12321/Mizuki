@@ -192,6 +192,15 @@ const siteTimeZone = siteConfig.timeZone;
 			return values.length > 0 ? values[0] : "";
 		}
 
+		function extractAttribute(tagXml, attribute) {
+			const pattern = new RegExp(
+				`${attribute}\\s*=\\s*["']([^"']+)["']`,
+				"i",
+			);
+			const match = String(tagXml || "").match(pattern);
+			return match?.[1] ? decodeEntities(match[1]) : "";
+		}
+
 		function resolveLink(link, baseUrl) {
 			if (!link) {
 				return "#";
@@ -204,8 +213,130 @@ const siteTimeZone = siteConfig.timeZone;
 			}
 		}
 
+		function extractTagXml(xml, tag) {
+			const pattern = new RegExp(
+				`<${tag}\\b[^>]*(?:\\/>|>[\\s\\S]*?<\\/${tag}>)`,
+				"gi",
+			);
+			return xml.match(pattern) ?? [];
+		}
+
+		function extractAtomLink(entryXml) {
+			const linkTags = extractTagXml(entryXml, "link");
+			const alternateLink =
+				linkTags.find((tagXml) => {
+					const rel = extractAttribute(tagXml, "rel").toLowerCase();
+					return !rel || rel === "alternate";
+				}) ??
+				linkTags[0] ??
+				"";
+
+			return (
+				extractAttribute(alternateLink, "href") ||
+				decodeEntities(extractFirstTag(entryXml, "link"))
+			);
+		}
+
+		function extractAtomCategory(entryXml) {
+			const textCategories = extractTagValues(entryXml, "category").map(
+				(value) => stripHtml(value),
+			);
+			const termCategories = extractTagXml(entryXml, "category").map(
+				(tagXml) =>
+					stripHtml(
+						extractAttribute(tagXml, "term") ||
+							extractAttribute(tagXml, "label"),
+					),
+			);
+
+			const categoryValues = [
+				...textCategories,
+				...termCategories,
+			].filter(Boolean);
+			return categoryValues.length > 0
+				? Array.from(new Set(categoryValues)).join(" / ")
+				: "";
+		}
+
+		function formatAtomDescription(value) {
+			const normalized = decodeEntities(value || "")
+				.replace(/<script\b[\s\S]*?<\/script>/gi, "\n")
+				.replace(/<style\b[\s\S]*?<\/style>/gi, "\n")
+				.replace(/<figure\b[\s\S]*?<\/figure>/gi, "\n")
+				.replace(/<img\b[^>]*>/gi, "\n")
+				.replace(
+					/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi,
+					"\n\n【$1】\n\n",
+				)
+				.replace(/<br\s*\/?>/gi, "\n")
+				.replace(/<(li)\b[^>]*>/gi, "• ")
+				.replace(/<\/li>/gi, "\n")
+				.replace(
+					/<\/(p|div|section|article|blockquote|pre|ul|ol|table|tr)>/gi,
+					"\n\n",
+				)
+				.replace(/<\/?(strong|em|b|i|code|span)\b[^>]*>/gi, "")
+				.replace(/<a\b[^>]*>/gi, "")
+				.replace(/<\/a>/gi, "")
+				.replace(/<[^>]*>/g, " ")
+				.replace(/\r\n?/g, "\n")
+				.replace(/[ \t]+\n/g, "\n")
+				.replace(/\n[ \t]+/g, "\n")
+				.replace(/[ \t]{2,}/g, " ")
+				.replace(/\n{3,}/g, "\n\n")
+				.trim();
+
+			return normalized
+				.split(/\n{2,}/)
+				.map((block) =>
+					block
+						.split("\n")
+						.map((line) => line.trim())
+						.filter(Boolean)
+						.filter((line) => !/^[•·。\-.|]+$/.test(line))
+						.join("\n"),
+				)
+				.filter(Boolean)
+				.join("\n\n")
+				.trim();
+		}
+
+		function parseAtom(xml, source) {
+			const entryXmlList = xml.match(/<entry\b[\s\S]*?<\/entry>/gi) ?? [];
+			return entryXmlList
+				.map((entryXml) => {
+					const title =
+						stripHtml(extractFirstTag(entryXml, "title")) ||
+						"无标题";
+					const link = extractAtomLink(entryXml);
+					const pubDate = stripHtml(
+						extractFirstTag(entryXml, "published") ||
+							extractFirstTag(entryXml, "updated"),
+					);
+					const description = formatAtomDescription(
+						extractFirstTag(entryXml, "content") ||
+							extractFirstTag(entryXml, "summary"),
+					);
+
+					return {
+						title,
+						link: resolveLink(link, source.url),
+						pubDate,
+						description,
+						category: extractAtomCategory(entryXml),
+						sourceName: source.name,
+						sourceUrl: source.url,
+					};
+				})
+				.filter((item) => item.title && item.link);
+		}
+
 		function parseGenericRss(xml, source) {
 			const itemXmlList = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
+			if (itemXmlList.length === 0) {
+				return parseAtom(xml, source);
+			}
+
 			return itemXmlList
 				.map((itemXml) => {
 					const title =
@@ -418,11 +549,17 @@ const siteTimeZone = siteConfig.timeZone;
 
 		function normalizeCsdnHeading(value) {
 			return String(value || "")
-				.replace(/^[\d.\-、\s]+/, "")
+				.replace(/^[\d.\-、\s•·]+/, "")
 				.replace(/[“”"'‘’【】《》()（）:：,，。！？!?\-]/g, "")
 				.replace(/\s+/g, "")
 				.trim()
 				.toLowerCase();
+		}
+
+		function stripCsdnListMarker(value) {
+			return String(value || "")
+				.replace(/^[\d.\-、\s•·]+/, "")
+				.trim();
 		}
 
 		function extractCsdnSections(value) {
@@ -580,7 +717,7 @@ const siteTimeZone = siteConfig.timeZone;
 
 					return {
 						...base,
-						title: tocTitle,
+						title: stripCsdnListMarker(tocTitle),
 						link: `${base.link}#csdn-item-${tocIndex + 1}`,
 						category: block?.section || base.category,
 						description: descParts.join("\n\n").trim(),
@@ -734,14 +871,23 @@ const siteTimeZone = siteConfig.timeZone;
 				<div class="news-card-inner">
 					<div class="news-title-row">
 						<h2 class="news-title"></h2>
-						<a href="#" target="_blank" rel="noopener noreferrer" class="news-open-btn" aria-label="${OPEN_NEWS_LABEL}">
-							<span class="news-arrow" aria-hidden="true">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<path d="M7 17L17 7"></path>
-									<path d="M8 7H17V16"></path>
-								</svg>
-							</span>
-						</a>
+						<div class="news-title-actions">
+							<button type="button" class="news-icon-btn news-title-toggle-btn" data-news-title-toggle data-expanded="false" aria-label="${expandLabel}" title="${expandLabel}" style="display: none;">
+								<span class="news-icon news-toggle-icon" aria-hidden="true">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M6 9L12 15L18 9"></path>
+									</svg>
+								</span>
+							</button>
+							<a href="#" target="_blank" rel="noopener noreferrer" class="news-icon-btn news-open-btn" aria-label="${OPEN_NEWS_LABEL}" title="${OPEN_NEWS_LABEL}">
+								<span class="news-icon" aria-hidden="true">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M7 17L17 7"></path>
+										<path d="M8 7H17V16"></path>
+									</svg>
+								</span>
+							</a>
+						</div>
 					</div>
 					<div class="news-meta">
 						<time></time>
@@ -798,9 +944,29 @@ const siteTimeZone = siteConfig.timeZone;
 			descElements.forEach((descEl) => {
 				const toggleBtn =
 					descEl.parentElement?.querySelector("[data-news-toggle]");
+				const titleToggleBtn = descEl
+					.closest(".news-card")
+					?.querySelector("[data-news-title-toggle]");
 				if (!toggleBtn) {
 					return;
 				}
+
+				const setToggleState = (expanded) => {
+					const label = expanded ? collapseLabel : expandLabel;
+					toggleBtn.setAttribute(
+						"data-expanded",
+						expanded ? "true" : "false",
+					);
+					toggleBtn.textContent = label;
+					if (titleToggleBtn) {
+						titleToggleBtn.setAttribute(
+							"data-expanded",
+							expanded ? "true" : "false",
+						);
+						titleToggleBtn.setAttribute("aria-label", label);
+						titleToggleBtn.setAttribute("title", label);
+					}
+				};
 
 				const lineHeight = Number.parseFloat(
 					window.getComputedStyle(descEl).lineHeight,
@@ -814,6 +980,9 @@ const siteTimeZone = siteConfig.timeZone;
 					descEl.style.maxHeight = "";
 					descEl.classList.remove("is-collapsed");
 					toggleBtn.style.display = "none";
+					if (titleToggleBtn) {
+						titleToggleBtn.style.display = "none";
+					}
 					return;
 				}
 
@@ -826,9 +995,12 @@ const siteTimeZone = siteConfig.timeZone;
 				});
 
 				toggleBtn.style.display = "inline-flex";
-				toggleBtn.textContent = expandLabel;
-				toggleBtn.setAttribute("data-expanded", "false");
-				toggleBtn.onclick = () => {
+				if (titleToggleBtn) {
+					titleToggleBtn.style.display = "inline-flex";
+				}
+				setToggleState(false);
+
+				const toggleDescription = () => {
 					const expanded =
 						toggleBtn.getAttribute("data-expanded") === "true";
 
@@ -836,8 +1008,7 @@ const siteTimeZone = siteConfig.timeZone;
 						descEl.classList.remove("is-collapsed");
 						const expandedHeight = descEl.scrollHeight;
 						descEl.style.maxHeight = `${expandedHeight}px`;
-						toggleBtn.setAttribute("data-expanded", "true");
-						toggleBtn.textContent = collapseLabel;
+						setToggleState(true);
 						return;
 					}
 
@@ -851,9 +1022,13 @@ const siteTimeZone = siteConfig.timeZone;
 						);
 						descEl.style.maxHeight = `${targetHeight}px`;
 					});
-					toggleBtn.setAttribute("data-expanded", "false");
-					toggleBtn.textContent = expandLabel;
+					setToggleState(false);
 				};
+
+				toggleBtn.onclick = toggleDescription;
+				if (titleToggleBtn) {
+					titleToggleBtn.onclick = toggleDescription;
+				}
 			});
 		}
 
@@ -1255,23 +1430,18 @@ const siteTimeZone = siteConfig.timeZone;
 		flex: 1;
 	}
 
-	.news-open-btn {
+	.news-title-actions {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex-shrink: 0;
+	}
+
+	.news-icon-btn {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		flex-shrink: 0;
-		text-decoration: none;
-		transition: transform 0.16s ease;
-	}
-
-	.news-open-btn:hover {
-		transform: scale(1.06);
-	}
-
-	.news-arrow {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
 		width: 1.6rem;
 		height: 1.6rem;
 		border-radius: 999px;
@@ -1279,12 +1449,40 @@ const siteTimeZone = siteConfig.timeZone;
 		background: color-mix(in srgb, var(--primary) 8%, transparent);
 		color: var(--primary);
 		opacity: 0.9;
-		flex-shrink: 0;
+		text-decoration: none;
+		cursor: pointer;
+		padding: 0;
+		transition:
+			transform 0.16s ease,
+			background 0.16s ease,
+			border-color 0.16s ease,
+			opacity 0.16s ease;
 	}
 
-	.news-arrow svg {
+	.news-icon-btn:hover {
+		transform: scale(1.06);
+		background: color-mix(in srgb, var(--primary) 14%, transparent);
+		border-color: color-mix(in srgb, var(--primary) 48%, transparent);
+		opacity: 1;
+	}
+
+	.news-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.news-icon svg {
 		width: 0.9rem;
 		height: 0.9rem;
+	}
+
+	.news-toggle-icon {
+		transition: transform 0.2s ease;
+	}
+
+	.news-title-toggle-btn[data-expanded="true"] .news-toggle-icon {
+		transform: rotate(180deg);
 	}
 
 	.news-meta {

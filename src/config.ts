@@ -111,6 +111,11 @@ export const siteConfig: SiteConfig = {
 				name: "CSDN · 极客日报",
 				url: "https://rss.ssr.ddns-ip.net/rss?source=csdn-geeknews",
 			},
+			{
+				id: "ruanyifeng-blog",
+				name: "阮一峰的网络日志",
+				url: "https://rss.ssr.ddns-ip.net/rss?source=ruanyifeng-blog",
+			},
 			// {
 			// 	id: "bilibili-hot",
 			// 	name: "bilibili 排行榜 · 全站",

@@ -44,6 +44,12 @@ export function extractFirstTag(xml, tag) {
 	return values.length > 0 ? values[0] : "";
 }
 
+export function extractAttribute(tagXml, attribute) {
+	const pattern = new RegExp(`${attribute}\\s*=\\s*["']([^"']+)["']`, "i");
+	const match = String(tagXml || "").match(pattern);
+	return match?.[1] ? decodeEntities(match[1]) : "";
+}
+
 export function resolveLink(link, baseUrl) {
 	if (!link) {
 		return "#";

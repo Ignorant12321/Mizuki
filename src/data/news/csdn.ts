@@ -92,11 +92,15 @@ interface CsdnSections {
 
 function normalizeHeading(value: string): string {
 	return value
-		.replace(/^[\d.\-、\s]+/, "")
+		.replace(/^[\d.\-、\s•·]+/, "")
 		.replace(/[“”"'‘’【】《》()（）:：,，。！？!?\-]/g, "")
 		.replace(/\s+/g, "")
 		.trim()
 		.toLowerCase();
+}
+
+function stripListMarker(value: string): string {
+	return value.replace(/^[\d.\-、\s•·]+/, "").trim();
 }
 
 function detectSectionMarkers(decodedHtml: string): string[] {
@@ -247,7 +251,7 @@ function splitDailyNews(
 
 		return {
 			...base,
-			title: tocTitle,
+			title: stripListMarker(tocTitle),
 			link: `${base.link}#csdn-item-${index + 1}`,
 			category: block?.section || base.category,
 			description: descParts.join("\n\n").trim(),

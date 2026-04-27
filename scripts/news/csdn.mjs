@@ -75,11 +75,17 @@ function formatSections(lines, sectionMarkers) {
 
 function normalizeHeading(value) {
 	return String(value || "")
-		.replace(/^[\d.\-、\s]+/, "")
+		.replace(/^[\d.\-、\s•·]+/, "")
 		.replace(/[“”"'‘’【】《》()（）:：,，。！？!?\-]/g, "")
 		.replace(/\s+/g, "")
 		.trim()
 		.toLowerCase();
+}
+
+function stripListMarker(value) {
+	return String(value || "")
+		.replace(/^[\d.\-、\s•·]+/, "")
+		.trim();
 }
 
 function detectSectionMarkers(decodedHtml) {
@@ -224,7 +230,7 @@ function splitDailyNews(base, sections) {
 
 		return {
 			...base,
-			title: tocTitle,
+			title: stripListMarker(tocTitle),
 			link: `${base.link}#csdn-item-${index + 1}`,
 			category: block?.section || base.category,
 			description: descParts.join("\n\n").trim(),
