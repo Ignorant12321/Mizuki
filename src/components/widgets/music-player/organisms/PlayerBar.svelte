@@ -10,6 +10,7 @@
 		onNext: () => void;
 		onToggleMode: () => void;
 		onTogglePlaylist: () => void;
+		onToggleLyrics: () => void;
 		onPlayIndex: (index: number) => void;
 		onSeek: (time: number) => void;
 		onToggleMute: () => void;
@@ -27,6 +28,7 @@
 		onNext,
 		onToggleMode,
 		onTogglePlaylist,
+		onToggleLyrics,
 		onPlayIndex,
 		onSeek,
 		onToggleMute,
@@ -51,10 +53,13 @@
 		{onNext}
 		{onToggleMode}
 		{onTogglePlaylist}
+		{onToggleLyrics}
 		{onPlayIndex}
 		{onSeek}
 		{onToggleMute}
 		{onSetVolume}
+		onTogglePanelVisibility={onCollapse}
+		isPanelVisible={!isHidden}
 		{onPlaylistSourceSelect}
 		{onHide}
 		{onCollapse}

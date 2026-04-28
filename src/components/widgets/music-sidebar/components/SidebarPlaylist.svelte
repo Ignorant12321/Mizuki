@@ -32,6 +32,14 @@
 		onPlaylistSourceSelect,
 		onPlaySong,
 	}: Props = $props();
+
+	function getSongProgress(): string {
+		if (playlist.length === 0) {
+			return "0/0";
+		}
+		const current = Math.min(Math.max(currentIndex + 1, 1), playlist.length);
+		return `${current}/${playlist.length}`;
+	}
 </script>
 
 <AccordionDrawer {show} class="playlist-drawer">
@@ -46,8 +54,11 @@
 				/>
 			</div>
 			<div class="playlist-track-title">
-				<Icon icon="material-symbols:music-note-rounded" />
-				<span>{i18n(Key.musicPlayerSongSource)}</span>
+				<span class="playlist-track-title-main">
+					<Icon icon="material-symbols:music-note-rounded" />
+					<span>{i18n(Key.musicPlayerSongSource)}</span>
+				</span>
+				<span class="playlist-track-index">{getSongProgress()}</span>
 			</div>
 			<div
 				class="playlist-content"
@@ -114,8 +125,9 @@
 	.playlist-track-title {
 		display: flex;
 		align-items: center;
-		gap: 0.34rem;
-		padding: 0.42rem 0.36rem 0.28rem;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.42rem 0.36rem 0.34rem;
 		border-bottom: 1px dashed
 			color-mix(in oklab, var(--line-color) 78%, transparent);
 		font-size: 0.76rem;
@@ -124,13 +136,32 @@
 		color: var(--content-meta);
 	}
 
+	.playlist-track-title-main {
+		min-width: 0;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.34rem;
+	}
+
+	.playlist-track-index {
+		flex-shrink: 0;
+		padding: 0.1rem 0.36rem;
+		border-radius: 9999px;
+		font-size: 0.66rem;
+		font-weight: 800;
+		line-height: 1;
+		color: var(--content-meta);
+		background: transparent;
+		border: 1px solid color-mix(in oklab, var(--line-color) 86%, transparent);
+	}
+
 	.playlist-content {
 		position: relative;
 		z-index: 1;
 		overflow-y: auto;
 		max-height: 12rem;
 		min-height: 9.8rem;
-		padding: 0.32rem 0.4rem 0.22rem 0.08rem;
+		padding: 0.44rem 0.4rem 0.22rem 0.08rem;
 		display: flex;
 		flex-direction: column;
 		gap: 0.38rem;

@@ -40,6 +40,7 @@ export interface MusicPlayerState {
 	isShuffled: boolean;
 	isRepeating: RepeatMode;
 	showPlaylist: boolean;
+	showLyrics: boolean;
 	errorMessage: string;
 	showError: boolean;
 	isExpanded: boolean;
@@ -231,6 +232,7 @@ class MusicPlayerStore {
 			isShuffled: false,
 			isRepeating: 2,
 			showPlaylist: false,
+			showLyrics: false,
 			errorMessage: "",
 			showError: false,
 			isExpanded: false,
@@ -926,6 +928,17 @@ class MusicPlayerStore {
 
 	togglePlaylist(): void {
 		this.state.showPlaylist = !this.state.showPlaylist;
+		if (this.state.showPlaylist) {
+			this.state.showLyrics = false;
+		}
+		this.broadcastState();
+	}
+
+	toggleLyrics(): void {
+		this.state.showLyrics = !this.state.showLyrics;
+		if (this.state.showLyrics) {
+			this.state.showPlaylist = false;
+		}
 		this.broadcastState();
 	}
 
@@ -955,6 +968,7 @@ class MusicPlayerStore {
 		if (this.state.isHidden) {
 			this.state.isExpanded = false;
 			this.state.showPlaylist = false;
+			this.state.showLyrics = false;
 		}
 		this.broadcastState();
 	}

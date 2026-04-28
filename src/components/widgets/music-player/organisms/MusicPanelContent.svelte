@@ -4,6 +4,7 @@
 	import Key from "../../../../i18n/i18nKey";
 	import { i18n } from "../../../../i18n/translation";
 	import type { MusicPlayerState } from "../../../../stores/musicPlayerStore";
+	import AccordionDrawer from "../../common/AccordionDrawer.svelte";
 	import SidebarControls from "../../music-sidebar/components/SidebarControls.svelte";
 	import SidebarCover from "../../music-sidebar/components/SidebarCover.svelte";
 	import SidebarPlaylist from "../../music-sidebar/components/SidebarPlaylist.svelte";
@@ -14,17 +15,21 @@
 	interface Props {
 		state: MusicPlayerState;
 		showPlaylist: boolean;
+		showLyrics?: boolean;
 		compact?: boolean;
 		onTogglePlay: () => void;
 		onPrev: () => void;
 		onNext: () => void;
 		onToggleMode: () => void;
 		onTogglePlaylist: () => void;
+		onToggleLyrics: () => void;
 		onPlayIndex: (index: number) => void;
 		onSeek: (time: number) => void;
 		onToggleMute: () => void;
 		onSetVolume: (volume: number) => void;
 		onPlaylistSourceSelect: (index: number) => void;
+		onTogglePanelVisibility?: () => void;
+		isPanelVisible?: boolean;
 		onHide?: () => void;
 		onCollapse?: () => void;
 	}
@@ -32,17 +37,21 @@
 	const {
 		state,
 		showPlaylist,
+		showLyrics = state.showLyrics,
 		compact = false,
 		onTogglePlay,
 		onPrev,
 		onNext,
 		onToggleMode,
 		onTogglePlaylist,
+		onToggleLyrics,
 		onPlayIndex,
 		onSeek,
 		onToggleMute,
 		onSetVolume,
 		onPlaylistSourceSelect,
+		onTogglePanelVisibility,
+		isPanelVisible = true,
 		onHide,
 		onCollapse,
 	}: Props = $props();
@@ -91,7 +100,7 @@
 		{/if}
 	</div>
 
-	{#if !showPlaylist}
+	<AccordionDrawer show={showLyrics && !showPlaylist} class="lyrics-drawer">
 		<LyricsPanel
 			lines={state.lyricLines}
 			isTimed={state.lyricIsTimed}
@@ -99,17 +108,24 @@
 			isLoading={state.lyricLoading}
 			{compact}
 		/>
-	{/if}
+	</AccordionDrawer>
 
 	<SidebarControls
 		isPlaying={state.isPlaying}
 		isShuffled={state.isShuffled}
 		repeatMode={state.isRepeating}
+		{showLyrics}
+		volume={state.volume}
+		isMuted={state.isMuted}
+		{isPanelVisible}
 		{onToggleMode}
 		{onPrev}
 		{onNext}
 		{onTogglePlay}
 		{onTogglePlaylist}
+		{onToggleLyrics}
+		{onToggleMute}
+		{onTogglePanelVisibility}
 	/>
 
 	<div class="music-panel-progress">
@@ -180,6 +196,22 @@
 	.music-panel-progress {
 		margin-top: 0.42rem;
 		margin-bottom: 0.32rem;
+	}
+
+	:global(.lyrics-drawer .accordion-inner) {
+		transform: translateY(-0.25rem);
+		transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	:global(.lyrics-drawer.open .accordion-inner) {
+		transform: translateY(0);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(.lyrics-drawer .accordion-inner) {
+			transition: none;
+			transform: none;
+		}
 	}
 
 	@media (max-width: 640px) {

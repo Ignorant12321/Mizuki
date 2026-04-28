@@ -23,6 +23,10 @@
 
 	let lyricContainer: HTMLDivElement | undefined;
 
+	function isActiveLyric(index: number) {
+		return isTimed && currentIndex >= 0 && index === currentIndex;
+	}
+
 	function scrollActiveLine(behavior: ScrollBehavior = "smooth") {
 		if (!lyricContainer || currentIndex < 0) {
 			return;
@@ -66,31 +70,41 @@
 	class:compact
 	aria-label={i18n(Key.musicPlayerLyrics)}
 >
-	<div class="lyrics-panel" class:compact bind:this={lyricContainer}>
-		{#if isLoading}
-			<p class="lyrics-placeholder">
-				{i18n(Key.musicPlayerLyricsLoading)}
-			</p>
-		{:else if lines.length === 0}
-			<p class="lyrics-placeholder">{i18n(Key.musicPlayerLyricsEmpty)}</p>
-		{:else}
-			<div class="lyrics-spacer" aria-hidden="true"></div>
-			{#each lines as line, index}
-				<p
-					class="lyric-line"
-					class:active={isTimed && index === currentIndex}
-					data-lyric-index={index}
-				>
-					{line.text}
+	<div class="lyrics-panel-shell" class:compact>
+		<div
+			class="lyrics-panel"
+			class:compact
+			class:has-lines={!isLoading && lines.length > 0}
+			bind:this={lyricContainer}
+		>
+			{#if isLoading}
+				<p class="lyrics-placeholder">
+					{i18n(Key.musicPlayerLyricsLoading)}
 				</p>
-			{/each}
-			<div class="lyrics-spacer" aria-hidden="true"></div>
-		{/if}
+			{:else if lines.length === 0}
+				<p class="lyrics-placeholder">
+					{i18n(Key.musicPlayerLyricsEmpty)}
+				</p>
+			{:else}
+				<div class="lyrics-spacer" aria-hidden="true"></div>
+				{#each lines as line, index}
+					<p
+						class="lyric-line"
+						class:active={isActiveLyric(index)}
+						data-lyric-index={index}
+					>
+						{line.text}
+					</p>
+				{/each}
+				<div class="lyrics-spacer" aria-hidden="true"></div>
+			{/if}
+		</div>
 	</div>
 </section>
 
 <style>
 	.lyrics-section {
+		position: relative;
 		margin: 0.58rem 0 0.62rem;
 		min-width: 0;
 	}
@@ -99,13 +113,17 @@
 		margin: 0.52rem 0 0.58rem;
 	}
 
+	.lyrics-panel-shell {
+		border-radius: 0.75rem;
+		background: color-mix(in oklab, var(--primary) 5%, var(--card-bg));
+		border: 1px solid color-mix(in oklab, var(--primary) 14%, transparent);
+		overflow: hidden;
+	}
+
 	.lyrics-panel {
 		max-height: 8rem;
 		overflow-y: auto;
 		padding: 0.62rem 0.75rem;
-		border-radius: 0.75rem;
-		background: color-mix(in oklab, var(--primary) 5%, var(--card-bg));
-		border: 1px solid color-mix(in oklab, var(--primary) 14%, transparent);
 		scroll-behavior: smooth;
 		scrollbar-width: thin;
 		scrollbar-color: color-mix(in oklab, var(--line-color) 78%, transparent)
@@ -114,6 +132,23 @@
 
 	.lyrics-panel.compact {
 		max-height: 7.2rem;
+	}
+
+	.lyrics-panel.has-lines {
+		-webkit-mask-image: linear-gradient(
+			to bottom,
+			transparent 0,
+			black 18%,
+			black 82%,
+			transparent 100%
+		);
+		mask-image: linear-gradient(
+			to bottom,
+			transparent 0,
+			black 18%,
+			black 82%,
+			transparent 100%
+		);
 	}
 
 	.lyrics-panel::-webkit-scrollbar {
@@ -138,12 +173,12 @@
 	}
 
 	.lyric-line {
-		margin: 0.28rem 0;
+		margin: 0.44rem 0;
 		font-size: 0.8rem;
-		line-height: 1.45;
+		line-height: 1.65;
 		text-align: center;
 		color: var(--content-meta);
-		opacity: 0.72;
+		opacity: 0.82;
 		transition:
 			color 0.22s ease,
 			opacity 0.22s ease,
@@ -166,7 +201,7 @@
 		opacity: 0.72;
 	}
 
-	:global(.dark) .lyrics-panel {
+	:global(.dark) .lyrics-panel-shell {
 		background: color-mix(in oklab, var(--primary) 8%, var(--card-bg));
 		border-color: color-mix(in oklab, var(--primary) 18%, transparent);
 	}
@@ -180,6 +215,7 @@
 
 		.lyric-line {
 			font-size: 0.76rem;
+			line-height: 1.58;
 		}
 	}
 </style>

@@ -33,6 +33,14 @@
 		onPlaylistSourceSelect,
 		onPlaySong,
 	}: Props = $props();
+
+	function getSongProgress(): string {
+		if (playlist.length === 0) {
+			return "0/0";
+		}
+		const current = Math.min(Math.max(currentIndex + 1, 1), playlist.length);
+		return `${current}/${playlist.length}`;
+	}
 </script>
 
 {#if show}
@@ -57,8 +65,11 @@
 				/>
 			</div>
 			<div class="playlist-track-title">
-				<Icon icon="material-symbols:music-note-rounded" />
-				<span>{i18n(Key.musicPlayerSongSource)}</span>
+				<span class="playlist-track-title-main">
+					<Icon icon="material-symbols:music-note-rounded" />
+					<span>{i18n(Key.musicPlayerSongSource)}</span>
+				</span>
+				<span class="playlist-track-index">{getSongProgress()}</span>
 			</div>
 			<div
 				class="playlist-content overflow-y-auto max-h-80"
@@ -132,7 +143,7 @@
 	}
 
 	.playlist-content {
-		padding: 0.32rem 0.25rem 0.35rem;
+		padding: 0.44rem 0.25rem 0.35rem;
 		scrollbar-gutter: stable;
 		scrollbar-width: thin;
 		scrollbar-color: color-mix(in oklab, var(--primary) 42%, transparent)
@@ -142,14 +153,34 @@
 	.playlist-track-title {
 		display: flex;
 		align-items: center;
-		gap: 0.34rem;
-		padding: 0.42rem 0.44rem 0.34rem;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.42rem 0.44rem 0.38rem;
 		border-bottom: 1px dashed
 			color-mix(in oklab, var(--primary) 12%, transparent);
 		font-size: 0.78rem;
 		font-weight: 700;
 		line-height: 1.2;
 		color: var(--content-meta);
+	}
+
+	.playlist-track-title-main {
+		min-width: 0;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.34rem;
+	}
+
+	.playlist-track-index {
+		flex-shrink: 0;
+		padding: 0.1rem 0.38rem;
+		border-radius: 9999px;
+		font-size: 0.68rem;
+		font-weight: 800;
+		line-height: 1;
+		color: var(--content-meta);
+		background: transparent;
+		border: 1px solid color-mix(in oklab, var(--line-color) 86%, transparent);
 	}
 
 	.playlist-body {

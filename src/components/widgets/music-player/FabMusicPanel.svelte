@@ -8,6 +8,7 @@
 
 	let state: MusicPlayerState = $state(musicPlayerStore.getState());
 	let showPlaylist = $state(false);
+	let showLyrics = $state(false);
 
 	function handleStateUpdate(event: Event) {
 		const custom = event as CustomEvent<MusicPlayerState>;
@@ -47,6 +48,16 @@
 
 	function togglePlaylistView() {
 		showPlaylist = !showPlaylist;
+		if (showPlaylist) {
+			showLyrics = false;
+		}
+	}
+
+	function toggleLyricsView() {
+		showLyrics = !showLyrics;
+		if (showLyrics) {
+			showPlaylist = false;
+		}
 	}
 
 	function playIndex(index: number) {
@@ -64,6 +75,10 @@
 	function setVolume(volume: number) {
 		musicPlayerStore.setVolume(volume);
 	}
+
+	function closePanel() {
+		musicPlayerStore.setExpanded(false);
+	}
 </script>
 
 <div
@@ -72,16 +87,20 @@
 	<MusicPanelContent
 		{state}
 		{showPlaylist}
+		{showLyrics}
 		compact
 		onTogglePlay={togglePlay}
 		onPrev={prev}
 		onNext={next}
 		onToggleMode={toggleMode}
 		onTogglePlaylist={togglePlaylistView}
+		onToggleLyrics={toggleLyricsView}
 		onPlayIndex={playIndex}
 		onSeek={seek}
 		onToggleMute={toggleMute}
 		onSetVolume={setVolume}
+		onTogglePanelVisibility={closePanel}
+		isPanelVisible={state.isExpanded}
 		onPlaylistSourceSelect={(index) =>
 			musicPlayerStore.selectPlaylist(index)}
 	/>

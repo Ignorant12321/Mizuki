@@ -14,6 +14,11 @@
 	let state: MusicPlayerState = musicPlayerStore.getState();
 	let fabAnchorRight = 0;
 	let fabAnchorBottom = 0;
+	let fabShellTop: number | null = null;
+	let fabShellEl: HTMLDivElement | null = null;
+	let shouldRenderFabPanel = false;
+	let isFabPanelClosing = false;
+	let fabPanelCloseTimer: ReturnType<typeof setTimeout> | undefined;
 	const showFloatingPlayer = musicPlayerConfig.showFloatingPlayer;
 	const floatingEntryMode = musicPlayerConfig.floatingEntryMode ?? "default";
 	const useFabEntry = floatingEntryMode === "fab";
@@ -94,6 +99,10 @@
 		musicPlayerStore.togglePlaylist();
 	}
 
+	function toggleLyrics() {
+		musicPlayerStore.toggleLyrics();
+	}
+
 	function toggleExpanded() {
 		musicPlayerStore.toggleExpanded();
 	}
@@ -121,8 +130,24 @@
 		fabAnchorBottom = Math.max(0, window.innerHeight - rect.bottom);
 	}
 
+	function captureFabShellTop() {
+		if (typeof window === "undefined" || !fabShellEl) {
+			return;
+		}
+
+		const rect = fabShellEl.getBoundingClientRect();
+		fabShellTop = Math.max(12, rect.top);
+	}
+
 	function handleFloatingTocBeforeOpen() {
 		musicPlayerStore.setExpanded(false);
+	}
+
+	function clearFabPanelCloseTimer() {
+		if (fabPanelCloseTimer) {
+			clearTimeout(fabPanelCloseTimer);
+			fabPanelCloseTimer = undefined;
+		}
 	}
 
 	onMount(() => {
@@ -155,11 +180,42 @@
 				handleFloatingTocBeforeOpen,
 			);
 		}
+		clearFabPanelCloseTimer();
 		musicPlayerStore.destroy();
 	});
 
 	$: if (useFabEntry && state.isExpanded) {
+		clearFabPanelCloseTimer();
+		shouldRenderFabPanel = true;
+		isFabPanelClosing = false;
+	}
+
+	$: if (
+		useFabEntry &&
+		!state.isExpanded &&
+		shouldRenderFabPanel &&
+		!isFabPanelClosing
+	) {
+		isFabPanelClosing = true;
+		clearFabPanelCloseTimer();
+		fabPanelCloseTimer = setTimeout(() => {
+			shouldRenderFabPanel = false;
+			isFabPanelClosing = false;
+			fabShellTop = null;
+		}, 220);
+	}
+
+	$: if (!shouldRenderFabPanel && fabShellTop !== null) {
+		fabShellTop = null;
+	}
+
+	$: if (useFabEntry && state.isExpanded) {
 		requestAnimationFrame(updateFabAnchorPosition);
+		if (fabShellTop === null) {
+			requestAnimationFrame(() => {
+				requestAnimationFrame(captureFabShellTop);
+			});
+		}
 	}
 </script>
 
@@ -187,19 +243,27 @@
 	{/if}
 
 	{#if useFabEntry}
-		{#if state.isExpanded}
+		{#if shouldRenderFabPanel}
 			<div
 				class="music-player-fab-anchor fixed z-[55]"
 				style={`--music-fab-anchor-right:${fabAnchorRight}px;--music-fab-anchor-bottom:${fabAnchorBottom}px;`}
 			>
-				<div class="music-player-fab-shell">
+				<div
+					class="music-player-fab-shell"
+					class:top-anchored={fabShellTop !== null}
+					class:is-closing={isFabPanelClosing}
+					bind:this={fabShellEl}
+					style={fabShellTop !== null
+						? `--music-fab-shell-top:${fabShellTop}px;`
+						: ""}
+				>
 					<FabMusicPanel />
 				</div>
 			</div>
 		{/if}
 	{:else}
 		<div
-			class="music-player fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out"
+			class="music-player fixed bottom-8 right-4 z-50 transition-all duration-300 ease-in-out"
 			class:expanded={state.isExpanded}
 			class:hidden-mode={state.isHidden}
 		>
@@ -238,6 +302,7 @@
 				onNext={() => next()}
 				onToggleMode={toggleMode}
 				onTogglePlaylist={togglePlaylist}
+				onToggleLyrics={toggleLyrics}
 				onPlayIndex={playIndex}
 				onSeek={seek}
 				onToggleMute={toggleMute}
@@ -258,7 +323,7 @@
 			bottom: var(
 				--music-fab-anchor-bottom,
 				calc(
-					var(--fab-group-bottom, 10rem) +
+					var(--fab-group-bottom, 11.5rem) +
 						(
 							var(--fab-button-size, 3rem) *
 								var(--fab-visible-count, 1)
@@ -277,11 +342,54 @@
 		.music-player-fab-shell {
 			position: absolute;
 			right: 0;
-			bottom: 0;
+			bottom: calc(
+				var(--fab-button-size, 3rem) + var(--fab-group-gap, 0.5rem)
+			);
 			margin-right: 0.75rem;
 			transform-origin: center right;
 			pointer-events: auto;
 			will-change: transform, opacity;
+			animation: musicPanelFadeIn 220ms cubic-bezier(0.22, 1, 0.36, 1)
+				both;
+		}
+
+		.music-player-fab-shell.top-anchored {
+			position: fixed;
+			top: var(--music-fab-shell-top, 1rem);
+			right: calc(
+				var(--music-fab-anchor-right, var(--fab-group-right, 1.5rem)) +
+					0.75rem
+			);
+			bottom: auto;
+			margin-right: 0;
+			transform-origin: top right;
+		}
+
+		.music-player-fab-shell.is-closing {
+			pointer-events: none;
+			animation: musicPanelFadeOut 180ms cubic-bezier(0.4, 0, 1, 1) both;
+		}
+
+		@keyframes musicPanelFadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(0.35rem) scale(0.98);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0) scale(1);
+			}
+		}
+
+		@keyframes musicPanelFadeOut {
+			from {
+				opacity: 1;
+				transform: translateY(0) scale(1);
+			}
+			to {
+				opacity: 0;
+				transform: translateY(0.3rem) scale(0.98);
+			}
 		}
 
 		.orb-player-container {
@@ -560,21 +668,38 @@
 				) !important;
 				bottom: var(
 					--music-fab-anchor-bottom,
-					var(--fab-group-bottom, 5rem)
+					var(--fab-group-bottom, 6.25rem)
 				) !important;
 			}
 
 			.music-player-fab-shell {
 				right: 0 !important;
-				bottom: 0 !important;
+				bottom: calc(
+					var(--fab-button-size, 2.75rem) +
+						var(--fab-group-gap, 0.5rem)
+				) !important;
 				margin-right: 0.5rem !important;
+			}
+
+			.music-player-fab-shell.top-anchored {
+				position: fixed;
+				right: calc(
+					var(
+							--music-fab-anchor-right,
+							var(--fab-group-right, 0.75rem)
+						) +
+						0.5rem
+				) !important;
+				bottom: auto !important;
+				margin-right: 0 !important;
+				transform-origin: top right;
 			}
 
 			.music-player {
 				width: 280px !important;
 				min-width: 280px !important;
 				max-width: 280px !important;
-				bottom: 0.5rem !important;
+				bottom: 1.75rem !important;
 				right: 0.5rem !important;
 			}
 			:global(.mini-player) {
@@ -616,14 +741,27 @@
 				) !important;
 				bottom: var(
 					--music-fab-anchor-bottom,
-					var(--fab-group-bottom, 4.5rem)
+					var(--fab-group-bottom, 5.75rem)
 				) !important;
 			}
 
 			.music-player-fab-shell {
 				right: 0 !important;
-				bottom: 0 !important;
+				bottom: calc(
+					var(--fab-button-size, 2.5rem) +
+						var(--fab-group-gap, 0.5rem)
+				) !important;
 				margin-right: 0.5rem !important;
+			}
+
+			.music-player-fab-shell.top-anchored {
+				right: calc(
+					var(
+							--music-fab-anchor-right,
+							var(--fab-group-right, 0.5rem)
+						) +
+						0.5rem
+				) !important;
 			}
 
 			.music-player {
@@ -696,6 +834,13 @@
 		:global(button.bg-\\[var\\(--primary\\)\\]) {
 			box-shadow: 0 0 0 2px var(--primary);
 			border: none;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.music-player-fab-shell,
+			.music-player-fab-shell.is-closing {
+				animation: none;
+			}
 		}
 	</style>
 {/if}
