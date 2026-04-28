@@ -12,7 +12,7 @@
 	"photos": [
 		{
 			"id": "rand-01",
-			"src": "https://pic.ssr.ddns-ip.net/v",
+			"src": "https://pic.ssr.ddns-ip.net/r?t=1",
 			"alt": "随机动漫 0",
 			"title": "随机动漫 0",
 			"description": "随机动漫 0",
@@ -22,7 +22,7 @@
 		},
 		{
 			"id": "rand-02",
-			"src": "https://pic.ssr.ddns-ip.net/h",
+			"src": "https://pic.ssr.ddns-ip.net/r?t=2",
 			"alt": "随机动漫 2",
 			"title": "随机动漫 2",
 			"description": "随机动漫 2",
@@ -32,7 +32,7 @@
 		},
 		{
 			"id": "rand-03",
-			"src": "https://pic.ssr.ddns-ip.net/r",
+			"src": "https://pic.ssr.ddns-ip.net/r?t=3",
 			"alt": "随机动漫 3",
 			"title": "随机动漫 3",
 			"description": "随机动漫 3",
@@ -42,10 +42,30 @@
 		},
 		{
 			"id": "rand-04",
-			"src": "https://pic.ssr.ddns-ip.net/r",
+			"src": "https://pic.ssr.ddns-ip.net/r?t=4",
 			"alt": "随机动漫 4",
 			"title": "随机动漫 4",
 			"description": "随机动漫 4",
+			"tags": ["随机", "动漫", "pic.ssr.ddns-ip.net"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-05",
+			"src": "https://pic.ssr.ddns-ip.net/r?t=5",
+			"alt": "随机动漫 5",
+			"title": "随机动漫 5",
+			"description": "随机动漫 5",
+			"tags": ["随机", "动漫", "pic.ssr.ddns-ip.net"],
+			"width": 800,
+			"height": 600
+		},
+		{
+			"id": "rand-06",
+			"src": "https://pic.ssr.ddns-ip.net/r?t=6",
+			"alt": "随机动漫 6",
+			"title": "随机动漫 6",
+			"description": "随机动漫 6",
 			"tags": ["随机", "动漫", "pic.ssr.ddns-ip.net"],
 			"width": 800,
 			"height": 600

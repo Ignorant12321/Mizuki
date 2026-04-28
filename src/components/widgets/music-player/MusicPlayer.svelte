@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
-	import { onDestroy, onMount } from "svelte";
+	import { onDestroy, onMount, tick } from "svelte";
 
 	import { musicPlayerConfig } from "@/config";
 	import type { MusicPlayerState } from "@/stores/musicPlayerStore";
@@ -10,15 +10,22 @@
 	import FabMusicPanel from "./FabMusicPanel.svelte";
 	import MiniPlayer from "./organisms/MiniPlayer.svelte";
 	import PlayerBar from "./organisms/PlayerBar.svelte";
+	import { calculateFabPanelLayout } from "./utils/fabPanelLayout";
 
 	let state: MusicPlayerState = musicPlayerStore.getState();
 	let fabAnchorRight = 0;
 	let fabAnchorBottom = 0;
 	let fabShellTop: number | null = null;
+	let fabShellMaxHeight: number | null = null;
 	let fabShellEl: HTMLDivElement | null = null;
 	let shouldRenderFabPanel = false;
 	let isFabPanelClosing = false;
 	let fabPanelCloseTimer: ReturnType<typeof setTimeout> | undefined;
+	let fabPanelLayoutFrame: number | undefined;
+	let fabPanelResizeObserver: ResizeObserver | undefined;
+	let wasFabPanelExpanded = state.isExpanded;
+	const FAB_PANEL_TOP_MARGIN = 12;
+	const FAB_PANEL_BOTTOM_MARGIN = 16;
 	const showFloatingPlayer = musicPlayerConfig.showFloatingPlayer;
 	const floatingEntryMode = musicPlayerConfig.floatingEntryMode ?? "default";
 	const useFabEntry = floatingEntryMode === "fab";
@@ -115,6 +122,30 @@
 		musicPlayerStore.hideError();
 	}
 
+	function readRootLengthPx(propertyName: string, fallback: number) {
+		if (typeof window === "undefined") {
+			return fallback;
+		}
+
+		const rootStyle = getComputedStyle(document.documentElement);
+		const rawValue = rootStyle.getPropertyValue(propertyName).trim();
+		const numericValue = Number.parseFloat(rawValue);
+
+		if (!Number.isFinite(numericValue)) {
+			return fallback;
+		}
+
+		if (rawValue.endsWith("rem")) {
+			const rootFontSize = Number.parseFloat(rootStyle.fontSize);
+			return (
+				numericValue *
+				(Number.isFinite(rootFontSize) ? rootFontSize : 16)
+			);
+		}
+
+		return numericValue;
+	}
+
 	function updateFabAnchorPosition() {
 		if (typeof window === "undefined") {
 			return;
@@ -130,13 +161,87 @@
 		fabAnchorBottom = Math.max(0, window.innerHeight - rect.bottom);
 	}
 
-	function captureFabShellTop() {
+	function updateFabPanelLayout() {
 		if (typeof window === "undefined" || !fabShellEl) {
 			return;
 		}
 
-		const rect = fabShellEl.getBoundingClientRect();
-		fabShellTop = Math.max(12, rect.top);
+		const fabButton = document.getElementById("music-fab-btn");
+		if (!fabButton) {
+			return;
+		}
+
+		const buttonRect = fabButton.getBoundingClientRect();
+		const gap = readRootLengthPx("--fab-group-gap", 8);
+		const layout = calculateFabPanelLayout({
+			buttonTop: buttonRect.top,
+			gap,
+			panelHeight: Math.max(
+				fabShellEl.getBoundingClientRect().height,
+				fabShellEl.scrollHeight,
+			),
+			viewportHeight: window.innerHeight,
+			topMargin: FAB_PANEL_TOP_MARGIN,
+			bottomMargin: FAB_PANEL_BOTTOM_MARGIN,
+		});
+
+		updateFabAnchorPosition();
+		fabShellTop = layout.top;
+		fabShellMaxHeight = layout.maxHeight;
+	}
+
+	function scheduleFabPanelLayoutUpdate() {
+		if (
+			typeof window === "undefined" ||
+			!useFabEntry ||
+			!state.isExpanded ||
+			fabPanelLayoutFrame !== undefined
+		) {
+			return;
+		}
+
+		fabPanelLayoutFrame = window.requestAnimationFrame(() => {
+			fabPanelLayoutFrame = undefined;
+			updateFabPanelLayout();
+		});
+	}
+
+	function disconnectFabPanelResizeObserver() {
+		fabPanelResizeObserver?.disconnect();
+		fabPanelResizeObserver = undefined;
+	}
+
+	function ensureFabPanelResizeObserver() {
+		if (
+			typeof window === "undefined" ||
+			!("ResizeObserver" in window) ||
+			!fabShellEl ||
+			fabPanelResizeObserver
+		) {
+			return;
+		}
+
+		fabPanelResizeObserver = new ResizeObserver(() => {
+			scheduleFabPanelLayoutUpdate();
+		});
+		fabPanelResizeObserver.observe(fabShellEl);
+
+		const panelContent = fabShellEl.firstElementChild;
+		if (panelContent instanceof HTMLElement) {
+			fabPanelResizeObserver.observe(panelContent);
+		}
+	}
+
+	async function prepareFabPanelLayoutAfterRender() {
+		await tick();
+		updateFabAnchorPosition();
+		scheduleFabPanelLayoutUpdate();
+		ensureFabPanelResizeObserver();
+	}
+
+	function handleFabViewportChange() {
+		updateFabAnchorPosition();
+		scheduleFabPanelLayoutUpdate();
 	}
 
 	function handleFloatingTocBeforeOpen() {
@@ -150,16 +255,30 @@
 		}
 	}
 
+	function cancelFabPanelLayoutFrame() {
+		if (
+			fabPanelLayoutFrame !== undefined &&
+			typeof window !== "undefined"
+		) {
+			window.cancelAnimationFrame(fabPanelLayoutFrame);
+			fabPanelLayoutFrame = undefined;
+		}
+	}
+
 	onMount(() => {
 		unsubscribe = musicPlayerStore.subscribe((nextState) => {
+			const isFabPanelExpanded = nextState.isExpanded;
+			const expandedChanged = wasFabPanelExpanded !== isFabPanelExpanded;
 			state = nextState;
+			wasFabPanelExpanded = isFabPanelExpanded;
+
+			if (useFabEntry && expandedChanged && isFabPanelExpanded) {
+				void prepareFabPanelLayoutAfterRender();
+			}
 		});
 		musicPlayerStore.initialize();
 		updateFabAnchorPosition();
-		window.addEventListener("resize", updateFabAnchorPosition, {
-			passive: true,
-		});
-		window.addEventListener("scroll", updateFabAnchorPosition, {
+		window.addEventListener("resize", handleFabViewportChange, {
 			passive: true,
 		});
 		window.addEventListener(
@@ -173,14 +292,15 @@
 			unsubscribe();
 		}
 		if (typeof window !== "undefined") {
-			window.removeEventListener("resize", updateFabAnchorPosition);
-			window.removeEventListener("scroll", updateFabAnchorPosition);
+			window.removeEventListener("resize", handleFabViewportChange);
 			window.removeEventListener(
 				"floating-toc:before-open",
 				handleFloatingTocBeforeOpen,
 			);
 		}
 		clearFabPanelCloseTimer();
+		cancelFabPanelLayoutFrame();
+		disconnectFabPanelResizeObserver();
 		musicPlayerStore.destroy();
 	});
 
@@ -202,6 +322,8 @@
 			shouldRenderFabPanel = false;
 			isFabPanelClosing = false;
 			fabShellTop = null;
+			fabShellMaxHeight = null;
+			disconnectFabPanelResizeObserver();
 		}, 220);
 	}
 
@@ -209,13 +331,8 @@
 		fabShellTop = null;
 	}
 
-	$: if (useFabEntry && state.isExpanded) {
-		requestAnimationFrame(updateFabAnchorPosition);
-		if (fabShellTop === null) {
-			requestAnimationFrame(() => {
-				requestAnimationFrame(captureFabShellTop);
-			});
-		}
+	$: if (!shouldRenderFabPanel && fabShellMaxHeight !== null) {
+		fabShellMaxHeight = null;
 	}
 </script>
 
@@ -254,7 +371,7 @@
 					class:is-closing={isFabPanelClosing}
 					bind:this={fabShellEl}
 					style={fabShellTop !== null
-						? `--music-fab-shell-top:${fabShellTop}px;`
+						? `--music-fab-shell-top:${fabShellTop}px;--music-fab-shell-max-height:${fabShellMaxHeight ?? 0}px;`
 						: ""}
 				>
 					<FabMusicPanel />
@@ -363,6 +480,16 @@
 			bottom: auto;
 			margin-right: 0;
 			transform-origin: top right;
+			max-height: min(
+				var(--music-fab-shell-max-height, 100dvh),
+				calc(
+					100dvh - var(--music-fab-shell-top, 1rem) - 1rem -
+						env(safe-area-inset-bottom, 0px)
+				)
+			);
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			scrollbar-gutter: stable;
 		}
 
 		.music-player-fab-shell.is-closing {
