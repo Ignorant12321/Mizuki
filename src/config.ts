@@ -407,11 +407,11 @@ export const navBarConfig: NavBarConfig = {
 					url: "/news/",
 					icon: "material-symbols:article",
 				},
-				{
-					name: "云盘",
-					url: "/files/",
-					icon: "material-symbols:cloud",
-				},
+				// {
+				// 	name: "云盘",
+				// 	url: "/files/",
+				// 	icon: "material-symbols:cloud",
+				// },
 				{
 					name: "津渡",
 					nameKey: I18nKey.navigation,
