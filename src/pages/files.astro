@@ -2,14 +2,19 @@
 import { PageHeader } from "@components/features/page-header";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 
+import { filesConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 
 export const prerender = true;
 
+if (!filesConfig.enable) {
+	return Astro.redirect("/404/");
+}
+
 const title = i18n(I18nKey.collectionFilesTitle);
 const subtitle = i18n(I18nKey.collectionFilesDescription);
-const shareUrl = "https://openlist.ignorant.top/@s/Jrk6HG9a";
+const shareUrl = filesConfig.shareUrl;
 ---
 
 <MainGridLayout title={title} description={subtitle}>
@@ -17,7 +22,9 @@ const shareUrl = "https://openlist.ignorant.top/@s/Jrk6HG9a";
 		import("../scripts/right-sidebar-layout.js");
 	</script>
 
-	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+	<div
+		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
+	>
 		<div class="card-base z-10 px-5 sm:px-8 py-6 relative w-full">
 			<PageHeader
 				title={title}
@@ -30,7 +37,11 @@ const shareUrl = "https://openlist.ignorant.top/@s/Jrk6HG9a";
 					文件由 OpenList 分享页提供，可直接在线浏览并下载。
 				</p>
 				<div class="files-actions">
-					<button type="button" id="files-refresh-btn" class="files-refresh-btn">
+					<button
+						type="button"
+						id="files-refresh-btn"
+						class="files-refresh-btn"
+					>
 						刷新
 					</button>
 					<a
@@ -54,10 +65,8 @@ const shareUrl = "https://openlist.ignorant.top/@s/Jrk6HG9a";
 					title="OpenList OneDrive Files"
 					loading="lazy"
 					referrerpolicy="no-referrer"
-					class="files-iframe"
-				></iframe>
+					class="files-iframe"></iframe>
 			</div>
-
 		</div>
 	</div>
 

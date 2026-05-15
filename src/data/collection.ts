@@ -8,7 +8,7 @@ export interface CollectionItem {
 	siteurl: string;
 	tagKeys: I18nKey[];
 	external?: boolean;
-	feature?: "news" | "navigation";
+	feature?: "news" | "navigation" | "files";
 }
 
 export const collectionTagPriorityKeys: I18nKey[] = [
@@ -50,6 +50,7 @@ export const collectionData: CollectionItem[] = [
 		siteurl: "/files/",
 		tagKeys: [I18nKey.collectionTagInternal, I18nKey.collectionTagCloud],
 		external: false,
+		feature: "files",
 	},
 ];
 

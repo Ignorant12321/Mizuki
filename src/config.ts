@@ -5,6 +5,7 @@ import type {
 	CommentConfig,
 	ExpressiveCodeConfig,
 	ExternalLinkConfirmConfig,
+	FilesConfig,
 	FooterConfig,
 	FullscreenWallpaperConfig,
 	LicenseConfig,
@@ -358,6 +359,11 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	blur: 1, // 背景模糊程度
 };
 
+export const filesConfig: FilesConfig = {
+	enable: true, // 是否启用文件分享页面入口和集合页卡片
+	shareUrl: "https://openlist.ignorant.top/@s/nTmLxhyX", // OpenList 分享页地址
+};
+
 export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
@@ -407,11 +413,11 @@ export const navBarConfig: NavBarConfig = {
 					url: "/news/",
 					icon: "material-symbols:article",
 				},
-				// {
-				// 	name: "云盘",
-				// 	url: "/files/",
-				// 	icon: "material-symbols:cloud",
-				// },
+				{
+					name: "典藏",
+					url: "/files/",
+					icon: "material-symbols:cloud",
+				},
 				{
 					name: "津渡",
 					nameKey: I18nKey.navigation,

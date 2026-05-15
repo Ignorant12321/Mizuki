@@ -555,6 +555,14 @@ export interface ShareConfig {
 	avatarFrame?: AvatarFrameConfig; // 分享海报头像框配置
 }
 
+/**
+ * 文件分享页面配置
+ */
+export interface FilesConfig {
+	enable: boolean; // 是否启用文件分享页面入口和集合页卡片
+	shareUrl: string; // OpenList 分享页地址
+}
+
 export interface AvatarFrameConfig {
 	enable: boolean; // 是否启用头像框
 	image: string; // 头像框图片路径
