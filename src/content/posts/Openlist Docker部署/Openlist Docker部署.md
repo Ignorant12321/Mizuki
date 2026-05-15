@@ -96,8 +96,6 @@ docker run -d --restart=unless-stopped -v /etc/openlist:/opt/openlist/data -p 52
 - 默认登录账号为`admin`
 - 默认密码【见2.1初始密码】
 
-![image-20260410135103617](https://cdn.218501.xyz/2026/04/eb15b00ec21e104f7e2b0fa81424b39e.png)
-
 记得及时更改用户名和重置密码！！！
 
 ![image-20260410110516718](https://cdn.218501.xyz/2026/04/a727355871fad7fe097be4e15db3d367.png)

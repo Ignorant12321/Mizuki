@@ -31,20 +31,41 @@ type ValidatedConfig = ClickEffectConfig & {
 	};
 };
 
+type BlacklistPathRule = {
+	path: string;
+	includeChildren: boolean;
+};
+
 class ClickEffectController {
 	private config: ValidatedConfig;
-	private activeParticles = 0;
+	private readonly reducedMotionQuery = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	);
+	private readonly coarsePointerQuery = window.matchMedia("(pointer: coarse)");
+	private readonly noHoverQuery = window.matchMedia("(hover: none)");
+	private readonly particlePool: HTMLDivElement[] = [];
+	private readonly activeParticleSet = new Set<HTMLDivElement>();
 	private activeParticleQueue: HTMLDivElement[] = [];
+	private activeParticleQueueStart = 0;
+	private blacklistPathRules: BlacklistPathRule[] = [];
+	private blacklistSelectors: string[] = [];
 	private lastEffectTimestamp = 0;
 	private pointerDownPosition: { x: number; y: number } | null = null;
 
 	constructor(config: ValidatedConfig) {
 		this.config = config;
+		this.applyConfig(config);
 		this.bindEvents();
 	}
 
 	updateConfig(config: ValidatedConfig) {
+		this.applyConfig(config);
+	}
+
+	private applyConfig(config: ValidatedConfig) {
 		this.config = config;
+		this.blacklistPathRules = config.blacklist.paths.map(createBlacklistPathRule);
+		this.blacklistSelectors = config.blacklist.selectors;
 	}
 
 	private bindEvents() {
@@ -69,7 +90,6 @@ class ClickEffectController {
 		if (!this.isEffectEnabled()) return;
 		if (event.button !== 0) return;
 		if (this.shouldIgnoreDrag(event)) return;
-		if (this.shouldIgnoreSelection()) return;
 
 		const now = performance.now();
 		if (now - this.lastEffectTimestamp < MIN_CLICK_INTERVAL_MS) return;
@@ -86,7 +106,7 @@ class ClickEffectController {
 		if (requestedParticles <= 0) return;
 
 		this.ensureParticleCapacity(requestedParticles);
-		const availableSlots = MAX_ACTIVE_PARTICLES - this.activeParticles;
+		const availableSlots = MAX_ACTIVE_PARTICLES - this.activeParticleSet.size;
 		if (availableSlots <= 0) return;
 
 		const totalParticles = Math.min(requestedParticles, availableSlots);
@@ -131,7 +151,7 @@ class ClickEffectController {
 	}
 
 	private isEffectEnabled() {
-		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+		if (this.reducedMotionQuery.matches) {
 			return false;
 		}
 
@@ -147,8 +167,8 @@ class ClickEffectController {
 	}
 
 	private isMobileDevice() {
-		const hasCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
-		const hasNoHover = window.matchMedia("(hover: none)").matches;
+		const hasCoarsePointer = this.coarsePointerQuery.matches;
+		const hasNoHover = this.noHoverQuery.matches;
 		const isSmallViewport = window.innerWidth < MOBILE_BREAKPOINT;
 		const hasTouchEvents =
 			"ontouchstart" in window || navigator.maxTouchPoints > 0;
@@ -159,18 +179,17 @@ class ClickEffectController {
 	private isPathBlacklisted(pathname: string) {
 		const normalizedCurrentPath = normalizePath(pathname);
 
-		return this.config.blacklist.paths.some((pattern) => {
-			const normalizedPattern = normalizePath(pattern);
-			if (normalizedPattern === "/") {
+		return this.blacklistPathRules.some((rule) => {
+			if (rule.path === "/") {
 				return normalizedCurrentPath === "/";
 			}
-			if (pattern.endsWith("/")) {
+			if (rule.includeChildren) {
 				return (
-					normalizedCurrentPath === normalizedPattern ||
-					normalizedCurrentPath.startsWith(`${normalizedPattern}/`)
+					normalizedCurrentPath === rule.path ||
+					normalizedCurrentPath.startsWith(`${rule.path}/`)
 				);
 			}
-			return normalizedCurrentPath === normalizedPattern;
+			return normalizedCurrentPath === rule.path;
 		});
 	}
 
@@ -180,11 +199,6 @@ class ClickEffectController {
 		const deltaX = Math.abs(event.clientX - this.pointerDownPosition.x);
 		const deltaY = Math.abs(event.clientY - this.pointerDownPosition.y);
 		return deltaX > DRAG_THRESHOLD_PX || deltaY > DRAG_THRESHOLD_PX;
-	}
-
-	private shouldIgnoreSelection() {
-		const selection = window.getSelection();
-		return Boolean(selection && !selection.isCollapsed && selection.toString().trim());
 	}
 
 	private getEventTargetElement(event: MouseEvent): Element | null {
@@ -200,7 +214,7 @@ class ClickEffectController {
 	}
 
 	private isAllowedTarget(target: Element) {
-		return !this.config.blacklist.selectors.some((selector) =>
+		return !this.blacklistSelectors.some((selector) =>
 			matchesSelectorTree(target, selector),
 		);
 	}
@@ -213,7 +227,7 @@ class ClickEffectController {
 		colorIndex: number,
 		delayMs: number,
 	) {
-		const particle = document.createElement("div");
+		const particle = this.acquireParticleElement();
 		particle.className = `click-particle color-${colorIndex}`;
 
 		const dx = Math.cos(angle) * distance;
@@ -228,43 +242,80 @@ class ClickEffectController {
 		particle.style.width = `${size}px`;
 		particle.style.height = `${size}px`;
 
-		this.activeParticles += 1;
-		this.activeParticleQueue.push(particle);
-		particle.addEventListener(
-			"animationend",
-			() => {
-				this.destroyParticle(particle);
-			},
-			{ once: true },
-		);
+		this.trackActiveParticle(particle);
 
 		return particle;
 	}
 
 	private ensureParticleCapacity(nextBurstCount: number) {
 		const overflow =
-			this.activeParticles + nextBurstCount - MAX_ACTIVE_PARTICLES;
-		if (overflow <= 0) return;
+			this.activeParticleSet.size + nextBurstCount - MAX_ACTIVE_PARTICLES;
+		if (overflow <= 0) {
+			return;
+		}
 
 		// 优先淘汰最早创建的粒子，避免连点时整次点击无反馈。
-		for (let i = 0; i < overflow; i += 1) {
-			const oldestParticle = this.activeParticleQueue.shift();
-			if (!oldestParticle) break;
-			this.destroyParticle(oldestParticle);
+		let removed = 0;
+		while (
+			removed < overflow &&
+			this.activeParticleQueueStart < this.activeParticleQueue.length
+		) {
+			const oldestParticle =
+				this.activeParticleQueue[this.activeParticleQueueStart];
+			this.activeParticleQueueStart += 1;
+			if (!this.activeParticleSet.has(oldestParticle)) {
+				continue;
+			}
+
+			this.releaseParticle(oldestParticle);
+			removed += 1;
 		}
+
+		this.compactParticleQueue();
 	}
 
-	private destroyParticle(particle: HTMLDivElement) {
-		if (particle.dataset.mizukiParticleDestroyed === "true") return;
-		particle.dataset.mizukiParticleDestroyed = "true";
+	private acquireParticleElement() {
+		const particle = this.particlePool.pop();
+		if (particle) {
+			return particle;
+		}
 
-		const queueIndex = this.activeParticleQueue.indexOf(particle);
-		if (queueIndex >= 0) {
-			this.activeParticleQueue.splice(queueIndex, 1);
+		const newParticle = document.createElement("div");
+		newParticle.addEventListener("animationend", () => {
+			this.releaseParticle(newParticle);
+		});
+		return newParticle;
+	}
+
+	private trackActiveParticle(particle: HTMLDivElement) {
+		this.activeParticleSet.add(particle);
+		this.activeParticleQueue.push(particle);
+		this.compactParticleQueueIfNeeded();
+	}
+
+	private releaseParticle(particle: HTMLDivElement) {
+		if (!this.activeParticleSet.delete(particle)) {
+			return;
 		}
 
 		particle.remove();
-		this.activeParticles = Math.max(0, this.activeParticles - 1);
+		if (this.particlePool.length < MAX_ACTIVE_PARTICLES) {
+			this.particlePool.push(particle);
+		}
+	}
+
+	private compactParticleQueueIfNeeded() {
+		if (this.activeParticleQueue.length <= MAX_ACTIVE_PARTICLES * 2) {
+			return;
+		}
+		this.compactParticleQueue();
+	}
+
+	private compactParticleQueue() {
+		this.activeParticleQueue = this.activeParticleQueue
+			.slice(this.activeParticleQueueStart)
+			.filter((particle) => this.activeParticleSet.has(particle));
+		this.activeParticleQueueStart = 0;
 	}
 }
 
@@ -274,6 +325,14 @@ function normalizePath(path: string) {
 
 	const normalized = path.startsWith("/") ? path : `/${path}`;
 	return normalized.replace(/\/+$/, "") || "/";
+}
+
+function createBlacklistPathRule(pattern: string): BlacklistPathRule {
+	const normalizedPath = normalizePath(pattern);
+	return {
+		path: normalizedPath,
+		includeChildren: normalizedPath !== "/" && pattern.endsWith("/"),
+	};
 }
 
 function matchesSelectorTree(target: Element, selector: string) {
