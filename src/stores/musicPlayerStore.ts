@@ -54,6 +54,10 @@ interface ParsedLyric {
 	timed: boolean;
 }
 
+interface LoadPlaylistOptions {
+	preserveCurrentSong?: boolean;
+}
+
 function getAssetPath(path: string): string {
 	if (!path) {
 		return "";
@@ -441,19 +445,22 @@ class MusicPlayerStore {
 	private async loadPlaylistAtIndex(
 		index: number,
 		autoPlay: boolean,
+		options: LoadPlaylistOptions = {},
 	): Promise<void> {
 		const source = this.state.playlists[index];
 		if (!source) {
 			return;
 		}
 
+		const previousPlaylistIndex = this.state.currentPlaylistIndex;
+		const previousPlaylistName = this.state.currentPlaylistName;
 		this.state.currentPlaylistIndex = index;
 		this.state.currentPlaylistName = source.name;
 		this.state.isPlaylistLoading = true;
 		this.state.isLoading = false;
 		this.broadcastState();
 
-		if (this.audio) {
+		if (this.audio && !options.preserveCurrentSong) {
 			this.audio.pause();
 		}
 
@@ -473,6 +480,7 @@ class MusicPlayerStore {
 				index,
 				this.cloneSongs(localSongs),
 				shouldAutoPlay,
+				options,
 			);
 			this.state.isPlaylistLoading = false;
 			this.broadcastState();
@@ -486,15 +494,18 @@ class MusicPlayerStore {
 				index,
 				this.cloneSongs(cachedSongs),
 				shouldAutoPlay,
+				options,
 			);
 			this.state.isPlaylistLoading = false;
 			this.broadcastState();
 			return;
 		}
 
-		this.state.playlist = [];
-		this.state.currentIndex = 0;
-		this.resetCurrentTrack();
+		if (!options.preserveCurrentSong) {
+			this.state.playlist = [];
+			this.state.currentIndex = 0;
+			this.resetCurrentTrack();
+		}
 		this.broadcastState();
 
 		const songs = await this.fetchMetingSongs(source, requestToken);
@@ -503,13 +514,17 @@ class MusicPlayerStore {
 		}
 
 		if (!songs) {
+			if (options.preserveCurrentSong) {
+				this.state.currentPlaylistIndex = previousPlaylistIndex;
+				this.state.currentPlaylistName = previousPlaylistName;
+			}
 			this.state.isPlaylistLoading = false;
 			this.broadcastState();
 			return;
 		}
 
 		this.playlistCache.set(cacheKey, this.cloneSongs(songs));
-		this.applyPlaylistSongs(index, songs, shouldAutoPlay);
+		this.applyPlaylistSongs(index, songs, shouldAutoPlay, options);
 		this.state.isPlaylistLoading = false;
 		this.broadcastState();
 	}
@@ -526,23 +541,49 @@ class MusicPlayerStore {
 			return;
 		}
 
-		const shouldAutoPlay = this.state.isPlaying;
-		void this.loadPlaylistAtIndex(index, shouldAutoPlay);
+		void this.loadPlaylistAtIndex(index, false, {
+			preserveCurrentSong: true,
+		});
+	}
+
+	private findSongIndex(song: Song, songs: Song[]): number {
+		if (!song.url) {
+			return -1;
+		}
+
+		return songs.findIndex(
+			(item) =>
+				item.url === song.url &&
+				String(item.id ?? "") === String(song.id ?? ""),
+		);
 	}
 
 	private applyPlaylistSongs(
 		index: number,
 		songs: Song[],
 		autoPlay: boolean,
+		options: LoadPlaylistOptions = {},
 	): void {
 		this.state.playlist = this.cloneSongs(songs);
-		this.state.currentIndex = 0;
 		if (this.state.playlist.length === 0) {
-			this.resetCurrentTrack();
+			this.state.currentIndex = -1;
+			if (!options.preserveCurrentSong) {
+				this.resetCurrentTrack();
+			}
 			this.showError(i18n(Key.musicPlayerErrorEmpty));
 			return;
 		}
-		this.loadSong(this.state.playlist[0], autoPlay);
+
+		if (options.preserveCurrentSong && this.state.currentSong.url) {
+			this.state.currentIndex = this.findSongIndex(
+				this.state.currentSong,
+				this.state.playlist,
+			);
+		} else {
+			this.state.currentIndex = 0;
+			this.loadSong(this.state.playlist[0], autoPlay);
+		}
+
 		this.state.currentPlaylistIndex = index;
 		this.state.currentPlaylistName =
 			this.state.playlists[index]?.name ?? this.state.currentPlaylistName;

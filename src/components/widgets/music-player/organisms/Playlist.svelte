@@ -38,7 +38,10 @@
 		if (playlist.length === 0) {
 			return "0/0";
 		}
-		const current = Math.min(Math.max(currentIndex + 1, 1), playlist.length);
+		const current =
+			currentIndex >= 0
+				? Math.min(currentIndex + 1, playlist.length)
+				: 0;
 		return `${current}/${playlist.length}`;
 	}
 </script>

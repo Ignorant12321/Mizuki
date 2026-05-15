@@ -1,17 +1,26 @@
 import type { ClickEffectConfig } from "@/types/config";
 
+// 与 Astro 模板、全局控制器和设置面板同步用的固定标识。
 const CLICK_EFFECT_CONFIG_ID = "click-effect-config";
 const GLOBAL_CONTROLLER_KEY = "__mizukiClickEffectController";
 const SETTINGS_LISTENER_KEY = "__mizukiClickEffectSettingsListener";
 const CLICK_EFFECT_STORAGE_KEY = "clickEffectEnabled";
+
+// 小于该宽度会按移动端处理，并结合触控能力判断是否启用特效。
 const MOBILE_BREAKPOINT = 768;
+
+// 粒子数量控制：限制总量和单次点击爆发量，避免连续点击造成过多 DOM 节点。
 const MAX_ACTIVE_PARTICLES = 64;
 const RING_PARTICLES = 8;
 const EXTRA_PARTICLES = 2;
-const MAX_PARTICLES_PER_CLICK = 8;
+const MAX_PARTICLES_PER_CLICK = 10;
+
+// 粒子视觉参数：基础扩散距离、可用颜色数量、每个粒子的错峰延迟。
 const BASE_DISTANCE = 18;
 const PARTICLE_COLORS = 10;
 const STAGGER_MS = 3;
+
+// 交互过滤参数：限制触发频率，并忽略拖拽产生的点击事件。
 const MIN_CLICK_INTERVAL_MS = 40;
 const DRAG_THRESHOLD_PX = 6;
 
