@@ -174,6 +174,17 @@ function formatDateSimple(dateString: string): string {
 																					>
 																						<div class="diary-image-skeleton-shine"></div>
 																					</div>
+																					<div
+																						class="diary-image-error"
+																						aria-hidden="true"
+																					>
+																						<iconify-icon
+																							icon="material-symbols:broken-image-outline-rounded"
+																							width="26"
+																							height="26"
+																						/>
+																						<span>图片加载失败</span>
+																					</div>
 																					<img
 																						src={image}
 																						alt="diary moment"
@@ -249,12 +260,6 @@ function formatDateSimple(dateString: string): string {
 
 <script is:inline>
 	(function () {
-		if (window.__mizukiDiaryImageSkeletonBound) {
-			return;
-		}
-
-		window.__mizukiDiaryImageSkeletonBound = true;
-
 		function markLoaded(shell) {
 			shell.dataset.loaded = "true";
 			shell.dataset.loadState = "loaded";
@@ -309,6 +314,29 @@ function formatDateSimple(dateString: string): string {
 				.forEach((shell) => bindDiaryImage(shell));
 		}
 
+		window.__mizukiInitDiaryImageSkeletons = initDiaryImageSkeletons;
+
+		if (!window.__mizukiDiaryImageSkeletonEventsBound) {
+			window.__mizukiDiaryImageSkeletonEventsBound = true;
+
+			const initCurrentDiaryImages = () => {
+				if (typeof window.__mizukiInitDiaryImageSkeletons === "function") {
+					window.__mizukiInitDiaryImageSkeletons();
+				}
+			};
+
+			if (document.readyState === "loading") {
+				document.addEventListener("DOMContentLoaded", initCurrentDiaryImages, {
+					once: true,
+				});
+			}
+
+			document.addEventListener("astro:page-load", initCurrentDiaryImages);
+			document.addEventListener("astro:after-swap", initCurrentDiaryImages);
+			document.addEventListener("mizuki:swup-ready", initCurrentDiaryImages);
+			window.addEventListener("pageshow", initCurrentDiaryImages);
+		}
+
 		if (document.readyState === "loading") {
 			document.addEventListener("DOMContentLoaded", initDiaryImageSkeletons, {
 				once: true,
@@ -316,9 +344,6 @@ function formatDateSimple(dateString: string): string {
 		} else {
 			initDiaryImageSkeletons();
 		}
-
-		document.addEventListener("astro:page-load", initDiaryImageSkeletons);
-		document.addEventListener("astro:after-swap", initDiaryImageSkeletons);
 	})();
 </script>
 
@@ -341,8 +366,8 @@ function formatDateSimple(dateString: string): string {
 		pointer-events: none;
 		background: color-mix(in oklab, var(--card-bg) 95%, white 5%);
 		transition:
-			opacity 220ms ease,
-			visibility 220ms ease;
+			opacity 320ms ease,
+			visibility 320ms ease;
 	}
 
 	.diary-image-skeleton-shine {
@@ -363,15 +388,19 @@ function formatDateSimple(dateString: string): string {
 		position: relative;
 		z-index: 0;
 		opacity: 0;
-		transform: scale(1);
+		filter: saturate(0.92) contrast(0.96);
+		transform: scale(1.015);
 		transform-origin: center;
 		transition:
-			opacity 240ms ease,
-			transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+			opacity 360ms ease,
+			filter 520ms ease,
+			transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
 	}
 
 	.diary-image-shell[data-loaded="true"] .diary-image-media {
 		opacity: 1;
+		filter: saturate(1) contrast(1);
+		transform: scale(1);
 	}
 
 	.diary-image-shell[data-loaded="true"]:hover .diary-image-media {
@@ -383,9 +412,52 @@ function formatDateSimple(dateString: string): string {
 		visibility: hidden;
 	}
 
+	.diary-image-error {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.45rem;
+		padding: 1rem;
+		text-align: center;
+		color: var(--content-meta);
+		background:
+			radial-gradient(
+				circle at center,
+				color-mix(in srgb, var(--primary) 10%, transparent),
+				transparent 62%
+			),
+			color-mix(in srgb, var(--card-bg-alt) 88%, var(--card-bg));
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+		transition:
+			opacity 260ms ease,
+			visibility 260ms ease;
+	}
+
+	.diary-image-error iconify-icon {
+		color: var(--primary);
+		opacity: 0.9;
+	}
+
+	.diary-image-error span {
+		font-size: 0.78rem;
+		font-weight: 600;
+		line-height: 1.2;
+	}
+
 	.diary-image-shell[data-loaded="error"] .diary-image-skeleton {
 		opacity: 0;
 		visibility: hidden;
+	}
+
+	.diary-image-shell[data-loaded="error"] .diary-image-error {
+		opacity: 1;
+		visibility: visible;
 	}
 
 	.diary-image-shell[data-load-state="error"] .diary-image-media {
