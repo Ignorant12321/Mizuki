@@ -487,9 +487,13 @@
 						env(safe-area-inset-bottom, 0px)
 				)
 			);
+			overflow: visible;
+		}
+
+		.music-player-fab-shell.top-anchored :global(.fab-music-panel) {
+			max-height: inherit;
 			overflow-y: auto;
 			overscroll-behavior: contain;
-			scrollbar-gutter: stable;
 		}
 
 		.music-player-fab-shell.is-closing {
