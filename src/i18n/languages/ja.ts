@@ -153,6 +153,7 @@ export const ja: Translation = {
 	[Key.diarySubtitle]: "いつでも、どこでも生活を共有",
 	[Key.diaryNoResults]: "一致する日記がありません",
 	[Key.diaryCount]: "件の日記",
+	[Key.diaryImageLoadFailed]: "画像の読み込みに失敗しました",
 
 	[Key.diaryTips]: "つぶやき、自分に聞かせる。",
 	[Key.diaryMinutesAgo]: "分前",

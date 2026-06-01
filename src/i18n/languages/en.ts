@@ -153,6 +153,7 @@ export const en: Translation = {
 	[Key.diarySubtitle]: "Share life, anytime, anywhere",
 	[Key.diaryNoResults]: "No matching moments",
 	[Key.diaryCount]: "entries",
+	[Key.diaryImageLoadFailed]: "Image failed to load",
 
 	[Key.diaryTips]: "Whispers to myself.",
 	[Key.diaryMinutesAgo]: "minutes ago",

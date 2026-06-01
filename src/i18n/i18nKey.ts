@@ -137,6 +137,7 @@ enum I18nKey {
 	diarySubtitle = "diarySubtitle",
 	diaryNoResults = "diaryNoResults",
 	diaryCount = "diaryCount",
+	diaryImageLoadFailed = "diaryImageLoadFailed",
 
 	diaryTips = "diaryTips",
 	diaryMinutesAgo = "diaryMinutesAgo",

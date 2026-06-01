@@ -150,6 +150,7 @@ export const zh_TW: Translation = {
 	[Key.diarySubtitle]: "隨時隨地，分享生活",
 	[Key.diaryNoResults]: "沒有匹配的日記",
 	[Key.diaryCount]: "條日記",
+	[Key.diaryImageLoadFailed]: "圖片載入失敗",
 
 	[Key.diaryTips]: "碎碎念，予己聽。",
 	[Key.diaryMinutesAgo]: "分鐘前",

@@ -183,7 +183,11 @@ function formatDateSimple(dateString: string): string {
 																							width="26"
 																							height="26"
 																						/>
-																						<span>图片加载失败</span>
+																						<span>
+																							{i18n(
+																								I18nKey.diaryImageLoadFailed,
+																							)}
+																						</span>
 																					</div>
 																					<img
 																						src={image}
@@ -270,6 +274,29 @@ function formatDateSimple(dateString: string): string {
 			shell.dataset.loadState = "error";
 		}
 
+		function findDiaryImageShell(target) {
+			if (!(target instanceof HTMLImageElement)) {
+				return null;
+			}
+
+			const shell = target.closest("[data-diary-image-shell]");
+			return shell instanceof HTMLElement ? shell : null;
+		}
+
+		function handleDiaryImageLoad(event) {
+			const shell = findDiaryImageShell(event.target);
+			if (shell) {
+				markLoaded(shell);
+			}
+		}
+
+		function handleDiaryImageError(event) {
+			const shell = findDiaryImageShell(event.target);
+			if (shell) {
+				markError(shell);
+			}
+		}
+
 		function bindDiaryImage(shell) {
 			if (!(shell instanceof HTMLElement) || shell.dataset.bound === "true") {
 				return;
@@ -290,22 +317,6 @@ function formatDateSimple(dateString: string): string {
 				}
 				return;
 			}
-
-			image.addEventListener(
-				"load",
-				() => {
-					markLoaded(shell);
-				},
-				{ once: true },
-			);
-
-			image.addEventListener(
-				"error",
-				() => {
-					markError(shell);
-				},
-				{ once: true },
-			);
 		}
 
 		function initDiaryImageSkeletons() {
@@ -334,6 +345,8 @@ function formatDateSimple(dateString: string): string {
 			document.addEventListener("astro:page-load", initCurrentDiaryImages);
 			document.addEventListener("astro:after-swap", initCurrentDiaryImages);
 			document.addEventListener("mizuki:swup-ready", initCurrentDiaryImages);
+			document.addEventListener("load", handleDiaryImageLoad, true);
+			document.addEventListener("error", handleDiaryImageError, true);
 			window.addEventListener("pageshow", initCurrentDiaryImages);
 		}
 

@@ -48,7 +48,7 @@ export const zh_CN: Translation = {
 	[Key.collectionNavigationTitle]: "津渡",
 	[Key.collectionNavigationDescription]:
 		"按标签筛选常用网站，沉淀你的导航收藏",
-	[Key.collectionFilesTitle]: "云盘",
+	[Key.collectionFilesTitle]: "典藏",
 	[Key.collectionFilesDescription]:
 		"通过 OpenList 访问 OneDrive 分享文件，在线浏览并下载",
 	[Key.collectionTagInternal]: "站内",
@@ -145,6 +145,7 @@ export const zh_CN: Translation = {
 	[Key.diarySubtitle]: "随时随地，分享生活",
 	[Key.diaryNoResults]: "没有匹配的日记",
 	[Key.diaryCount]: "条日记",
+	[Key.diaryImageLoadFailed]: "图片加载失败",
 
 	[Key.diaryTips]: "碎碎念，予己听。",
 	[Key.diaryMinutesAgo]: "分钟前",
