@@ -7,6 +7,7 @@ import { widgetConfigs } from "../config";
 import { initLinkPreloading } from "../utils/navigation-utils";
 import { SWUP_SELECTORS } from "./core/swup-config";
 import { SwupHooksManager } from "./core/swup-hooks";
+import { initDiaryImageLoader } from "./diary-image-loader";
 import { setupSakuraOnDOMReady } from "./effects/sakura-effect";
 import {
 	destroyTransitionEffect,
@@ -116,6 +117,9 @@ export class SwupManager {
 			cleanupFancybox: () => {
 				cleanupFancybox();
 			},
+			initDiaryImages: () => {
+				initDiaryImageLoader();
+			},
 			initCustomScrollbar: () => {
 				initCustomScrollbar();
 			},
@@ -130,6 +134,7 @@ export class SwupManager {
 			}
 
 			initFancybox();
+			initDiaryImageLoader();
 			checkKatex();
 			this.hooksManager.registerHooks();
 			this.dispatchSwupReady();
@@ -152,10 +157,12 @@ export class SwupManager {
 		if (document.readyState === "loading") {
 			document.addEventListener("DOMContentLoaded", async () => {
 				await initFancybox();
+				initDiaryImageLoader();
 				checkKatex();
 			});
 		} else {
 			initFancybox();
+			initDiaryImageLoader();
 			checkKatex();
 		}
 	}

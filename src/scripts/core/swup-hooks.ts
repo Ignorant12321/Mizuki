@@ -20,6 +20,7 @@ export interface SwupHookHandlers {
 	showBanner?: () => void;
 	initFancybox?: () => void;
 	cleanupFancybox?: () => void;
+	initDiaryImages?: () => void;
 	initCustomScrollbar?: () => void;
 	checkKatex?: () => void;
 }
@@ -108,6 +109,7 @@ export class SwupHooksManager {
 
 			// 初始化新页面的图片、公式、滚动条和 TOC
 			this.handlers.initFancybox?.();
+			this.handlers.initDiaryImages?.();
 			this.handlers.checkKatex?.();
 			this.handlers.initCustomScrollbar?.();
 
