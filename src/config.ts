@@ -147,7 +147,7 @@ export const siteConfig: SiteConfig = {
 	// 页面自动缩放配置
 	pageScaling: {
 		enable: true, // 是否开启自动缩放
-		targetWidth: 2000, // 目标宽度，低于此宽度时开始缩放
+		targetWidth: 1920, // 目标宽度，低于此宽度时开始缩放
 	},
 
 	bangumi: {
@@ -272,7 +272,8 @@ export const siteConfig: SiteConfig = {
 		},
 
 		navbar: {
-			transparentMode: "semifull", // 导航栏透明模式："semi" 半透明加圆角，"full" 完全透明，"semifull" 动态透明
+			transparentMode: "glass", // 导航栏透明模式："semi" 半透明加圆角，"full" 完全透明，"semifull" 动态透明，"glass" 滚动渐变
+			autoHide: false, // 滚动到横幅下方时是否自动隐藏导航栏
 		},
 	},
 	toc: {

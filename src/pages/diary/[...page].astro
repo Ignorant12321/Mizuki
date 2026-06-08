@@ -59,7 +59,7 @@ function formatDateSimple(dateString: string): string {
 		<div
 			class="card-base z-10 px-4 py-4 md:px-6 md:py-5 relative w-full bg-(--page-bg)"
 		>
-			<div class="relative max-w-3xl w-full mx-auto px-2 md:px-0">
+			<div class="relative w-full max-w-none mx-auto px-2 md:px-0">
 				<PageHeader
 					title={i18n(I18nKey.diary)}
 					subtitle={i18n(I18nKey.diarySubtitle)}
@@ -139,16 +139,20 @@ function formatDateSimple(dateString: string): string {
 
 																		let spanClass = "col-span-2";
 																		let aspectClass = "aspect-square";
+																		let imageClass =
+																			"w-full h-full object-cover";
 
 																		if (isSingle) {
 																			spanClass = "col-span-6";
-																			aspectClass =
-																				"aspect-21/9 md:aspect-3/1";
+																			aspectClass = "";
+																			imageClass =
+																				"w-full h-auto object-contain";
 																		} else if (isLastRow) {
 																			if (remainder === 1) {
 																				spanClass = "col-span-6";
-																				aspectClass =
-																					"aspect-21/9 md:aspect-3/1";
+																				aspectClass = "";
+																				imageClass =
+																					"w-full h-auto object-contain";
 																			} else if (remainder === 2) {
 																				spanClass = "col-span-3";
 																				aspectClass = "aspect-4/3";
@@ -192,7 +196,7 @@ function formatDateSimple(dateString: string): string {
 																					<img
 																						src={image}
 																						alt="diary moment"
-																						class="diary-image-media w-full h-full object-cover cursor-pointer"
+																						class={`diary-image-media ${imageClass} cursor-pointer`}
 																						loading="lazy"
 																						decoding="async"
 																						data-diary-image

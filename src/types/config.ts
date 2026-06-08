@@ -213,7 +213,8 @@ export interface SiteConfig {
 			url?: string;
 		};
 		navbar?: {
-			transparentMode?: "semi" | "full" | "semifull"; // 导航栏透明模式
+			transparentMode?: "semi" | "full" | "semifull" | "glass"; // 导航栏透明模式
+			autoHide?: boolean; // 滚动到横幅下方时是否自动隐藏导航栏，默认 true
 		};
 	};
 	toc: {

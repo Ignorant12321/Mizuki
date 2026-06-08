@@ -457,6 +457,37 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
   display: none !important;
 }
 
+/* 平板宽度下，列表模式保留左侧栏，隐藏右侧栏，避免额外空轨道 */
+@media (min-width: 768px) and (max-width: 1279px) {
+  #main-grid:not([data-layout-mode="grid"]) {
+    grid-template-columns: var(--sidebar-column-width) 1fr !important;
+    grid-template-rows: auto auto !important;
+  }
+
+  #main-grid:not([data-layout-mode="grid"]) #swup-container {
+    grid-column: 2 / 3 !important;
+    grid-row: 1 / 2 !important;
+  }
+
+  #main-grid:not([data-layout-mode="grid"]) #sidebar {
+    grid-column: 1 / 2 !important;
+    grid-row: 1 / 2 !important;
+    width: 100% !important;
+    max-width: var(--sidebar-column-width) !important;
+    margin-top: 0 !important;
+    margin-bottom: 1rem !important;
+  }
+
+  #main-grid:not([data-layout-mode="grid"]) .right-sidebar-container,
+  #main-grid:not([data-layout-mode="grid"]) #right-sidebar {
+    display: none !important;
+  }
+
+  #main-grid:not([data-layout-mode="grid"]) .footer {
+    grid-column: 1 / 3 !important;
+  }
+}
+
 /* Grid 模式下调整主网格布局 */
 #main-grid[data-layout-mode="grid"] {
   /* 在桌面端只显示左侧边栏和主内容 */
@@ -533,7 +564,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
    ========================================================================== */
 @media (min-width: 1280px) {
   #main-grid[data-layout-mode="grid"] {
-    grid-template-columns: 17.5rem 1fr !important;
+    grid-template-columns: var(--sidebar-column-width) 1fr !important;
   }
 
   #main-grid[data-layout-mode="grid"] #swup-container {
@@ -544,7 +575,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* 确保大屏桌面设备 Grid 模式配置 */
 @media (min-width: 1280px) {
   #main-grid[data-layout-mode="grid"] {
-    grid-template-columns: 17.5rem 1fr !important;
+    grid-template-columns: var(--sidebar-column-width) 1fr !important;
   }
 
   #main-grid[data-layout-mode="grid"] #swup-container {

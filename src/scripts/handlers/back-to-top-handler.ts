@@ -3,6 +3,7 @@
  * 管理返回顶部按钮和滚动监听
  */
 
+import { siteConfig } from "../../config";
 import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_HOME,
@@ -144,6 +145,12 @@ export class BackToTopHandler {
 	 */
 	private updateNavbarVisibility(scrollTop: number): void {
 		if (!this.bannerEnabled || !this.navbar) {
+			return;
+		}
+
+		const shouldAutoHide = siteConfig.banner.navbar?.autoHide ?? true;
+		if (!shouldAutoHide) {
+			this.navbar.classList.remove("navbar-hidden");
 			return;
 		}
 

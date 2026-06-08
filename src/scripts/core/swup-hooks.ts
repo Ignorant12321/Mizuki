@@ -3,6 +3,7 @@
  * 处理页面过渡过程中的各种钩子事件
  */
 
+import { siteConfig } from "../../config";
 import { pathsEqual, url } from "../../utils/url-utils";
 import type { FancyboxHandler } from "../handlers/fancybox-handler";
 import type { ScrollHandler } from "../handlers/scroll-handler";
@@ -192,6 +193,11 @@ export class SwupHooksManager {
 	 * 处理链接点击时的 navbar 隐藏
 	 */
 	private handleNavbarHideOnLinkClick(): void {
+		const shouldAutoHide = siteConfig.banner.navbar?.autoHide ?? true;
+		if (!shouldAutoHide) {
+			return;
+		}
+
 		const navbar = this.getCachedElement(SWUP_SELECTORS.navbarWrapper);
 		if (navbar && document.body.classList.contains("lg:is-home")) {
 			const threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 88;
@@ -231,7 +237,7 @@ export class SwupHooksManager {
 	}
 
 	/**
-	 * 重新初始化 semifull 模式滚动检测
+	 * 重新初始化 semifull / glass 模式滚动检测
 	 */
 	private reinitSemifullScrollDetection(): void {
 		const navbar = this.getCachedElement(SWUP_SELECTORS.navbar);
@@ -239,7 +245,10 @@ export class SwupHooksManager {
 			const transparentMode = navbar.getAttribute(
 				"data-transparent-mode",
 			);
-			if (transparentMode === "semifull") {
+			if (
+				transparentMode === "semifull" ||
+				transparentMode === "glass"
+			) {
 				if (
 					typeof (window as any).initSemifullScrollDetection ===
 					"function"
@@ -288,11 +297,14 @@ export class SwupHooksManager {
 		if (navbar) {
 			navbar.setAttribute("data-is-home", isHomePage.toString());
 
-			// 重新初始化 semifull 模式滚动检测
+			// 重新初始化 semifull / glass 模式滚动检测
 			const transparentMode = navbar.getAttribute(
 				"data-transparent-mode",
 			);
-			if (transparentMode === "semifull") {
+			if (
+				transparentMode === "semifull" ||
+				transparentMode === "glass"
+			) {
 				if (
 					typeof (window as any).initSemifullScrollDetection ===
 					"function"

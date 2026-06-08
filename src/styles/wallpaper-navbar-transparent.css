@@ -79,12 +79,45 @@ body.wallpaper-transparent #navbar[data-transparent-mode="semifull"][data-is-hom
   --nav-radius: 0;
 }
 
+/* Glass：顶部透明，滚动到横幅底部时渐变为实体导航栏 */
+#navbar[data-transparent-mode="glass"] {
+  --navbar-scroll-progress: 0;
+  --navbar-bg-alpha: 0;
+  --nav-bg: rgba(255, 255, 255, var(--navbar-bg-alpha));
+  --nav-blur: none;
+  --nav-shadow: none;
+  --nav-radius: 0 0 var(--radius-std) var(--radius-std);
+  --panel-bg: rgba(255, 255, 255, 0.92);
+  --panel-blur: blur(20px);
+}
+
+:root.dark #navbar[data-transparent-mode="glass"] {
+  --nav-bg: rgba(24, 25, 38, var(--navbar-bg-alpha));
+  --panel-bg: rgba(24, 25, 38, 0.92);
+}
+
+#navbar.navbar-sticky-shadow {
+  --nav-shadow: var(--shadow-lg);
+}
+
+#navbar[data-transparent-mode="glass"].scrolled.navbar-sticky-shadow {
+  --nav-shadow: var(--shadow-lg);
+}
+
 /* 混合模式滚动后 -> 回归毛玻璃 */
 body.wallpaper-transparent #navbar[data-transparent-mode="semifull"].scrolled {
   --nav-bg: var(--card-bg-transparent);
   --nav-blur: blur(8px);
   --nav-shadow: var(--shadow-lg);
   --nav-radius: var(--radius-std);
+}
+
+body.wallpaper-transparent #navbar[data-transparent-mode="semifull"]:not(.scrolled).navbar-sticky-shadow {
+  --nav-shadow: none;
+}
+
+#navbar[data-transparent-mode="glass"]:not(.scrolled).navbar-sticky-shadow {
+  --nav-shadow: none;
 }
 
 /* 导航栏样式核心 (Navbar Core) */
@@ -101,6 +134,12 @@ body.wallpaper-transparent #navbar[data-transparent-mode="semifull"].scrolled {
   /* 性能优化 */
   will-change: background, backdrop-filter, box-shadow;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#navbar[data-transparent-mode="glass"] > div {
+  transition:
+    box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* 子组件样式 (Sub-Components)

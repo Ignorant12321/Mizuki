@@ -183,9 +183,10 @@ const {
 						"data-transparent-mode",
 						navbarTransparentMode,
 					);
-					// 如果是 semifull 模式，重新初始化滚动检测
+					// 如果是 semifull / glass 模式，重新初始化滚动检测
 					if (
-						navbarTransparentMode === "semifull" &&
+						(navbarTransparentMode === "semifull" ||
+							navbarTransparentMode === "glass") &&
 						window.initSemifullScrollDetection
 					) {
 						window.initSemifullScrollDetection();

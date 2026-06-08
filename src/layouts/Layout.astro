@@ -53,7 +53,9 @@ const navbarTransparentMode =
 
 // 判断是否应该显示顶部高光效果（只在full和semifull模式下显示）
 const shouldShowTopHighlight =
-	navbarTransparentMode === "full" || navbarTransparentMode === "semifull";
+	navbarTransparentMode === "full" ||
+	navbarTransparentMode === "semifull" ||
+	navbarTransparentMode === "glass";
 
 // 获取默认banner图片的辅助函数
 const getDefaultBanner = (): string => {
@@ -176,7 +178,9 @@ const fontBlacklistSelectors =
 		.map((selector) => selector.trim())
 		.filter(
 			(selector) =>
-				selector.length > 0 && !selector.includes("{") && !selector.includes("}"),
+				selector.length > 0 &&
+				!selector.includes("{") &&
+				!selector.includes("}"),
 		) ?? [];
 
 const fontBlacklistCss =
@@ -188,7 +192,7 @@ const fontBlacklistCss =
 <!doctype html>
 <html
 	lang={siteLang}
-	class="bg-[var(--page-bg)] text-[14px] md:text-[16px]"
+	class="bg-[var(--page-bg)] text-[14px] md:text-[16.5px]"
 	data-overlayscrollbars-initialize
 >
 	<head>
@@ -223,15 +227,13 @@ const fontBlacklistCss =
 			define:vars={{
 				configHue,
 				"page-width": `${PAGE_WIDTH}rem`,
+				"sidebar-column-width": "clamp(17.5rem, 17vw, 18.75rem)",
 			}}
 		></style>
 		{fontBlacklistCss && <style is:global set:html={fontBlacklistCss} />}
 
 		<!-- Live2D 看板娘样式 -->
-		<link
-			rel="stylesheet"
-			href={live2dConfig.paths.waifuCss}
-		/>
+		<link rel="stylesheet" href={live2dConfig.paths.waifuCss} />
 
 		<link
 			rel="alternate"
