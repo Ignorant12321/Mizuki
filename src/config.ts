@@ -748,10 +748,10 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 		breakpoints: {
 			// 移动端断点：屏幕宽度小于768px
 			mobile: 768,
-			// 平板端断点：屏幕宽度小于1280px
-			tablet: 1280,
-			// 桌面端断点：屏幕宽度大于等于1280px
-			desktop: 1280,
+			// 平板端断点：屏幕宽度小于1279px
+			tablet: 1279,
+			// 桌面端断点：屏幕宽度大于等于1279px
+			desktop: 1279,
 		},
 	},
 };

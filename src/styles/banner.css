@@ -54,7 +54,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 }
 
 /* 桌面端 Banner 模式下的主内容区域位置 */
-@media (min-width: 1280px) {
+@media (min-width: 1279px) {
   body.enable-banner .absolute.w-full.z-30 {
     top: 35vh !important;
   }
@@ -214,9 +214,9 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 }
 
 /* ==========================================================================
-   平板设备横幅优化 (768px - 1279px)
+   平板设备横幅优化 (768px - 1278px)
    ========================================================================== */
-@media (min-width: 768px) and (max-width: 1279px) {
+@media (min-width: 768px) and (max-width: 1278px) {
   /* Banner wrapper 高度优化 */
   body.enable-banner #banner-wrapper:not(.mobile-hide-banner) {
     height: 70vh !important;
@@ -306,9 +306,9 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 }
 
 /* ==========================================================================
-   桌面端样式 (1280px+)
+   桌面端样式 (1279px+)
    ========================================================================== */
-@media (min-width: 1280px) {
+@media (min-width: 1279px) {
   .banner-text-overlay {
     align-items: center !important;
     justify-content: center !important;
@@ -333,7 +333,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* ==========================================================================
    移动端图片优化
    ========================================================================== */
-@media (max-width: 1279px) {
+@media (max-width: 1278px) {
   /* 移动端 banner 加载动画优化 */
   .onload-animation-fade-in {
     animation: mobile-fade-in 0.8s ease-out forwards !important;
@@ -355,7 +355,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* ==========================================================================
    手机端非首页隐藏 Banner
    ========================================================================== */
-@media (max-width: 1279px) {
+@media (max-width: 1278px) {
   #banner-wrapper {
     transition:
       transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
@@ -393,7 +393,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* ==========================================================================
    移动端导航栏与 Banner 的协调
    ========================================================================== */
-@media (max-width: 1279px) {
+@media (max-width: 1278px) {
   /* 暗色主题下的导航栏 */
   :root.dark #navbar-wrapper {
     /* 移除覆盖样式，让 Navbar.astro 的圆角和半透明效果生效 */
@@ -403,7 +403,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* ==========================================================================
    移动端 Banner 性能优化
    ========================================================================== */
-@media (max-width: 1279px) {
+@media (max-width: 1278px) {
   .banner-container {
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
@@ -458,7 +458,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 }
 
 /* 平板宽度下，列表模式保留左侧栏，隐藏右侧栏，避免额外空轨道 */
-@media (min-width: 768px) and (max-width: 1279px) {
+@media (min-width: 768px) and (max-width: 1278px) {
   #main-grid:not([data-layout-mode="grid"]) {
     grid-template-columns: var(--sidebar-column-width) 1fr !important;
     grid-template-rows: auto auto !important;
@@ -496,7 +496,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* ==========================================================================
    平板设备 Grid 模式
    ========================================================================== */
-@media (min-width: 768px) and (max-width: 1279px) {
+@media (min-width: 768px) and (max-width: 1278px) {
   #main-grid[data-layout-mode="grid"] {
     grid-template-columns: 1fr !important;
     grid-template-rows: auto auto auto !important;
@@ -562,7 +562,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* ==========================================================================
    桌面设备 Grid 模式
    ========================================================================== */
-@media (min-width: 1280px) {
+@media (min-width: 1279px) {
   #main-grid[data-layout-mode="grid"] {
     grid-template-columns: var(--sidebar-column-width) 1fr !important;
   }
@@ -573,7 +573,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 }
 
 /* 确保大屏桌面设备 Grid 模式配置 */
-@media (min-width: 1280px) {
+@media (min-width: 1279px) {
   #main-grid[data-layout-mode="grid"] {
     grid-template-columns: var(--sidebar-column-width) 1fr !important;
   }
@@ -586,7 +586,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* ==========================================================================
    移动端当 Banner 被禁用时的布局样式
    ========================================================================== */
-@media (max-width: 1279px) {
+@media (max-width: 1278px) {
   .absolute.w-full.z-30.no-banner-layout {
     top: 5.5rem !important;
     min-height: calc(100vh - 5.5rem) !important;
@@ -604,7 +604,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 }
 
 /* 平板设备当 Banner 被禁用时的布局样式 */
-@media (min-width: 768px) and (max-width: 1279px) {
+@media (min-width: 768px) and (max-width: 1278px) {
   .absolute.w-full.z-30.no-banner-layout {
     top: 5.5rem !important;
     min-height: calc(100vh - 5.5rem) !important;
@@ -615,7 +615,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* ==========================================================================
    移动端横屏优化
    ========================================================================== */
-@media (max-width: 1279px) and (orientation: landscape) {
+@media (max-width: 1278px) and (orientation: landscape) {
   #banner-wrapper:not(.mobile-hide-banner) {
     top: 0 !important;
     height: 60vh !important;
@@ -653,7 +653,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* ==========================================================================
    移动端暗色模式优化
    ========================================================================== */
-@media (max-width: 1279px) and (prefers-color-scheme: dark) {
+@media (max-width: 1278px) and (prefers-color-scheme: dark) {
   .banner-text-overlay {
     background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
   }
@@ -705,7 +705,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* ==========================================================================
    移动端水波纹特殊优化
    ========================================================================== */
-@media (max-width: 1279px) {
+@media (max-width: 1278px) {
   #header-waves {
     overflow: visible;
     z-index: 5;

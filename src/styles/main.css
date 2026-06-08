@@ -26,7 +26,7 @@
   --font-sans: "Roboto", "sans-serif", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   --breakpoint-md: 768px;
-  --breakpoint-lg: 1280px;
+  --breakpoint-lg: 1279px;
   --breakpoint-xl: 1920px;
 }
 
