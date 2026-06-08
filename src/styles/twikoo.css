@@ -70,17 +70,15 @@ html.dark {
 }
 
 .tk-comment {
-  @apply border-[1px] border-(--line-divider) p-4 rounded-2xl transition-all duration-300;
+  @apply border-[1px] border-(--line-divider) p-4 rounded-2xl transition-colors duration-200;
   background: linear-gradient(135deg, var(--card-bg) 0%, rgba(var(--primary), 0.02) 100%);
   .tk-action-icon {
     @apply text-(--primary)!;
     svg {
-      @apply fill-(--primary) hover:scale-110 transition-transform duration-200;
+      @apply fill-(--primary);
     }
   }
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     @apply border-(--primary);
     z-index: 2;
   }
@@ -131,7 +129,7 @@ html.dark {
 
 /* Replies */
 .tk-replies .tk-comment {
-  @apply border-l-4 border-l-(--btn-regular-bg)/30 p-3 hover:border-(--primary) transition-all duration-300;
+  @apply border-l-4 border-l-(--btn-regular-bg)/30 p-3 hover:border-(--primary) transition-colors duration-200;
 }
 
 .twikoo .code-block {
@@ -164,6 +162,7 @@ Make the emoji component display correctly when there are too many emoji packs
 
 /* Interaction */
 .tk-action-icon,
+.tk-icon,
 .tk-owo,
 .tk-submit,
 .tk-cancel,
@@ -173,6 +172,16 @@ Make the emoji component display correctly when there are too many emoji packs
 .tk-edit {
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.tk-icon,
+.tk-action-icon,
+.tk-submit-action-icon,
+.tk-admin,
+.tk-admin svg {
+  color: var(--primary) !important;
+  fill: var(--primary) !important;
+  stroke: var(--primary) !important;
 }
 
 .tk-action {
