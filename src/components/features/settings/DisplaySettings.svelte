@@ -7,7 +7,6 @@
 	import I18nKey from "@i18n/i18nKey";
 	import { i18n } from "@i18n/translation";
 	import Icon from "@iconify/svelte";
-	import { panelManager } from "@utils/panel-manager.js";
 	import {
 		getDefaultHue,
 		getDefaultBannerWavesEnabled,
@@ -166,9 +165,21 @@
 		}
 	}
 
-	async function closePanel() {
-		await panelManager.closePanel("display-setting");
-	}
+	$: hueNeedsReset = isMounted && hue !== defaultHue;
+	$: wallpaperModeNeedsReset =
+		isMounted && wallpaperMode !== getDefaultWallpaperMode();
+	$: wallpaperTransparencyNeedsReset =
+		isMounted &&
+		(wallpaperOpacity !== getDefaultWallpaperOpacity() ||
+			wallpaperBlur !== getDefaultWallpaperBlur());
+	$: effectsSettingsNeedReset =
+		isMounted &&
+		(live2dEnabled !== getDefaultLive2dEnabled() ||
+			clickEffectEnabled !== getDefaultClickEffectEnabled() ||
+			bannerWavesEnabled !== getDefaultBannerWavesEnabled() ||
+			sakuraEnabled !== getDefaultSakuraEnabled());
+	$: layoutSettingsNeedReset =
+		isMounted && layoutMode !== getDefaultPostListLayout();
 
 	onMount(() => {
 		defaultHue = getDefaultHue();
@@ -230,36 +241,25 @@
 	class:is-wallpaper-fullscreen={lockWallpaperPanelHeight}
 >
 	<div class="panel-scroll">
-		<div class="panel-header">
-			<div class="panel-heading">
-				<div class="panel-title-row">
-					<Icon
-						icon="material-symbols:palette-outline"
-						class="text-[1.05rem]"
-					/>
-					<div>
-						<div class="panel-title">
-							{i18n(I18nKey.displaySettings)}
-						</div>
-					</div>
-				</div>
-			</div>
-			<button
-				type="button"
-				aria-label={i18n(I18nKey.announcementClose)}
-				class="panel-close-btn"
-				on:click={closePanel}
-			>
-				<Icon
-					icon="material-symbols:close-rounded"
-					class="text-[0.95rem]"
-				/>
-			</button>
-		</div>
-
 		<section class="setting-section">
 			<div class="section-header">
-				<div class="section-title">{i18n(I18nKey.themeColor)}</div>
+				<div class="section-title-row">
+					<div class="section-title">{i18n(I18nKey.themeColor)}</div>
+					<button
+						type="button"
+						aria-label={i18n(I18nKey.resetThemeColor)}
+						aria-hidden={!hueNeedsReset}
+						tabindex={hueNeedsReset ? 0 : -1}
+						class="section-reset-btn"
+						class:is-hidden={!hueNeedsReset}
+						on:click|stopPropagation={resetHue}
+					>
+						<Icon
+							icon="fa7-solid:arrow-rotate-left"
+							class="text-[0.875rem]"
+						/>
+					</button>
+				</div>
 				<div class="section-header-actions">
 					<input
 						id="theme-color-hue-input"
@@ -273,18 +273,6 @@
 						class="value-chip"
 						on:change={clampHue}
 					/>
-					<button
-						type="button"
-						aria-label={i18n(I18nKey.resetThemeColor)}
-						class="section-reset-btn"
-						class:is-disabled={hue === defaultHue}
-						on:click={resetHue}
-					>
-						<Icon
-							icon="fa7-solid:arrow-rotate-left"
-							class="text-[0.875rem]"
-						/>
-					</button>
 				</div>
 			</div>
 			<input
@@ -302,17 +290,18 @@
 
 		<section class="setting-section">
 			<div class="section-header">
-				<div class="section-title">
-					{i18n(I18nKey.wallpaperModeTitle)}
-				</div>
-				<div class="section-header-actions">
+				<div class="section-title-row">
+					<div class="section-title">
+						{i18n(I18nKey.wallpaperModeTitle)}
+					</div>
 					<button
 						type="button"
 						aria-label={i18n(I18nKey.resetWallpaperMode)}
+						aria-hidden={!wallpaperModeNeedsReset}
+						tabindex={wallpaperModeNeedsReset ? 0 : -1}
 						class="section-reset-btn"
-						class:is-disabled={wallpaperMode ===
-							getDefaultWallpaperMode()}
-						on:click={resetWallpaperMode}
+						class:is-hidden={!wallpaperModeNeedsReset}
+						on:click|stopPropagation={resetWallpaperMode}
 					>
 						<Icon
 							icon="fa7-solid:arrow-rotate-left"
@@ -345,20 +334,22 @@
 			>
 				<section class="setting-section fullscreen-extra-section">
 					<div class="section-header">
-						<div class="section-title">
-							{i18n(I18nKey.wallpaperTransparencySettings)}
-						</div>
-						<div class="section-header-actions">
+						<div class="section-title-row">
+							<div class="section-title">
+								{i18n(I18nKey.wallpaperTransparencySettings)}
+							</div>
 							<button
 								type="button"
 								aria-label={i18n(
 									I18nKey.resetWallpaperTransparency,
 								)}
+								aria-hidden={!wallpaperTransparencyNeedsReset}
+								tabindex={wallpaperTransparencyNeedsReset
+									? 0
+									: -1}
 								class="section-reset-btn"
-								class:is-disabled={wallpaperOpacity ===
-									getDefaultWallpaperOpacity() &&
-									wallpaperBlur === getDefaultWallpaperBlur()}
-								on:click={resetWallpaperTransparency}
+								class:is-hidden={!wallpaperTransparencyNeedsReset}
+								on:click|stopPropagation={resetWallpaperTransparency}
 							>
 								<Icon
 									icon="fa7-solid:arrow-rotate-left"
@@ -372,7 +363,9 @@
 						<div class="slider-block">
 							<div class="slider-meta">
 								<span>{i18n(I18nKey.wallpaperOpacity)}</span>
-								<span>{Math.round(wallpaperOpacity * 100)}%</span>
+								<span
+									>{Math.round(wallpaperOpacity * 100)}%</span
+								>
 							</div>
 							<input
 								name="wallpaper-opacity"
@@ -411,20 +404,18 @@
 
 		<section class="setting-section">
 			<div class="section-header">
-				<div class="section-title">{i18n(I18nKey.effectsSettings)}</div>
-				<div class="section-header-actions">
+				<div class="section-title-row">
+					<div class="section-title">
+						{i18n(I18nKey.effectsSettings)}
+					</div>
 					<button
 						type="button"
 						aria-label={i18n(I18nKey.resetEffectsSettings)}
+						aria-hidden={!effectsSettingsNeedReset}
+						tabindex={effectsSettingsNeedReset ? 0 : -1}
 						class="section-reset-btn"
-						class:is-disabled={live2dEnabled ===
-							getDefaultLive2dEnabled() &&
-							clickEffectEnabled ===
-								getDefaultClickEffectEnabled() &&
-							bannerWavesEnabled ===
-								getDefaultBannerWavesEnabled() &&
-							sakuraEnabled === getDefaultSakuraEnabled()}
-						on:click={resetEffectsSettings}
+						class:is-hidden={!effectsSettingsNeedReset}
+						on:click|stopPropagation={resetEffectsSettings}
 					>
 						<Icon
 							icon="fa7-solid:arrow-rotate-left"
@@ -530,15 +521,18 @@
 
 		<section class="setting-section">
 			<div class="section-header">
-				<div class="section-title">{i18n(I18nKey.layoutSettings)}</div>
-				<div class="section-header-actions">
+				<div class="section-title-row">
+					<div class="section-title">
+						{i18n(I18nKey.layoutSettings)}
+					</div>
 					<button
 						type="button"
 						aria-label={i18n(I18nKey.resetLayoutSettings)}
+						aria-hidden={!layoutSettingsNeedReset}
+						tabindex={layoutSettingsNeedReset ? 0 : -1}
 						class="section-reset-btn"
-						class:is-disabled={layoutMode ===
-							getDefaultPostListLayout()}
-						on:click={resetLayoutSettings}
+						class:is-hidden={!layoutSettingsNeedReset}
+						on:click|stopPropagation={resetLayoutSettings}
 					>
 						<Icon
 							icon="fa7-solid:arrow-rotate-left"

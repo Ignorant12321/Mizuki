@@ -1,5 +1,9 @@
 #display-setting {
-  --panel-scroll-safe-right: 1.35rem;
+  --panel-scroll-safe-right: 0.55rem;
+  --panel-scrollbar-track: transparent;
+  --panel-scrollbar-thumb: rgba(148, 163, 184, 0.34);
+  --panel-scrollbar-thumb-hover: color-mix(in oklab, var(--primary) 24%, #dbe6e4);
+  --panel-scrollbar-thumb-active: color-mix(in oklab, var(--primary) 38%, #edf5f4);
   --text-primary: var(--content-meta);
   position: fixed;
   display: flex;
@@ -27,6 +31,9 @@
 }
 
 :global(html.dark) #display-setting {
+  --panel-scrollbar-thumb: rgba(226, 232, 240, 0.22);
+  --panel-scrollbar-thumb-hover: color-mix(in oklab, var(--primary) 22%, rgba(255, 255, 255, 0.46));
+  --panel-scrollbar-thumb-active: color-mix(in oklab, var(--primary) 34%, rgba(255, 255, 255, 0.58));
   background: linear-gradient(180deg, color-mix(in oklab, #1c2530 84%, var(--card-bg)) 0%, color-mix(in oklab, #0d1218 90%, var(--card-bg)) 40%);
   border-color: color-mix(in oklab, #2a3741 86%, var(--line-color));
   box-shadow:
@@ -40,92 +47,47 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  padding: 0.95rem 0.95rem 1rem 1rem;
+  gap: 0.82rem;
+  padding: 0.85rem 0.55rem 0.9rem 0.85rem;
   padding-right: var(--panel-scroll-safe-right);
   scroll-padding-bottom: 1rem;
   overscroll-behavior: contain;
-  scrollbar-gutter: stable both-edges;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in oklab, var(--primary) 52%, #b7d7d0) color-mix(in oklab, var(--primary) 10%, transparent);
+  scrollbar-color: var(--panel-scrollbar-thumb) var(--panel-scrollbar-track);
 }
 
-#display-setting .panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.1rem 0.15rem 0.85rem;
-  border-bottom: 0;
-  margin-bottom: 0.05rem;
-  position: relative;
+#display-setting .panel-scroll:hover {
+  scrollbar-color: var(--panel-scrollbar-thumb-hover) var(--panel-scrollbar-track);
 }
 
-#display-setting .panel-header::after {
-  content: "";
-  position: absolute;
-  left: 0.05rem;
-  right: 0.05rem;
-  bottom: 0;
-  height: 1px;
+#display-setting .panel-scroll::-webkit-scrollbar {
+  width: 0.38rem;
+}
+
+#display-setting .panel-scroll::-webkit-scrollbar-track {
+  background: var(--panel-scrollbar-track);
+}
+
+#display-setting .panel-scroll::-webkit-scrollbar-thumb {
+  background: var(--panel-scrollbar-thumb);
   border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    color-mix(in oklab, var(--line-divider) 72%, transparent) 18%,
-    var(--line-divider) 50%,
-    color-mix(in oklab, var(--line-divider) 72%, transparent) 82%,
-    transparent 100%
-  );
 }
 
-#display-setting .panel-heading {
-  min-width: 0;
+#display-setting .panel-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--panel-scrollbar-thumb-hover);
 }
 
-#display-setting .panel-title-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.55rem;
-  min-width: 0;
-  color: var(--primary);
+#display-setting .panel-scroll::-webkit-scrollbar-thumb:active {
+  background: var(--panel-scrollbar-thumb-active);
 }
 
-#display-setting .panel-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--primary);
-}
-
-#display-setting .panel-title,
 #display-setting .section-title,
 #display-setting .slider-meta,
 #display-setting .effect-meta,
 #display-setting .mode-button,
 #display-setting .toggle-button {
   transition: color 0.18s ease;
-}
-
-#display-setting .panel-close-btn {
-  width: 1.95rem;
-  height: 1.95rem;
-  border-radius: 0.58rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(160deg, color-mix(in oklab, #fff 10%, var(--card-bg)) 0%, color-mix(in oklab, #000 2%, var(--card-bg)) 100%);
-  border: 1px solid transparent;
-  box-shadow: 0 0 0 1px color-mix(in oklab, #000 8%, transparent);
-  color: var(--text-primary);
-  transition: all 0.18s ease;
-}
-
-#display-setting .panel-close-btn:hover {
-  background: linear-gradient(160deg, color-mix(in oklab, #fff 10%, var(--card-bg)) 0%, color-mix(in oklab, #000 2%, var(--card-bg)) 100%);
-  border-color: color-mix(in oklab, #000 18%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in oklab, #000 12%, transparent);
-  color: var(--primary);
 }
 
 #display-setting .section-reset-btn {
@@ -149,8 +111,8 @@
   color: var(--primary);
 }
 
-#display-setting .section-reset-btn.is-disabled {
-  opacity: 0.42;
+#display-setting .section-reset-btn.is-hidden {
+  opacity: 0;
   pointer-events: none;
 }
 
@@ -210,6 +172,13 @@
 
 #display-setting .section-header-actions input {
   background: transparent;
+}
+
+#display-setting .section-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
 }
 
 #display-setting .section-title {
@@ -299,6 +268,7 @@
 
 #display-setting .mode-button,
 #display-setting .toggle-button {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -313,7 +283,38 @@
   font-size: 0.86rem;
   font-weight: 600;
   line-height: 1.2;
-  transition: all 0.18s ease;
+  overflow: hidden;
+  transform: scale(1);
+  transition:
+    transform 0.18s cubic-bezier(0.2, 0.9, 0.2, 1),
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease,
+    background-color 0.18s ease;
+  will-change: transform;
+}
+
+#display-setting .mode-button::before,
+#display-setting .toggle-button::before,
+#display-setting .effect-row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 42%, color-mix(in oklab, var(--primary) 20%, transparent) 0%, color-mix(in oklab, var(--primary) 10%, transparent) 38%, transparent 72%);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.72);
+  transition:
+    opacity 0.18s ease,
+    transform 0.24s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+#display-setting .mode-button > *,
+#display-setting .toggle-button > *,
+#display-setting .effect-row > * {
+  position: relative;
+  z-index: 1;
 }
 
 #display-setting .effects-list {
@@ -323,6 +324,7 @@
 }
 
 #display-setting .effect-row {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -333,7 +335,15 @@
   background: transparent;
   border: 1px solid color-mix(in oklab, var(--text-primary) 36%, transparent);
   box-shadow: none;
-  transition: all 0.18s ease;
+  overflow: hidden;
+  transform: scale(1);
+  transition:
+    transform 0.18s cubic-bezier(0.2, 0.9, 0.2, 1),
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease,
+    background-color 0.18s ease;
+  will-change: transform;
   cursor: pointer;
 }
 
@@ -352,6 +362,27 @@
   background: transparent;
   border-color: color-mix(in oklab, var(--text-primary) 56%, transparent);
   box-shadow: none;
+}
+
+#display-setting .mode-button:hover::before,
+#display-setting .toggle-button:hover::before,
+#display-setting .effect-row:hover::before {
+  opacity: 0.28;
+  transform: scale(1);
+}
+
+#display-setting .mode-button:active,
+#display-setting .toggle-button:active,
+#display-setting .effect-row:active {
+  transform: scale(0.965);
+  transition-duration: 80ms;
+}
+
+#display-setting .mode-button:active::before,
+#display-setting .toggle-button:active::before,
+#display-setting .effect-row:active::before {
+  opacity: 0.46;
+  transform: scale(1.12);
 }
 
 #display-setting .effect-meta {
@@ -424,7 +455,7 @@
   border: 1px solid color-mix(in oklab, #000 16%, transparent);
   transform: translate(0, -50%);
   box-shadow: none;
-  transition: transform 0.18s ease;
+  transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.2, 1);
 }
 
 #display-setting .effect-row.is-active .effect-switch {
@@ -438,6 +469,35 @@
   border-color: color-mix(in oklab, var(--primary) 22%, transparent);
   box-shadow: none;
   transform: translate(0.92rem, -50%);
+}
+
+#display-setting .effect-row:active .effect-thumb {
+  transform: translate(0, -50%) scale(1.08);
+}
+
+#display-setting .effect-row.is-active:active .effect-thumb {
+  transform: translate(0.92rem, -50%) scale(1.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #display-setting .mode-button,
+  #display-setting .toggle-button,
+  #display-setting .effect-row {
+    transition-duration: 0.01ms;
+    will-change: auto;
+  }
+
+  #display-setting .mode-button:active,
+  #display-setting .toggle-button:active,
+  #display-setting .effect-row:active {
+    transform: scale(1);
+  }
+
+  #display-setting .mode-button::before,
+  #display-setting .toggle-button::before,
+  #display-setting .effect-row::before {
+    display: none;
+  }
 }
 
 #display-setting .mode-button,
@@ -545,16 +605,12 @@
   }
 
   #display-setting .panel-scroll {
-    padding-right: 0.8rem;
+    padding-right: var(--panel-scroll-safe-right);
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 }
 
 @media (max-width: 640px) {
-  #display-setting .panel-title {
-    font-size: 0.98rem;
-  }
-
   #display-setting .mode-button,
   #display-setting .effect-row,
   #display-setting .toggle-button {
