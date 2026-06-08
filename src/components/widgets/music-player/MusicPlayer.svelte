@@ -244,7 +244,7 @@
 		scheduleFabPanelLayoutUpdate();
 	}
 
-	function handleFloatingTocBeforeOpen() {
+	function handleCompetingPanelBeforeOpen() {
 		musicPlayerStore.setExpanded(false);
 	}
 
@@ -283,7 +283,11 @@
 		});
 		window.addEventListener(
 			"floating-toc:before-open",
-			handleFloatingTocBeforeOpen,
+			handleCompetingPanelBeforeOpen,
+		);
+		window.addEventListener(
+			"display-settings:before-open",
+			handleCompetingPanelBeforeOpen,
 		);
 	});
 
@@ -295,7 +299,11 @@
 			window.removeEventListener("resize", handleFabViewportChange);
 			window.removeEventListener(
 				"floating-toc:before-open",
-				handleFloatingTocBeforeOpen,
+				handleCompetingPanelBeforeOpen,
+			);
+			window.removeEventListener(
+				"display-settings:before-open",
+				handleCompetingPanelBeforeOpen,
 			);
 		}
 		clearFabPanelCloseTimer();

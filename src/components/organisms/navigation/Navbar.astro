@@ -159,6 +159,10 @@ async function loadButtonScript() {
         const settingBtn = document.getElementById("display-settings-switch");
         if (settingBtn) {
             settingBtn.onclick = async function () {
+                const settingPanel = document.getElementById("display-setting");
+                if (settingPanel?.classList.contains("float-panel-closed")) {
+                    window.dispatchEvent(new CustomEvent("display-settings:before-open"));
+                }
                 await panelManager.togglePanel('display-setting');
             };
         }
@@ -177,6 +181,9 @@ async function loadButtonScript() {
             settingBtn.onclick = function () {
                 const settingPanel = document.getElementById("display-setting");
                 if (settingPanel) {
+                    if (settingPanel.classList.contains("float-panel-closed")) {
+                        window.dispatchEvent(new CustomEvent("display-settings:before-open"));
+                    }
                     settingPanel.classList.toggle("float-panel-closed");
                 }
             };
