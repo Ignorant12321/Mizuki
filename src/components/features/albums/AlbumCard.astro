@@ -10,19 +10,35 @@ const { album } = Astro.props as AlbumCardProps;
 <a
 	href={`/albums/${album.id}/`}
 	data-tags={album.tags?.join(",") || ""}
-	class="album-card group relative block overflow-hidden rounded-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+	class="album-card relative block overflow-hidden rounded-xl transition-shadow duration-300 hover:shadow-xl"
 >
 	<!-- Cover Image -->
-	<div class="aspect-4/3 relative overflow-hidden">
+	<div
+		class="album-cover-shell aspect-4/3 relative overflow-hidden"
+		data-progressive-image-shell
+		data-loaded={album.cover ? "false" : "error"}
+	>
 		{
 			album.cover ? (
-				<img
-					src={album.cover}
-					alt={album.title}
-					class="w-full h-full object-cover pointer-events-none transition-transform duration-500 group-hover:scale-105"
-					loading="lazy"
-					decoding="async"
-				/>
+				<>
+					<div class="album-image-skeleton" aria-hidden="true">
+						<div class="album-image-skeleton-shine" />
+					</div>
+					<img
+						src={album.cover}
+						alt={album.title}
+						class="album-cover-image w-full h-full object-cover pointer-events-none"
+						loading="lazy"
+						decoding="async"
+						data-progressive-image
+					/>
+					<div class="album-image-error" aria-hidden="true">
+						<Icon
+							name="material-symbols:broken-image-outline-rounded"
+							class="text-4xl"
+						/>
+					</div>
+				</>
 			) : (
 				<div class="w-full h-full bg-[var(--btn-regular-bg)] flex items-center justify-center">
 					<Icon
@@ -113,6 +129,149 @@ const { album } = Astro.props as AlbumCardProps;
 
 	.album-card.filtered-out {
 		display: none;
+	}
+
+	.album-cover-shell {
+		isolation: isolate;
+		background: color-mix(in oklab, var(--card-bg-alt) 88%, var(--line-color));
+	}
+
+	.album-image-skeleton {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		pointer-events: none;
+		background:
+			linear-gradient(
+				135deg,
+				color-mix(in oklab, var(--card-bg-alt) 78%, white 22%) 0%,
+				color-mix(in oklab, var(--line-color) 72%, white 28%) 100%
+			),
+			color-mix(in oklab, var(--card-bg-alt) 88%, var(--line-color));
+		box-shadow:
+			inset 0 0 0 1px
+				color-mix(in oklab, var(--line-color) 70%, transparent),
+			inset 0 18px 42px color-mix(in oklab, white 44%, transparent);
+		transition:
+			opacity 520ms ease,
+			visibility 520ms ease;
+	}
+
+	.album-image-skeleton-shine {
+		position: absolute;
+		inset: 0 -45%;
+		border-radius: inherit;
+		background:
+			linear-gradient(
+				105deg,
+				transparent 0%,
+				transparent 34%,
+				color-mix(in oklab, white 68%, transparent) 47%,
+				transparent 62%,
+				transparent 100%
+			),
+			radial-gradient(
+				circle at top left,
+				color-mix(in oklab, var(--primary) 11%, transparent) 0%,
+				transparent 54%
+			),
+			linear-gradient(
+				135deg,
+				color-mix(in oklab, var(--line-color) 42%, transparent),
+				color-mix(in oklab, white 28%, transparent)
+			);
+		animation: albumImageSkeletonPulse 1.2s ease-in-out infinite;
+	}
+
+	.album-cover-shell .album-cover-image {
+		opacity: 0;
+		transition:
+			opacity 560ms ease,
+			transform 500ms ease;
+	}
+
+	.album-cover-shell[data-loaded="true"] .album-cover-image {
+		opacity: 1;
+	}
+
+	.album-card:hover .album-cover-image {
+		transform: scale(1.05);
+	}
+
+	.album-cover-shell[data-loaded="true"] .album-image-skeleton,
+	.album-cover-shell[data-loaded="error"] .album-image-skeleton {
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	.album-image-error {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--content-meta);
+		background: color-mix(in oklab, var(--btn-regular-bg) 88%, white 12%);
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+		transition:
+			opacity 260ms ease,
+			visibility 260ms ease;
+	}
+
+	.album-cover-shell[data-loaded="error"] .album-image-error {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	:global(.dark) .album-image-skeleton {
+		background:
+			linear-gradient(
+				135deg,
+				color-mix(in oklab, var(--card-bg) 84%, black 16%) 0%,
+				color-mix(in oklab, var(--line-color) 74%, black 26%) 100%
+			),
+			color-mix(in oklab, var(--card-bg) 90%, black 10%);
+		box-shadow:
+			inset 0 0 0 1px
+				color-mix(in oklab, var(--line-color) 78%, transparent),
+			inset 0 18px 42px color-mix(in oklab, black 24%, transparent);
+	}
+
+	:global(.dark) .album-image-skeleton-shine {
+		background:
+			linear-gradient(
+				105deg,
+				transparent 0%,
+				transparent 34%,
+				color-mix(in oklab, white 18%, transparent) 47%,
+				transparent 62%,
+				transparent 100%
+			),
+			radial-gradient(
+				circle at top left,
+				color-mix(in oklab, var(--primary) 16%, transparent) 0%,
+				transparent 54%
+			),
+			linear-gradient(
+				135deg,
+				color-mix(in oklab, var(--line-color) 52%, transparent),
+				color-mix(in oklab, black 16%, transparent)
+			);
+	}
+
+	@keyframes albumImageSkeletonPulse {
+		0%,
+		100% {
+			opacity: 0.58;
+			transform: translateX(-18%);
+		}
+		50% {
+			opacity: 1;
+			transform: translateX(18%);
+		}
 	}
 
 	@keyframes fadeInUp {

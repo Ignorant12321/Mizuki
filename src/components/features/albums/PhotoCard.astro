@@ -1,5 +1,6 @@
 ---
 import type { PhotoCardProps } from "./types";
+import { Icon } from "astro-icon/components";
 
 const { src, alt = "", albumId } = Astro.props as PhotoCardProps;
 ---
@@ -9,14 +10,174 @@ const { src, alt = "", albumId } = Astro.props as PhotoCardProps;
 		data-fancybox={`gallery-${albumId}`}
 		data-src={src}
 		data-type="image"
-		class="block rounded-xl overflow-hidden group cursor-pointer"
+		class="album-photo-shell block rounded-xl overflow-hidden cursor-pointer"
+		data-progressive-image-shell
+		data-loaded="false"
 	>
+		<div class="album-photo-skeleton" aria-hidden="true">
+			<div class="album-photo-skeleton-shine"></div>
+		</div>
 		<img
 			src={src}
 			alt={alt}
 			loading="lazy"
 			decoding="async"
-			class="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
+			class="album-photo-image w-full h-auto object-cover"
+			data-progressive-image
 		/>
+		<div class="album-photo-error" aria-hidden="true">
+			<Icon
+				name="material-symbols:broken-image-outline-rounded"
+				class="text-4xl"
+			/>
+		</div>
 	</div>
 </div>
+
+<style>
+	.album-photo-shell {
+		position: relative;
+		isolation: isolate;
+		background: color-mix(in oklab, var(--card-bg-alt) 88%, var(--line-color));
+	}
+
+	.album-photo-skeleton {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		pointer-events: none;
+		background:
+			linear-gradient(
+				135deg,
+				color-mix(in oklab, var(--card-bg-alt) 78%, white 22%) 0%,
+				color-mix(in oklab, var(--line-color) 72%, white 28%) 100%
+			),
+			color-mix(in oklab, var(--card-bg-alt) 88%, var(--line-color));
+		box-shadow:
+			inset 0 0 0 1px
+				color-mix(in oklab, var(--line-color) 70%, transparent),
+			inset 0 18px 42px color-mix(in oklab, white 44%, transparent);
+		transition:
+			opacity 520ms ease,
+			visibility 520ms ease;
+	}
+
+	.album-photo-skeleton-shine {
+		position: absolute;
+		inset: 0 -45%;
+		border-radius: inherit;
+		background:
+			linear-gradient(
+				105deg,
+				transparent 0%,
+				transparent 34%,
+				color-mix(in oklab, white 68%, transparent) 47%,
+				transparent 62%,
+				transparent 100%
+			),
+			radial-gradient(
+				circle at top left,
+				color-mix(in oklab, var(--primary) 11%, transparent) 0%,
+				transparent 54%
+			),
+			linear-gradient(
+				135deg,
+				color-mix(in oklab, var(--line-color) 42%, transparent),
+				color-mix(in oklab, white 28%, transparent)
+			);
+		animation: albumPhotoSkeletonPulse 1.2s ease-in-out infinite;
+	}
+
+	.album-photo-shell .album-photo-image {
+		display: block;
+		opacity: 0;
+		transition:
+			opacity 560ms ease,
+			transform 300ms ease;
+	}
+
+	.album-photo-shell[data-loaded="true"] .album-photo-image {
+		opacity: 1;
+	}
+
+	.album-photo-shell:hover .album-photo-image {
+		transform: scale(1.05);
+	}
+
+	.album-photo-shell[data-loaded="true"] .album-photo-skeleton,
+	.album-photo-shell[data-loaded="error"] .album-photo-skeleton {
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	.album-photo-error {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 9rem;
+		color: var(--content-meta);
+		background: color-mix(in oklab, var(--btn-regular-bg) 88%, white 12%);
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+		transition:
+			opacity 260ms ease,
+			visibility 260ms ease;
+	}
+
+	.album-photo-shell[data-loaded="error"] .album-photo-error {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	:global(.dark) .album-photo-skeleton {
+		background:
+			linear-gradient(
+				135deg,
+				color-mix(in oklab, var(--card-bg) 84%, black 16%) 0%,
+				color-mix(in oklab, var(--line-color) 74%, black 26%) 100%
+			),
+			color-mix(in oklab, var(--card-bg) 90%, black 10%);
+		box-shadow:
+			inset 0 0 0 1px
+				color-mix(in oklab, var(--line-color) 78%, transparent),
+			inset 0 18px 42px color-mix(in oklab, black 24%, transparent);
+	}
+
+	:global(.dark) .album-photo-skeleton-shine {
+		background:
+			linear-gradient(
+				105deg,
+				transparent 0%,
+				transparent 34%,
+				color-mix(in oklab, white 18%, transparent) 47%,
+				transparent 62%,
+				transparent 100%
+			),
+			radial-gradient(
+				circle at top left,
+				color-mix(in oklab, var(--primary) 16%, transparent) 0%,
+				transparent 54%
+			),
+			linear-gradient(
+				135deg,
+				color-mix(in oklab, var(--line-color) 52%, transparent),
+				color-mix(in oklab, black 16%, transparent)
+			);
+	}
+
+	@keyframes albumPhotoSkeletonPulse {
+		0%,
+		100% {
+			opacity: 0.58;
+			transform: translateX(-18%);
+		}
+		50% {
+			opacity: 1;
+			transform: translateX(18%);
+		}
+	}
+</style>

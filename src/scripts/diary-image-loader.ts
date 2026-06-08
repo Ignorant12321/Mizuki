@@ -1,5 +1,9 @@
 const DIARY_IMAGE_SHELL_SELECTOR = "[data-diary-image-shell]";
 const DIARY_IMAGE_SELECTOR = "[data-diary-image]";
+const PROGRESSIVE_IMAGE_SHELL_SELECTOR = "[data-progressive-image-shell]";
+const PROGRESSIVE_IMAGE_SELECTOR = "[data-progressive-image]";
+const IMAGE_SHELL_SELECTOR = `${DIARY_IMAGE_SHELL_SELECTOR}, ${PROGRESSIVE_IMAGE_SHELL_SELECTOR}`;
+const IMAGE_SELECTOR = `${DIARY_IMAGE_SELECTOR}, ${PROGRESSIVE_IMAGE_SELECTOR}`;
 
 declare global {
 	interface Window {
@@ -13,6 +17,18 @@ function markLoaded(shell: HTMLElement): void {
 	shell.dataset.loadState = "loaded";
 }
 
+function markLoadedAfterPaint(shell: HTMLElement): void {
+	if (shell.dataset.loadState === "loaded") {
+		return;
+	}
+
+	window.requestAnimationFrame(() => {
+		window.requestAnimationFrame(() => {
+			markLoaded(shell);
+		});
+	});
+}
+
 function markError(shell: HTMLElement): void {
 	shell.dataset.loaded = "error";
 	shell.dataset.loadState = "error";
@@ -23,7 +39,7 @@ function findDiaryImageShell(target: EventTarget | null): HTMLElement | null {
 		return null;
 	}
 
-	const shell = target.closest(DIARY_IMAGE_SHELL_SELECTOR);
+	const shell = target.closest(IMAGE_SHELL_SELECTOR);
 	return shell instanceof HTMLElement ? shell : null;
 }
 
@@ -36,7 +52,7 @@ function syncDiaryImageState(
 	}
 
 	if (image.naturalWidth > 0) {
-		markLoaded(shell);
+		markLoadedAfterPaint(shell);
 	} else {
 		markError(shell);
 	}
@@ -45,7 +61,7 @@ function syncDiaryImageState(
 function handleDiaryImageLoad(event: Event): void {
 	const shell = findDiaryImageShell(event.target);
 	if (shell) {
-		markLoaded(shell);
+		markLoadedAfterPaint(shell);
 	}
 }
 
@@ -61,7 +77,7 @@ function bindDiaryImage(shell: Element): void {
 		return;
 	}
 
-	const image = shell.querySelector(DIARY_IMAGE_SELECTOR);
+	const image = shell.querySelector(IMAGE_SELECTOR);
 	if (!(image instanceof HTMLImageElement)) {
 		return;
 	}
@@ -77,7 +93,7 @@ function bindDiaryImage(shell: Element): void {
 
 export function initDiaryImageSkeletons(): void {
 	document
-		.querySelectorAll(DIARY_IMAGE_SHELL_SELECTOR)
+		.querySelectorAll(IMAGE_SHELL_SELECTOR)
 		.forEach((shell) => bindDiaryImage(shell));
 }
 
